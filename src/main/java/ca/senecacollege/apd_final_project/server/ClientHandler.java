@@ -251,6 +251,238 @@ public class ClientHandler implements Runnable {
      */
     private void displayGuestReservations(int guestId) {
         try {
+            Guest guest = guestService.getGuestById(guestId);
+            List<Reservation> reservations = reservationService.getReservationsByGuest(guestId);
+
+            if (guest == null) {
+                out.println("\nGuest not found.");
+                return;
+            }
+
+            out.println("\nReservations for " + guest.getName() + ":");
+            out.println("----------------------------------");
+
+            if (reservations.isEmpty()) {
+                out.println("No reservations found for this guest.");
+            } else {
+                for (Reservation reservation : reservations) {
+                    out.println("Reservation ID: " + reservation.getReservationID());
+                    out.println("Check-in: " + reservation.getCheckInDate());
+                    out.println("Check-out: " + reservation.getCheckOutDate());
+                    out.println("Status: " + reservation.getStatus());
+                    out.println("----------------------------------");
+                }
+            }
+        } catch (Exception e) {
+            LoggingManager.logException("Error displaying guest reservations", e);
+            out.println("\nAn error occurred: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Handle viewing all reservations
+     */
+    private void handleViewReservations() throws IOException {
+        out.println("\nVIEW RESERVATIONS");
+        out.println("----------------");
+        out.println("1. View All Active Reservations");
+        out.println("2. View Today's Check-ins");
+        out.println("3. View Today's Check-outs");
+        out.println("4. Back to Main Menu");
+
+        out.print("\nEnter your choice: ");
+        out.flush();
+
+        String choice = in.readLine();
+
+        if ("4".equals(choice)) {
+            return;
+        }
+
+        try {
+            List<Reservation> reservations = null;
+
+            switch (choice) {
+                case "1":
+                    reservations = reservationService.getActiveReservations();
+                    break;
+                case "2":
+                    reservations = reservationService.getTodayCheckIns();
+                    break;
+                case "3":
+                    reservations = reservationService.getTodayCheckOuts();
+                    break;
+                default:
+                    out.println("\nInvalid choice. Please try again.");
+                    return;
+            }
+
+            // Display reservations
+            if (reservations.isEmpty()) {
+                out.println("\nNo reservations found.");
+            } else {
+                out.println("\nReservations:");
+                out.println("-------------");
+                for (Reservation reservation : reservations) {
+                    out.println("Reservation ID: " + reservation.getReservationID());
+
+                    // Get guest info
+                    try {
+                        Guest guest = guestService.getGuestById(reservation.getGuestID());
+                        out.println("Guest: " + guest.getName() + " (" + guest.getPhoneNumber() + ")");
+                    } catch (Exception e) {
+                        out.println("Guest: [Error retrieving guest info]");
+                    }
+
+                    out.println("Check-in: " + reservation.getCheckInDate());
+                    out.println("Check-out: " + reservation.getCheckOutDate());
+                    out.println("Status: " + reservation.getStatus());
+                    out.println("-------------");
+                }
+            }
+
+        } catch (Exception e) {
+            LoggingManager.logException("Error viewing reservations", e);
+            out.println("\nAn error occurred: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Handle check-in process
+     */
+    private void handleCheckIn() throws IOException {
+        out.println("\nCHECK-IN GUEST");
+        out.println("-------------");
+
+        out.print("Enter reservation ID: ");
+        out.flush();
+
+        try {
+            int reservationId = Integer.parseInt(in.readLine());
+
+            Reservation reservation = reservationService.getReservationById(reservationId);
+
+            if (reservation == null) {
+                out.println("\nReservation not found.");
+                return;
+            }
+
+            if (!reservation.getStatus().equals(Reservation.STATUS_CONFIRMED)) {
+                out.println("\nThis reservation cannot be checked in. Current status: " + reservation.getStatus());
+                return;
+            }
+
+            Guest guest = guestService.getGuestById(reservation.getGuestID());
+
+            out.println("\nReservation Details:");
+            out.println("Guest: " + guest.getName());
+            out.println("Check-in: " + reservation.getCheckInDate());
+            out.println("Check-out: " + reservation.getCheckOutDate());
+
+            out.print("\nConfirm check-in (y/n): ");
+            out.flush();
+
+            String confirm = in.readLine();
+
+            if ("y".equalsIgnoreCase(confirm)) {
+                reservationService.checkIn(reservationId);
+                out.println("\nCheck-in completed successfully!");
+                LoggingManager.logAdminActivity(loggedInAdmin.getUsername(), "Checked in reservation #" + reservationId);
+            } else {
+                out.println("\nCheck-in cancelled.");
+            }
+
+        } catch (NumberFormatException e) {
+            out.println("\nInvalid reservation ID. Please enter a valid number.");
+        } catch (Exception e) {
+            LoggingManager.logException("Error during check-in", e);
+            out.println("\nAn error occurred during check-in: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Handle check-out process
+     */
+    private void handleCheckOut() throws IOException {
+        out.println("\nCHECK-OUT GUEST");
+        out.println("--------------");
+
+        out.print("Enter reservation ID: ");
+        out.flush();
+
+        try {
+            int reservationId = Integer.parseInt(in.readLine());
+
+            Reservation reservation = reservationService.getReservationById(reservationId);
+
+            if (reservation == null) {
+                out.println("\nReservation not found.");
+                return;
+            }
+
+            if (!reservation.getStatus().equals(Reservation.STATUS_CHECKED_IN)) {
+                out.println("\nThis reservation cannot be checked out. Current status: " + reservation.getStatus());
+                return;
+            }
+
+            Guest guest = guestService.getGuestById(reservation.getGuestID());
+
+            out.println("\nReservation Details:");
+            out.println("Guest: " + guest.getName());
+            out.println("Check-in: " + reservation.getCheckInDate());
+            out.println("Check-out: " + reservation.getCheckOutDate());
+
+            // Here we'd normally handle billing, but we'll keep it simple
+            out.println("\nPlease remind the guest to leave feedback at the kiosk.");
+
+            out.print("\nConfirm check-out (y/n): ");
+            out.flush();
+
+            String confirm = in.readLine();
+
+            if ("y".equalsIgnoreCase(confirm)) {
+                reservationService.checkOut(reservationId);
+                out.println("\nCheck-out completed successfully!");
+                LoggingManager.logAdminActivity(loggedInAdmin.getUsername(), "Checked out reservation #" + reservationId);
+            } else {
+                out.println("\nCheck-out cancelled.");
+            }
+
+        } catch (NumberFormatException e) {
+            out.println("\nInvalid reservation ID. Please enter a valid number.");
+        } catch (Exception e) {
+            LoggingManager.logException("Error during check-out", e);
+            out.println("\nAn error occurred during check-out: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Handle reservation cancellation
+     */
+    private void handleCancelReservation() throws IOException {
+        out.println("\nCANCEL RESERVATION");
+        out.println("-----------------");
+
+        out.print("Enter reservation ID: ");
+        out.flush();
+
+        try {
+            int reservationId = Integer.parseInt(in.readLine());
+
+            Reservation reservation = reservationService.getReservationById(reservationId);
+
+            if (reservation == null) {
+                out.println("\nReservation not found.");
+                return;
+            }
+
+            if (reservation.getStatus().equals(Reservation.STATUS_CHECKED_IN) ||
+                    reservation.getStatus().equals(Reservation.STATUS_CHECKED_OUT) ||
+                    reservation.getStatus().equals(Reservation.STATUS_CANCELLED)) {
+                out.println("\nThis reservation cannot be cancelled. Current status: " + reservation.getStatus());
+                return;
+            }
+
             Guest guest = guestService.getGuestById(reservation.getGuestID());
 
             out.println("\nReservation Details:");
@@ -377,264 +609,5 @@ public class ClientHandler implements Runnable {
         } catch (IOException e) {
             LoggingManager.logException("Error cleaning up client handler resources", e);
         }
-    }
-} guest = guestService.getGuestById(guestId);
-List<Reservation> reservations = reservationService.getReservationsByGuest(guestId);
-
-            if (guest == null) {
-        out.println("\nGuest not found.");
-                return;
-                        }
-
-                        out.println("\nReservations for " + guest.getName() + ":");
-        out.println("----------------------------------");
-
-            if (reservations.isEmpty()) {
-        out.println("No reservations found for this guest.");
-            } else {
-                    for (Reservation reservation : reservations) {
-        out.println("Reservation ID: " + reservation.getReservationID());
-        out.println("Check-in: " + reservation.getCheckInDate());
-        out.println("Check-out: " + reservation.getCheckOutDate());
-        out.println("Status: " + reservation.getStatus());
-        out.println("----------------------------------");
-                }
-                        }
-
-                        } catch (Exception e) {
-        LoggingManager.logException("Error displaying guest reservations", e);
-            out.println("\nAn error occurred: " + e.getMessage());
-        }
-        }
-
-/**
- * Handle viewing all reservations
- */
-private void handleViewReservations() throws IOException {
-    out.println("\nVIEW RESERVATIONS");
-    out.println("----------------");
-    out.println("1. View All Active Reservations");
-    out.println("2. View Today's Check-ins");
-    out.println("3. View Today's Check-outs");
-    out.println("4. Back to Main Menu");
-
-    out.print("\nEnter your choice: ");
-    out.flush();
-
-    String choice = in.readLine();
-
-    if ("4".equals(choice)) {
-        return;
-    }
-
-    try {
-        List<Reservation> reservations = null;
-
-        switch (choice) {
-            case "1":
-                reservations = reservationService.getActiveReservations();
-                break;
-            case "2":
-                reservations = reservationService.getTodayCheckIns();
-                break;
-            case "3":
-                reservations = reservationService.getTodayCheckOuts();
-                break;
-            default:
-                out.println("\nInvalid choice. Please try again.");
-                return;
-        }
-
-        // Display reservations
-        if (reservations.isEmpty()) {
-            out.println("\nNo reservations found.");
-        } else {
-            out.println("\nReservations:");
-            out.println("-------------");
-            for (Reservation reservation : reservations) {
-                out.println("Reservation ID: " + reservation.getReservationID());
-
-                // Get guest info
-                try {
-                    Guest guest = guestService.getGuestById(reservation.getGuestID());
-                    out.println("Guest: " + guest.getName() + " (" + guest.getPhoneNumber() + ")");
-                } catch (Exception e) {
-                    out.println("Guest: [Error retrieving guest info]");
-                }
-
-                out.println("Check-in: " + reservation.getCheckInDate());
-                out.println("Check-out: " + reservation.getCheckOutDate());
-                out.println("Status: " + reservation.getStatus());
-                out.println("-------------");
-            }
-        }
-
-    } catch (Exception e) {
-        LoggingManager.logException("Error viewing reservations", e);
-        out.println("\nAn error occurred: " + e.getMessage());
-    }
-}
-
-/**
- * Handle check-in process
- */
-private void handleCheckIn() throws IOException {
-    out.println("\nCHECK-IN GUEST");
-    out.println("-------------");
-
-    out.print("Enter reservation ID: ");
-    out.flush();
-
-    try {
-        int reservationId = Integer.parseInt(in.readLine());
-
-        Reservation reservation = reservationService.getReservationById(reservationId);
-
-        if (reservation == null) {
-            out.println("\nReservation not found.");
-            return;
-        }
-
-        if (!reservation.getStatus().equals(Reservation.STATUS_CONFIRMED)) {
-            out.println("\nThis reservation cannot be checked in. Current status: " + reservation.getStatus());
-            return;
-        }
-
-        Guest guest = guestService.getGuestById(reservation.getGuestID());
-
-        out.println("\nReservation Details:");
-        out.println("Guest: " + guest.getName());
-        out.println("Check-in: " + reservation.getCheckInDate());
-        out.println("Check-out: " + reservation.getCheckOutDate());
-
-        out.print("\nConfirm check-in (y/n): ");
-        out.flush();
-
-        String confirm = in.readLine();
-
-        if ("y".equalsIgnoreCase(confirm)) {
-            reservationService.checkIn(reservationId);
-            out.println("\nCheck-in completed successfully!");
-            LoggingManager.logAdminActivity(loggedInAdmin.getUsername(), "Checked in reservation #" + reservationId);
-        } else {
-            out.println("\nCheck-in cancelled.");
-        }
-
-    } catch (NumberFormatException e) {
-        out.println("\nInvalid reservation ID. Please enter a valid number.");
-    } catch (Exception e) {
-        LoggingManager.logException("Error during check-in", e);
-        out.println("\nAn error occurred during check-in: " + e.getMessage());
-    }
-}
-
-/**
- * Handle check-out process
- */
-private void handleCheckOut() throws IOException {
-    out.println("\nCHECK-OUT GUEST");
-    out.println("--------------");
-
-    out.print("Enter reservation ID: ");
-    out.flush();
-
-    try {
-        int reservationId = Integer.parseInt(in.readLine());
-
-        Reservation reservation = reservationService.getReservationById(reservationId);
-
-        if (reservation == null) {
-            out.println("\nReservation not found.");
-            return;
-        }
-
-        if (!reservation.getStatus().equals(Reservation.STATUS_CHECKED_IN)) {
-            out.println("\nThis reservation cannot be checked out. Current status: " + reservation.getStatus());
-            return;
-        }
-
-        Guest guest = guestService.getGuestById(reservation.getGuestID());
-
-        out.println("\nReservation Details:");
-        out.println("Guest: " + guest.getName());
-        out.println("Check-in: " + reservation.getCheckInDate());
-        out.println("Check-out: " + reservation.getCheckOutDate());
-
-        // Here we'd normally handle billing, but we'll keep it simple
-        out.println("\nPlease remind the guest to leave feedback at the kiosk.");
-
-        out.print("\nConfirm check-out (y/n): ");
-        out.flush();
-
-        String confirm = in.readLine();
-
-        if ("y".equalsIgnoreCase(confirm)) {
-            reservationService.checkOut(reservationId);
-            out.println("\nCheck-out completed successfully!");
-            LoggingManager.logAdminActivity(loggedInAdmin.getUsername(), "Checked out reservation #" + reservationId);
-        } else {
-            out.println("\nCheck-out cancelled.");
-        }
-
-    } catch (NumberFormatException e) {
-        out.println("\nInvalid reservation ID. Please enter a valid number.");
-    } catch (Exception e) {
-        LoggingManager.logException("Error during check-out", e);
-        out.println("\nAn error occurred during check-out: " + e.getMessage());
-    }
-}
-
-/**
- * Handle reservation cancellation
- */
-private void handleCancelReservation() throws IOException {
-    out.println("\nCANCEL RESERVATION");
-    out.println("-----------------");
-
-    out.print("Enter reservation ID: ");
-    out.flush();
-
-    try {
-        int reservationId = Integer.parseInt(in.readLine());
-
-        Reservation reservation = reservationService.getReservationById(reservationId);
-
-        if (reservation == null) {
-            out.println("\nReservation not found.");
-            return;
-        }
-
-        if (reservation.getStatus().equals(Reservation.STATUS_CHECKED_IN) ||
-                reservation.getStatus().equals(Reservation.STATUS_CHECKED_OUT) ||
-                reservation.getStatus().equals(Reservation.STATUS_CANCELLED)) {
-            out.println("\nThis reservation cannot be cancelled. Current status: " + reservation.getStatus());
-            return;
-        }
-
-        Guest guest = guestService.getGuestById(reservation.getGuestID());
-
-        out.println("\nReservation Details:");
-        out.println("Guest: " + guest.getName());
-        out.println("Check-in: " + reservation.getCheckInDate());
-        out.println("Check-out: " + reservation.getCheckOutDate());
-
-        out.print("\nConfirm cancellation (y/n): ");
-        out.flush();
-
-        String confirm = in.readLine();
-
-        if ("y".equalsIgnoreCase(confirm)) {
-            reservationService.cancelReservation(reservationId);
-            out.println("\nReservation cancelled successfully!");
-            LoggingManager.logAdminActivity(loggedInAdmin.getUsername(), "Cancelled reservation #" + reservationId);
-        } else {
-            out.println("\nCancellation aborted.");
-        }
-
-    } catch (NumberFormatException e) {
-        out.println("\nInvalid reservation ID. Please enter a valid number.");
-    } catch (Exception e) {
-        LoggingManager.logException("Error cancelling reservation", e);
-        out.println("\nAn error occurred during cancellation: " + e.getMessage());
     }
 }
