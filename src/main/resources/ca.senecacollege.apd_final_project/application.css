@@ -1,0 +1,392 @@
+/* Base application styling with dark theme and purple palette */
+
+/* Color palette */
+* {
+    -fx-primary: #7b1fa2; /* Deep Purple */
+    -fx-primary-dark: #4a148c; /* Darker Purple */
+    -fx-primary-light: #e1bee7; /* Light Purple */
+    -fx-accent: #ce93d8; /* Accent Purple */
+    -fx-secondary: #673ab7; /* Secondary Purple */
+    -fx-bg-dark: #121212; /* Dark Background */
+    -fx-bg-medium: #1e1e1e; /* Medium Dark Background */
+    -fx-bg-light: #2d2d2d; /* Light Dark Background */
+    -fx-text-primary: #ffffff; /* Primary Text */
+    -fx-text-secondary: #b3b3b3; /* Secondary Text */
+    -fx-error: #cf6679; /* Error Color */
+    -fx-success: #4caf50; /* Success Color */
+    -fx-warning: #ffab00; /* Warning Color */
+}
+
+/* Root styling */
+.root {
+    -fx-background-color: -fx-bg-dark;
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    -fx-font-size: 12pt;
+    -fx-text-fill: -fx-text-primary;
+}
+
+/* Label styling */
+.label {
+    -fx-text-fill: -fx-text-primary;
+}
+
+.label-secondary {
+    -fx-text-fill: -fx-text-secondary;
+    -fx-font-size: 10pt;
+}
+
+.label-header {
+    -fx-font-size: 24pt;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-primary-light;
+}
+
+.label-subheader {
+    -fx-font-size: 18pt;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-primary-light;
+}
+
+/* Button styling */
+.button {
+    -fx-background-color: -fx-primary;
+    -fx-text-fill: -fx-text-primary;
+    -fx-background-radius: 4px;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 5, 0, 0, 1);
+}
+
+.button:hover {
+    -fx-background-color: derive(-fx-primary, 10%);
+}
+
+.button:pressed {
+    -fx-background-color: derive(-fx-primary, -10%);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 3, 0, 0, 1);
+}
+
+.button-secondary {
+    -fx-background-color: -fx-secondary;
+}
+
+.button-secondary:hover {
+    -fx-background-color: derive(-fx-secondary, 10%);
+}
+
+.button-secondary:pressed {
+    -fx-background-color: derive(-fx-secondary, -10%);
+}
+
+.button-danger {
+    -fx-background-color: -fx-error;
+}
+
+.button-danger:hover {
+    -fx-background-color: derive(-fx-error, 10%);
+}
+
+.button-danger:pressed {
+    -fx-background-color: derive(-fx-error, -10%);
+}
+
+.button-success {
+    -fx-background-color: -fx-success;
+}
+
+.button-success:hover {
+    -fx-background-color: derive(-fx-success, 10%);
+}
+
+.button-success:pressed {
+    -fx-background-color: derive(-fx-success, -10%);
+}
+
+/* Text field styling */
+.text-field, .text-area, .password-field, .combo-box {
+    -fx-background-color: -fx-bg-light;
+    -fx-text-fill: -fx-text-primary;
+    -fx-prompt-text-fill: -fx-text-secondary;
+    -fx-background-radius: 4px;
+    -fx-border-color: -fx-bg-medium;
+    -fx-border-radius: 4px;
+    -fx-padding: 8px;
+}
+
+.text-field:focused, .text-area:focused, .password-field:focused, .combo-box:focused {
+    -fx-border-color: -fx-primary;
+    -fx-effect: dropshadow(three-pass-box, -fx-accent, 3, 0, 0, 0);
+}
+
+/* ComboBox styling */
+.combo-box {
+    -fx-background-color: -fx-bg-light;
+}
+
+.combo-box .list-cell {
+    -fx-background-color: -fx-bg-light;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: -fx-bg-medium;
+    -fx-border-color: -fx-bg-light;
+}
+
+.combo-box-popup .list-view .list-cell {
+    -fx-background-color: -fx-bg-medium;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.combo-box-popup .list-view .list-cell:filled:selected,
+.combo-box-popup .list-view .list-cell:filled:selected:hover {
+    -fx-background-color: -fx-primary;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.combo-box-popup .list-view .list-cell:filled:hover {
+    -fx-background-color: -fx-bg-light;
+    -fx-text-fill: -fx-text-primary;
+}
+
+/* CheckBox styling */
+.check-box {
+    -fx-text-fill: -fx-text-primary;
+}
+
+.check-box .box {
+    -fx-background-color: -fx-bg-light;
+    -fx-border-color: -fx-text-secondary;
+    -fx-border-radius: 3px;
+}
+
+.check-box:selected .mark {
+    -fx-background-color: -fx-text-primary;
+}
+
+.check-box:selected .box {
+    -fx-background-color: -fx-primary;
+    -fx-border-color: -fx-primary;
+}
+
+/* RadioButton styling */
+.radio-button {
+    -fx-text-fill: -fx-text-primary;
+}
+
+.radio-button .radio {
+    -fx-background-color: -fx-bg-light;
+    -fx-border-color: -fx-text-secondary;
+}
+
+.radio-button:selected .dot {
+    -fx-background-color: -fx-text-primary;
+}
+
+.radio-button:selected .radio {
+    -fx-background-color: -fx-primary;
+    -fx-border-color: -fx-primary;
+}
+
+/* TableView styling */
+.table-view {
+    -fx-background-color: -fx-bg-medium;
+    -fx-table-cell-border-color: -fx-bg-light;
+}
+
+.table-view .column-header {
+    -fx-background-color: -fx-primary-dark;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: -fx-text-primary;
+    -fx-font-weight: bold;
+}
+
+.table-view .table-row-cell {
+    -fx-background-color: -fx-bg-medium;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.table-view .table-row-cell:odd {
+    -fx-background-color: -fx-bg-dark;
+}
+
+.table-view .table-row-cell:selected {
+    -fx-background-color: -fx-primary;
+}
+
+.table-view .table-cell {
+    -fx-text-fill: -fx-text-primary;
+    -fx-alignment: center-left;
+    -fx-padding: 8px;
+}
+
+/* DatePicker styling */
+.date-picker {
+    -fx-background-color: -fx-bg-light;
+}
+
+.date-picker .arrow-button {
+    -fx-background-color: -fx-primary;
+    -fx-background-radius: 0 4px 4px 0;
+}
+
+.date-picker .arrow-button .arrow {
+    -fx-background-color: -fx-text-primary;
+}
+
+.date-picker .cell {
+    -fx-background-color: -fx-bg-medium;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.date-picker .cell:hover {
+    -fx-background-color: -fx-bg-light;
+}
+
+.date-picker .selected {
+    -fx-background-color: -fx-primary;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.date-picker .today {
+    -fx-border-color: -fx-accent;
+}
+
+/* ScrollPane styling */
+.scroll-pane {
+    -fx-background-color: -fx-bg-medium;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: -fx-bg-medium;
+}
+
+.scroll-bar {
+    -fx-background-color: -fx-bg-dark;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: -fx-primary;
+    -fx-background-radius: 0;
+}
+
+.scroll-bar .increment-button, .scroll-bar .decrement-button {
+    -fx-background-color: -fx-bg-dark;
+}
+
+.scroll-bar .increment-arrow, .scroll-bar .decrement-arrow {
+    -fx-background-color: -fx-text-secondary;
+}
+
+/* Separator styling */
+.separator .line {
+    -fx-border-color: -fx-bg-light;
+    -fx-border-width: 1px;
+}
+
+/* TabPane styling */
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: -fx-bg-dark;
+}
+
+.tab-pane .tab {
+    -fx-background-color: -fx-bg-medium;
+    -fx-text-fill: -fx-text-secondary;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: -fx-primary;
+}
+
+.tab-pane .tab .tab-label {
+    -fx-text-fill: -fx-text-secondary;
+}
+
+.tab-pane .tab:selected .tab-label {
+    -fx-text-fill: -fx-text-primary;
+}
+
+/* Card styling for panels */
+.card {
+    -fx-background-color: -fx-bg-medium;
+    -fx-background-radius: 8px;
+    -fx-padding: 16px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 3);
+}
+
+.card-header {
+    -fx-font-size: 16pt;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-primary-light;
+    -fx-padding: 0 0 10px 0;
+}
+
+/* Progress indicators */
+.progress-bar {
+    -fx-background-color: -fx-bg-light;
+}
+
+.progress-bar .bar {
+    -fx-background-color: -fx-primary;
+}
+
+.progress-indicator {
+    -fx-progress-color: -fx-primary;
+}
+
+/* Tooltip styling */
+.tooltip {
+    -fx-background-color: -fx-bg-light;
+    -fx-text-fill: -fx-text-primary;
+    -fx-background-radius: 4px;
+    -fx-padding: 6px 10px;
+}
+
+/* Menu styling */
+.menu-bar {
+    -fx-background-color: -fx-primary-dark;
+}
+
+.menu {
+    -fx-background-color: transparent;
+}
+
+.menu:hover, .menu:showing {
+    -fx-background-color: -fx-primary;
+}
+
+.menu .label {
+    -fx-text-fill: -fx-text-primary;
+}
+
+.menu-item {
+    -fx-background-color: -fx-bg-medium;
+}
+
+.menu-item .label {
+    -fx-text-fill: -fx-text-primary;
+}
+
+.menu-item:focused, .menu-item:hover {
+    -fx-background-color: -fx-primary;
+}
+
+.context-menu {
+    -fx-background-color: -fx-bg-medium;
+    -fx-border-color: -fx-bg-light;
+}
+
+/* Rating stars for feedback */
+.rating-star {
+    -fx-background-color: -fx-text-secondary;
+    -fx-padding: 10px;
+    -fx-shape: "M 0 -3.5 L 0.6 -1.1 L 3.1 -1.1 L 1.3 0.4 L 1.9 2.8 L 0 1.2 L -1.9 2.8 L -1.3 0.4 L -3.1 -1.1 L -0.6 -1.1 Z";
+    -fx-cursor: hand;
+}
+
+.rating-star:hover, .rating-star-filled {
+    -fx-background-color: -fx-warning;
+}

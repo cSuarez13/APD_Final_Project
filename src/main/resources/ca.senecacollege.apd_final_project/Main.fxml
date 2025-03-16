@@ -1,14 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="ca.senecacollege.apd_final_project.Main"
-            prefHeight="400.0" prefWidth="600.0">
-
-</AnchorPane>
+<BorderPane fx:id="mainBorderPane" prefHeight="600.0" prefWidth="800.0" styleClass="root"
+            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ca.senecacollege.apd_final_project.controller.MainController">
+    <center>
+        <VBox alignment="CENTER" spacing="20.0" styleClass="card">
+            <children>
+                <Label styleClass="label-header" text="Hotel ABC Reservation System">
+                    <font>
+                        <Font name="System Bold" size="36.0" />
+                    </font>
+                </Label>
+                <Label styleClass="label-secondary" text="Select an option to continue">
+                    <font>
+                        <Font size="18.0" />
+                    </font>
+                </Label>
+                <HBox alignment="CENTER" spacing="50.0">
+                    <children>
+                        <Button fx:id="btnKiosk" mnemonicParsing="false" onAction="#handleKioskButton" prefHeight="150.0" prefWidth="200.0" styleClass="button" text="Kiosk Mode">
+                            <font>
+                                <Font size="24.0" />
+                            </font>
+                        </Button>
+                        <Button fx:id="btnAdmin" mnemonicParsing="false" onAction="#handleAdminButton" prefHeight="150.0" prefWidth="200.0" styleClass="button-secondary" text="Admin Login">
+                            <font>
+                                <Font size="24.0" />
+                            </font>
+                        </Button>
+                    </children>
+                    <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                    </padding>
+                </HBox>
+            </children>
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+            <BorderPane.margin>
+                <Insets bottom="50.0" left="50.0" right="50.0" top="50.0" />
+            </BorderPane.margin>
+        </VBox>
+    </center>
+    <bottom>
+        <HBox alignment="CENTER" styleClass="bg-dark">
+            <children>
+                <Label styleClass="label-secondary" text="© 2025 Hotel ABC. All Rights Reserved." />
+            </children>
+            <padding>
+                <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+            </padding>
+        </HBox>
+    </bottom>
+</BorderPane>
