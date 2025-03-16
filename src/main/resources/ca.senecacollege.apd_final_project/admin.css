@@ -1,0 +1,279 @@
+/* Admin Interface Styling with dark theme and blue accent colors */
+
+/* Color palette */
+* {
+    -fx-primary: #1976d2; /* Blue */
+    -fx-primary-dark: #0d47a1; /* Darker Blue */
+    -fx-primary-light: #bbdefb; /* Light Blue */
+    -fx-accent: #64b5f6; /* Accent Blue */
+    -fx-secondary: #2196f3; /* Secondary Blue */
+    -fx-bg-dark: #121212; /* Dark Background */
+    -fx-bg-medium: #1e1e1e; /* Medium Dark Background */
+    -fx-bg-light: #2d2d2d; /* Light Dark Background */
+    -fx-text-primary: #ffffff; /* Primary Text */
+    -fx-text-secondary: #b3b3b3; /* Secondary Text */
+    -fx-error: #cf6679; /* Error Color */
+    -fx-success: #4caf50; /* Success Color */
+    -fx-warning: #ffab00; /* Warning Color */
+}
+
+/* Import base styles */
+@import "application.css";
+
+/* Override and extend base styling for admin-specific components */
+
+/* Header styling */
+.header {
+    -fx-background-color: -fx-primary-dark;
+    -fx-padding: 10px;
+    -fx-spacing: 10px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 8, 0, 0, 2);
+}
+
+/* Footer styling */
+.footer {
+    -fx-background-color: -fx-bg-dark;
+    -fx-padding: 5px;
+    -fx-border-width: 1px 0 0 0;
+    -fx-border-color: -fx-bg-light;
+}
+
+/* Tab styling */
+.tab-pane > .tab-header-area > .headers-region > .tab {
+    -fx-background-color: -fx-bg-medium;
+    -fx-background-radius: 0;
+    -fx-padding: 5px 15px;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab:selected {
+    -fx-background-color: -fx-primary;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab > .tab-container > .tab-label {
+    -fx-text-fill: -fx-text-secondary;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab:selected > .tab-container > .tab-label {
+    -fx-text-fill: -fx-text-primary;
+}
+
+.tab-pane > .tab-header-area > .tab-header-background {
+    -fx-background-color: -fx-bg-dark;
+}
+
+/* Table styling enhancements */
+.table-view {
+    -fx-background-color: -fx-bg-medium;
+}
+
+.table-view .column-header {
+    -fx-background-color: -fx-primary-dark;
+    -fx-padding: 8px;
+}
+
+.table-view .table-row-cell:even {
+    -fx-background-color: -fx-bg-medium;
+}
+
+.table-view .table-row-cell:odd {
+    -fx-background-color: -fx-bg-dark;
+}
+
+.table-view .table-row-cell:selected {
+    -fx-background-color: -fx-primary;
+}
+
+/* Stats cards styling */
+.card {
+    -fx-background-color: -fx-bg-medium;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 3);
+    -fx-padding: 15px;
+}
+
+.card-header {
+    -fx-font-size: 16pt;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-primary-light;
+    -fx-padding: 0 0 10px 0;
+}
+
+.stat-number {
+    -fx-font-size: 36pt;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-primary-light;
+}
+
+/* Dashboard-specific components */
+.dashboard-tile {
+    -fx-background-color: -fx-bg-medium;
+    -fx-background-radius: 8px;
+    -fx-padding: 15px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 3);
+}
+
+.dashboard-tile-header {
+    -fx-font-size: 14pt;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-primary-light;
+    -fx-padding: 0 0 10px 0;
+}
+
+/* Admin forms styling */
+.admin-form {
+    -fx-background-color: -fx-bg-medium;
+    -fx-padding: 20px;
+    -fx-spacing: 15px;
+}
+
+.admin-form-title {
+    -fx-font-size: 18pt;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-primary-light;
+}
+
+.admin-form-subtitle {
+    -fx-font-size: 12pt;
+    -fx-text-fill: -fx-text-secondary;
+}
+
+.form-section {
+    -fx-padding: 10px 0;
+    -fx-spacing: 10px;
+}
+
+.form-section-title {
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-primary-light;
+}
+
+/* Dialog styling */
+.dialog-pane {
+    -fx-background-color: -fx-bg-medium;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: -fx-primary-dark;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-text-fill: -fx-text-primary;
+    -fx-font-weight: bold;
+}
+
+.dialog-pane .content {
+    -fx-padding: 15px;
+}
+
+.dialog-pane .button-bar {
+    -fx-background-color: -fx-bg-medium;
+    -fx-padding: 10px;
+}
+
+/* Status badges */
+.status-badge {
+    -fx-background-radius: 3px;
+    -fx-padding: 3px 8px;
+    -fx-text-fill: -fx-text-primary;
+    -fx-font-weight: bold;
+}
+
+.status-confirmed {
+    -fx-background-color: -fx-primary;
+}
+
+.status-checked-in {
+    -fx-background-color: -fx-success;
+}
+
+.status-checked-out {
+    -fx-background-color: -fx-secondary;
+}
+
+.status-cancelled {
+    -fx-background-color: -fx-error;
+}
+
+.status-pending {
+    -fx-background-color: -fx-warning;
+}
+
+/* Special text styling */
+.label-total {
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+    -fx-text-fill: -fx-success;
+}
+
+/* Special buttons */
+.icon-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-cursor: hand;
+}
+
+.icon-button:hover {
+    -fx-background-color: -fx-bg-light;
+}
+
+.icon-button-primary {
+    -fx-text-fill: -fx-primary;
+}
+
+.icon-button-danger {
+    -fx-text-fill: -fx-error;
+}
+
+.icon-button-success {
+    -fx-text-fill: -fx-success;
+}
+
+/* Report styling */
+.chart-plot-background {
+    -fx-background-color: -fx-bg-medium;
+}
+
+.chart-vertical-grid-lines {
+    -fx-stroke: -fx-bg-light;
+}
+
+.chart-horizontal-grid-lines {
+    -fx-stroke: -fx-bg-light;
+}
+
+.chart-title {
+    -fx-text-fill: -fx-text-primary;
+    -fx-font-size: 14pt;
+}
+
+.axis {
+    -fx-tick-label-fill: -fx-text-secondary;
+}
+
+.chart-legend {
+    -fx-background-color: transparent;
+}
+
+.chart-legend-item {
+    -fx-text-fill: -fx-text-secondary;
+}
+
+/* Split pane styling */
+.split-pane {
+    -fx-background-color: -fx-bg-dark;
+}
+
+.split-pane > .split-pane-divider {
+    -fx-background-color: -fx-bg-light;
+    -fx-padding: 0 1px 0 1px;
+}
+
+/* Admin-specific scroll pane styling */
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 5px;
+}

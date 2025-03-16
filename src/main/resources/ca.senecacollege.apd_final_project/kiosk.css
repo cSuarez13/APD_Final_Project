@@ -1,0 +1,324 @@
+/* Kiosk Interface Styling with dark theme and purple accent colors */
+
+/* Color palette */
+* {
+    -fx-primary: #7b1fa2; /* Purple */
+    -fx-primary-dark: #4a148c; /* Darker Purple */
+    -fx-primary-light: #e1bee7; /* Light Purple */
+    -fx-accent: #ce93d8; /* Accent Purple */
+    -fx-secondary: #673ab7; /* Secondary Purple */
+    -fx-bg-dark: #121212; /* Dark Background */
+    -fx-bg-medium: #1e1e1e; /* Medium Dark Background */
+    -fx-bg-light: #2d2d2d; /* Light Dark Background */
+    -fx-text-primary: #ffffff; /* Primary Text */
+    -fx-text-secondary: #b3b3b3; /* Secondary Text */
+    -fx-error: #cf6679; /* Error Color */
+    -fx-success: #4caf50; /* Success Color */
+    -fx-warning: #ffab00; /* Warning Color */
+}
+
+/* Import base styles */
+@import "application.css";
+
+/* Override and extend base styling for kiosk-specific components */
+
+/* Make buttons larger for touch screens */
+.button {
+    -fx-font-size: 16pt;
+    -fx-padding: 15px 25px;
+    -fx-background-radius: 8px;
+    -fx-min-height: 60px;
+}
+
+.button:hover {
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 10, 0, 0, 3);
+    -fx-cursor: hand;
+}
+
+/* Text fields and inputs larger for touch */
+.text-field, .password-field, .text-area, .combo-box, .date-picker {
+    -fx-font-size: 16pt;
+    -fx-padding: 12px;
+    -fx-background-radius: 8px;
+    -fx-min-height: 50px;
+}
+
+.text-area {
+    -fx-min-height: 120px;
+}
+
+.combo-box {
+    -fx-padding: 10px;
+}
+
+.combo-box .list-cell {
+    -fx-padding: 10px;
+    -fx-font-size: 16pt;
+}
+
+.date-picker .text-field {
+    -fx-padding: 10px;
+}
+
+/* Decorative styling for kiosk UI */
+.root {
+    -fx-background-color: linear-gradient(to bottom right, derive(-fx-bg-dark, -10%), -fx-bg-dark);
+}
+
+.card {
+    -fx-background-color: rgba(46, 46, 46, 0.95);
+    -fx-background-radius: 15px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 15, 0.2, 0, 8);
+    -fx-padding: 30px;
+    -fx-border-color: rgba(123, 31, 162, 0.2);
+    -fx-border-width: 1px;
+    -fx-border-radius: 15px;
+}
+
+/* Larger text for kiosk */
+.label {
+    -fx-font-size: 14pt;
+}
+
+.label-header {
+    -fx-font-size: 32pt;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(three-pass-box, rgba(206, 147, 216, 0.6), 10, 0, 0, 0);
+}
+
+.label-subheader {
+    -fx-font-size: 22pt;
+    -fx-font-weight: bold;
+}
+
+.label-secondary {
+    -fx-font-size: 16pt;
+}
+
+.label-error {
+    -fx-font-size: 16pt;
+    -fx-text-fill: -fx-error;
+    -fx-effect: dropshadow(three-pass-box, rgba(207, 102, 121, 0.6), 5, 0, 0, 0);
+}
+
+.label-success {
+    -fx-font-size: 18pt;
+    -fx-text-fill: -fx-success;
+    -fx-effect: dropshadow(three-pass-box, rgba(76, 175, 80, 0.6), 5, 0, 0, 0);
+}
+
+/* Star rating for feedback */
+.rating-star {
+    -fx-font-size: 36pt;
+    -fx-text-fill: -fx-text-secondary;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 5, 0, 0, 0);
+}
+
+.rating-star:hover {
+    -fx-text-fill: -fx-warning;
+    -fx-effect: dropshadow(three-pass-box, rgba(255, 171, 0, 0.8), 10, 0, 0, 0);
+}
+
+.rating-star-filled {
+    -fx-text-fill: -fx-warning;
+    -fx-effect: dropshadow(three-pass-box, rgba(255, 171, 0, 0.8), 10, 0, 0, 0);
+}
+
+/* Animated progress indicators */
+.progress-indicator {
+    -fx-progress-color: -fx-primary;
+    -fx-min-width: 100px;
+    -fx-min-height: 100px;
+}
+
+/* Details panels for booking information */
+.details-panel {
+    -fx-background-color: rgba(30, 30, 30, 0.8);
+    -fx-background-radius: 8px;
+    -fx-padding: 15px;
+    -fx-spacing: 10px;
+}
+
+.detail-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-primary-light;
+}
+
+.detail-value {
+    -fx-font-size: 14pt;
+}
+
+/* Bottom bar with hints and help */
+.bottom-bar {
+    -fx-background-color: -fx-bg-dark;
+    -fx-border-width: 1px 0 0 0;
+    -fx-border-color: -fx-primary-dark;
+    -fx-padding: 15px;
+}
+
+/* Custom styling for specific screens */
+.welcome-content {
+    -fx-spacing: 30px;
+    -fx-alignment: center;
+}
+
+.welcome-message {
+    -fx-font-size: 18pt;
+    -fx-text-alignment: center;
+    -fx-wrap-text: true;
+}
+
+.room-selector {
+    -fx-padding: 15px;
+    -fx-spacing: 15px;
+    -fx-background-color: -fx-bg-medium;
+    -fx-background-radius: 10px;
+    -fx-border-color: -fx-primary;
+    -fx-border-radius: 10px;
+    -fx-border-width: 2px;
+}
+
+.room-option {
+    -fx-padding: 20px;
+    -fx-background-color: -fx-bg-light;
+    -fx-background-radius: 8px;
+    -fx-spacing: 10px;
+    -fx-alignment: center;
+    -fx-cursor: hand;
+}
+
+.room-option:hover {
+    -fx-background-color: -fx-primary-dark;
+    -fx-effect: dropshadow(three-pass-box, -fx-primary, 10, 0, 0, 0);
+}
+
+.room-option-selected {
+    -fx-background-color: -fx-primary;
+    -fx-effect: dropshadow(three-pass-box, -fx-primary-light, 10, 0, 0, 0);
+}
+
+.room-type-name {
+    -fx-font-weight: bold;
+    -fx-font-size: 18pt;
+}
+
+.room-price {
+    -fx-font-size: 16pt;
+}
+
+/* Booking summary styling */
+.summary-table {
+    -fx-font-size: 16pt;
+}
+
+.summary-row {
+    -fx-padding: 10px 0;
+    -fx-border-width: 0 0 1px 0;
+    -fx-border-color: -fx-bg-light;
+}
+
+.summary-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-primary-light;
+}
+
+.summary-value {
+    -fx-text-fill: -fx-text-primary;
+}
+
+.summary-total {
+    -fx-font-weight: bold;
+    -fx-font-size: 20pt;
+    -fx-text-fill: -fx-primary-light;
+}
+
+/* Animation for confirmation check */
+.confirmation-check {
+    -fx-fill: -fx-success;
+    -fx-stroke: -fx-success;
+    -fx-stroke-width: 2;
+    -fx-opacity: 0.9;
+    -fx-effect: dropshadow(gaussian, -fx-success, 10, 0.5, 0, 0);
+}
+
+/* Styling for calendar/date picker */
+.date-picker-popup {
+    -fx-background-color: -fx-bg-medium;
+    -fx-border-color: -fx-primary;
+}
+
+.date-picker-popup .month-year-pane {
+    -fx-background-color: -fx-primary-dark;
+}
+
+.date-picker-popup .spinner .button {
+    -fx-background-color: transparent;
+    -fx-font-size: 12pt;
+}
+
+.date-picker-popup .spinner .button:hover {
+    -fx-background-color: -fx-primary;
+}
+
+.date-picker-popup .spinner .label {
+    -fx-font-size: 14pt;
+}
+
+.date-picker-popup .calendar-grid {
+    -fx-background-color: -fx-bg-medium;
+}
+
+.date-picker-popup .day-cell {
+    -fx-font-size: 14pt;
+    -fx-background-color: -fx-bg-light;
+    -fx-text-fill: -fx-text-primary;
+    -fx-border-color: -fx-bg-medium;
+}
+
+.date-picker-popup .day-cell:hover {
+    -fx-background-color: -fx-primary-dark;
+}
+
+.date-picker-popup .day-cell.selected {
+    -fx-background-color: -fx-primary;
+    -fx-text-fill: -fx-text-primary;
+}
+
+/* Special accent elements */
+.accent-border {
+    -fx-border-color: -fx-primary;
+    -fx-border-width: 0 0 0 4px;
+    -fx-padding: 0 0 0 15px;
+}
+
+.accent-text {
+    -fx-fill: -fx-primary-light;
+    -fx-font-weight: bold;
+}
+
+/* Dialog styling for kiosk */
+.dialog-pane {
+    -fx-background-color: -fx-bg-medium;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: -fx-primary-dark;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-text-fill: -fx-text-primary;
+    -fx-font-size: 18pt;
+    -fx-font-weight: bold;
+}
+
+.dialog-pane .content {
+    -fx-padding: 20px;
+    -fx-font-size: 16pt;
+}
+
+.dialog-pane .button-bar .button {
+    -fx-min-width: 120px;
+}
