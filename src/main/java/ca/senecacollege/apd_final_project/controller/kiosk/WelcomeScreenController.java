@@ -11,9 +11,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
-import javafx.scene.media.MediaView;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -32,11 +29,6 @@ public class WelcomeScreenController implements Initializable {
     @FXML
     private Button btnRules;
 
-    @FXML
-    private MediaView mediaView;
-
-    private MediaPlayer mediaPlayer;
-
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         // Set welcome message
@@ -44,9 +36,6 @@ public class WelcomeScreenController implements Initializable {
 
         // Setup welcome animation
         setupWelcomeAnimation();
-
-        // Setup video guide if available
-        setupVideoGuide();
 
         LoggingManager.logSystemInfo("WelcomeScreenController initialized");
     }
@@ -56,29 +45,6 @@ public class WelcomeScreenController implements Initializable {
         fadeIn.setFromValue(0.0);
         fadeIn.setToValue(1.0);
         fadeIn.play();
-    }
-
-    private void setupVideoGuide() {
-        try {
-            URL videoResource = getClass().getResource("/videos/kiosk_guide.mp4");
-            if (videoResource != null) {
-                Media media = new Media(videoResource.toExternalForm());
-                mediaPlayer = new MediaPlayer(media);
-                mediaView.setMediaPlayer(mediaPlayer);
-
-                // Loop the video
-                mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
-                mediaPlayer.play();
-            } else {
-                // If video resource not found, hide the media view
-                mediaView.setVisible(false);
-                LoggingManager.logSystemWarning("Kiosk guide video not found");
-            }
-        } catch (Exception e) {
-            // Handle media loading errors
-            mediaView.setVisible(false);
-            LoggingManager.logException("Error loading kiosk guide video", e);
-        }
     }
 
     @FXML
@@ -120,14 +86,5 @@ public class WelcomeScreenController implements Initializable {
         dialogPane.getStyleClass().add("root");
 
         alert.showAndWait();
-    }
-
-    @Override
-    public void stop() {
-        // Stop media player if it's running
-        if (mediaPlayer != null) {
-            mediaPlayer.stop();
-            mediaPlayer.dispose();
-        }
     }
 }
