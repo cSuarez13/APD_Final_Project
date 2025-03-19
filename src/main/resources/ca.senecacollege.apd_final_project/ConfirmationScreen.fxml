@@ -35,16 +35,16 @@
                 </Label>
                 <GridPane hgap="20.0" vgap="10.0">
                     <columnConstraints>
-                        <columnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="150.0" prefWidth="200.0" />
-                        <columnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="400.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="150.0" prefWidth="200.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="400.0" />
                     </columnConstraints>
                     <rowConstraints>
-                        <rowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                        <rowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                        <rowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                        <rowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                        <rowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                        <rowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                     <children>
                         <Label text="Guest Name:">
@@ -119,13 +119,13 @@
                 </Separator>
                 <GridPane hgap="20.0" vgap="10.0">
                     <columnConstraints>
-                        <columnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="150.0" prefWidth="200.0" />
-                        <columnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="200.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="150.0" prefWidth="200.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="200.0" />
                     </columnConstraints>
                     <rowConstraints>
-                        <rowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                        <rowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                        <rowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                     <children>
                         <Label text="Subtotal:">
@@ -143,17 +143,17 @@
                                 <Font name="System Bold" size="16.0" />
                             </font>
                         </Label>
-                        <Label fx:id="lblSubtotal" text="$200.00" GridPane.columnIndex="1">
+                        <Label fx:id="lblSubtotal" text="200.00" GridPane.columnIndex="1">
                             <font>
                                 <Font size="16.0" />
                             </font>
                         </Label>
-                        <Label fx:id="lblTax" text="$26.00" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <Label fx:id="lblTax" text="26.00" GridPane.columnIndex="1" GridPane.rowIndex="1">
                             <font>
                                 <Font size="16.0" />
                             </font>
                         </Label>
-                        <Label fx:id="lblTotal" styleClass="label-total" text="$226.00" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                        <Label fx:id="lblTotal" styleClass="label-total" text="226.00" GridPane.columnIndex="1" GridPane.rowIndex="2">
                             <font>
                                 <Font name="System Bold" size="16.0" />
                             </font>

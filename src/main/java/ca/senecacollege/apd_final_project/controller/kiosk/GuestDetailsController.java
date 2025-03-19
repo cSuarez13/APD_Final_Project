@@ -12,11 +12,13 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -69,6 +71,42 @@ public class GuestDetailsController implements Initializable {
         lblError.setVisible(false);
 
         LoggingManager.logSystemInfo("GuestDetailsController initialized");
+
+        // Make sure the current stage has proper size and position
+        adjustStageSize();
+    }
+
+    /**
+     * Adjust the stage size to ensure it fits properly on screen
+     */
+    private void adjustStageSize() {
+        // Get the current scene and stage, but wait until they're available
+        // This will be called when the scene exists
+        txtName.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                Stage stage = (Stage) newScene.getWindow();
+
+                // Get the screen bounds
+                Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+
+                // Set preferred dimensions that are more appropriate for a form
+                double prefWidth = Math.min(900, screenBounds.getWidth() * 0.8);
+                double prefHeight = Math.min(750, screenBounds.getHeight() * 0.85); // Increased height
+
+                // Set the stage's size
+                stage.setWidth(prefWidth);
+                stage.setHeight(prefHeight);
+
+                // Center the stage on the screen
+                stage.setX((screenBounds.getWidth() - prefWidth) / 2);
+                stage.setY((screenBounds.getHeight() - prefHeight) / 2);
+
+                // Make sure it's not maximized
+                stage.setMaximized(false);
+
+                LoggingManager.logSystemInfo("GuestDetailsScreen size adjusted to fit screen");
+            }
+        });
     }
 
     public void initBookingData(int numberOfGuests, LocalDate checkInDate, LocalDate checkOutDate, RoomType roomType) {
@@ -127,6 +165,16 @@ public class GuestDetailsController implements Initializable {
             // Set the new scene
             stage.setScene(confirmationScene);
 
+            // Keep the stage properly sized and centered
+            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+            double prefWidth = Math.min(900, screenBounds.getWidth() * 0.8);
+            double prefHeight = Math.min(700, screenBounds.getHeight() * 0.8);
+
+            stage.setWidth(prefWidth);
+            stage.setHeight(prefHeight);
+            stage.setX((screenBounds.getWidth() - prefWidth) / 2);
+            stage.setY((screenBounds.getHeight() - prefHeight) / 2);
+
             LoggingManager.logSystemInfo("Navigated to confirmation screen with reservation ID: " + reservationId);
 
         } catch (Exception e) {
@@ -154,6 +202,16 @@ public class GuestDetailsController implements Initializable {
 
             // Set the new scene
             stage.setScene(bookingScene);
+
+            // Keep the stage properly sized and centered
+            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+            double prefWidth = Math.min(900, screenBounds.getWidth() * 0.8);
+            double prefHeight = Math.min(700, screenBounds.getHeight() * 0.8);
+
+            stage.setWidth(prefWidth);
+            stage.setHeight(prefHeight);
+            stage.setX((screenBounds.getWidth() - prefWidth) / 2);
+            stage.setY((screenBounds.getHeight() - prefHeight) / 2);
 
             LoggingManager.logSystemInfo("Navigated back to booking screen");
 

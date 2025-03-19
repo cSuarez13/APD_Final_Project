@@ -226,21 +226,19 @@ public class BookingScreenController implements Initializable {
             Scene guestDetailsScene = new Scene(guestDetailsRoot);
             guestDetailsScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
 
-            // Configure and show the stage - properly fit to screen
+            // Set the scene
             stage.setScene(guestDetailsScene);
 
-            // Get screen dimensions
+            // Size it properly
             Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+            double prefWidth = Math.min(900, screenBounds.getWidth() * 0.8);
+            double prefHeight = Math.min(700, screenBounds.getHeight() * 0.8);
 
-            // Set stage size to fit screen (or use a percentage of screen)
-            stage.setX(screenBounds.getMinX());
-            stage.setY(screenBounds.getMinY());
-            stage.setWidth(screenBounds.getWidth());
-            stage.setHeight(screenBounds.getHeight());
-
-            // Set minimum size to ensure elements don't get squished
-            stage.setMinWidth(800);
-            stage.setMinHeight(600);
+            stage.setWidth(prefWidth);
+            stage.setHeight(prefHeight);
+            stage.setX((screenBounds.getWidth() - prefWidth) / 2);
+            stage.setY((screenBounds.getHeight() - prefHeight) / 2);
+            stage.setMaximized(false);
 
             LoggingManager.logSystemInfo("Navigated to guest details screen");
 

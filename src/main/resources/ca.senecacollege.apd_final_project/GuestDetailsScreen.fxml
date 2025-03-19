@@ -33,16 +33,16 @@
                         <Font size="14.0" />
                     </font>
                 </Label>
-                <GridPane hgap="20.0" vgap="15.0">
+                <GridPane hgap="20.0" vgap="25.0"> <!-- Increased vertical gap from 15.0 to 25.0 -->
                     <columnConstraints>
                         <ColumnConstraints minWidth="150.0" prefWidth="200.0" />
                         <ColumnConstraints minWidth="10.0" prefWidth="400.0" />
                     </columnConstraints>
                     <rowConstraints>
-                        <RowConstraints minHeight="10.0" prefHeight="50.0" />
-                        <RowConstraints minHeight="10.0" prefHeight="50.0" />
-                        <RowConstraints minHeight="10.0" prefHeight="50.0" />
-                        <RowConstraints minHeight="10.0" prefHeight="50.0" />
+                        <RowConstraints minHeight="10.0" prefHeight="60.0" /> <!-- Increased prefHeight from 50.0 to 60.0 -->
+                        <RowConstraints minHeight="10.0" prefHeight="60.0" /> <!-- Increased prefHeight -->
+                        <RowConstraints minHeight="10.0" prefHeight="60.0" /> <!-- Increased prefHeight -->
+                        <RowConstraints minHeight="10.0" prefHeight="60.0" /> <!-- Increased prefHeight -->
                     </rowConstraints>
                     <children>
                         <Label text="Full Name:">
