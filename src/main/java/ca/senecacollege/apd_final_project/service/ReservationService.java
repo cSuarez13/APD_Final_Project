@@ -251,4 +251,20 @@ public class ReservationService {
             throw new DatabaseException("Error retrieving today's check-outs: " + e.getMessage(), e);
         }
     }
+
+    /**
+     * Get reservations by status
+     *
+     * @param status The status to filter by
+     * @return List of reservations with the specified status
+     * @throws DatabaseException If there's an error retrieving reservations
+     */
+    public List<Reservation> getReservationsByStatus(String status) throws DatabaseException {
+        try {
+            return reservationDAO.findByStatus(new String[]{status});
+        } catch (Exception e) {
+            LoggingManager.logException("Error retrieving reservations by status: " + status, e);
+            throw new DatabaseException("Error retrieving reservations: " + e.getMessage(), e);
+        }
+    }
 }

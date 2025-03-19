@@ -259,4 +259,22 @@ public class BillingService {
             throw new DatabaseException("Error generating bill summary: " + e.getMessage(), e);
         }
     }
+
+    /**
+     * Save a new bill
+     *
+     * @param bill The bill to save
+     * @return The generated bill ID
+     * @throws DatabaseException If there's an error saving the bill
+     */
+    public int saveBill(Billing bill) throws DatabaseException {
+        try {
+            int billId = billingDAO.save(bill);
+            LoggingManager.logSystemInfo("Saved bill #" + billId + " for reservation #" + bill.getReservationID());
+            return billId;
+        } catch (Exception e) {
+            LoggingManager.logException("Error saving bill for reservation #" + bill.getReservationID(), e);
+            throw new DatabaseException("Error saving bill: " + e.getMessage(), e);
+        }
+    }
 }
