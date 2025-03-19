@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import javafx.scene.control.TableCell;
 
 public class ReportController implements Initializable {
 
@@ -821,5 +822,91 @@ public class ReportController implements Initializable {
 
         // Add columns to table
         tblRevenue.getColumns().addAll(dateCol, roomRevenueCol, taxesCol, discountsCol, totalCol);
+    }
+
+    private void setupFeedbackTable() {
+        // Create columns
+        TableColumn<FeedbackSummaryData, String> categoryCol = new TableColumn<>("Category");
+        categoryCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getCategory()));
+
+        TableColumn<FeedbackSummaryData, Number> countCol = new TableColumn<>("Count");
+        countCol.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().getCount()));
+
+        TableColumn<FeedbackSummaryData, Number> ratingCol = new TableColumn<>("Average Rating");
+        ratingCol.setCellValueFactory(data -> new SimpleDoubleProperty(data.getValue().getAverageRating()));
+        ratingCol.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(Number item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(String.format("%.2f", item.doubleValue()));
+                }
+            }
+        });
+
+        // Add columns to table
+        tblFeedback.getColumns().addAll(categoryCol, countCol, ratingCol);
+    }
+
+    /**
+     * Clear previous report data
+     */
+    private void clearReportData() {
+        // Clear table data
+        if (tblOccupancy != null) tblOccupancy.getItems().clear();
+        if (tblRevenue != null) tblRevenue.getItems().clear();
+        if (tblFeedback != null) tblFeedback.getItems().clear();
+
+        // Clear chart areas
+        occupancyPane.setCenter(null);
+        revenuePane.setCenter(null);
+        feedbackPane.setCenter(null);
+
+        // Clear summary
+        lblReportSummary.setText("");
+
+        // Clear collections
+        currentReservations = null;
+        currentBillings = null;
+        currentFeedbacks = null;
+
+        // Hide error
+        lblError.setVisible(false);
+    }
+
+    /**
+     * Validate date range for the report
+     *
+     * @return true if the date range is valid, false otherwise
+     */
+    private boolean validateDateRange() {
+        if (currentStartDate == null) {
+            showError("Please select a start date");
+            return false;
+        }
+
+        if (currentEndDate == null) {
+            showError("Please select an end date");
+            return false;
+        }
+
+        if (currentEndDate.isBefore(currentStartDate)) {
+            showError("End date must be after start date");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Show an error message
+     *
+     * @param message The error message to display
+     */
+    private void showError(String message) {
+        lblError.setText(message);
+        lblError.setVisible(true);
     }
 }

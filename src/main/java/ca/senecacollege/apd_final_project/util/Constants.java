@@ -17,6 +17,7 @@ public class Constants {
     public static final String FXML_GUEST_DETAILS = "/ca.senecacollege.apd_final_project/GuestDetailsScreen.fxml";
     public static final String FXML_CONFIRMATION = "/ca.senecacollege.apd_final_project/ConfirmationScreen.fxml";
     public static final String FXML_FEEDBACK = "/ca.senecacollege.apd_final_project/FeedbackScreen.fxml";
+    public static final String FXML_CHECKIN = "/ca.senecacollege.apd_final_project/CheckInScreen.fxml";
 
     // CSS files
     public static final String CSS_MAIN = "/ca.senecacollege.apd_final_project/application.css";

@@ -390,3 +390,17 @@
 .rating-star:hover, .rating-star-filled {
     -fx-background-color: -fx-warning;
 }
+
+
+* {
+    -fx-text-primary: #ffffff;
+    -fx-text-secondary: #ffffff;
+}
+
+.label {
+    -fx-text-fill: -fx-text-primary;
+}
+
+.label-secondary {
+    -fx-text-fill: -fx-text-secondary;
+}

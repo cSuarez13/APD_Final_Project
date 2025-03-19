@@ -26,6 +26,9 @@ import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
+import javafx.scene.layout.VBox;
+import javafx.scene.control.Separator;
+import javafx.scene.control.TextArea;
 
 public class SearchGuestController implements Initializable {
 

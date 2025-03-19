@@ -7,6 +7,7 @@ import ca.senecacollege.apd_final_project.model.Reservation;
 import ca.senecacollege.apd_final_project.model.Room;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -276,5 +277,21 @@ public class BillingService {
             LoggingManager.logException("Error saving bill for reservation #" + bill.getReservationID(), e);
             throw new DatabaseException("Error saving bill: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Get bills by date range using LocalDate instead of LocalDateTime
+     *
+     * @param startDate Start date
+     * @param endDate End date
+     * @return List of bills within the date range
+     * @throws DatabaseException If there's an error retrieving bills
+     */
+    public List<Billing> getBillingsByDateRange(LocalDate startDate, LocalDate endDate) throws DatabaseException {
+        // Convert LocalDate to LocalDateTime (start of day and end of day)
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+
+        return getBillsByDateRange(startDateTime, endDateTime);
     }
 }

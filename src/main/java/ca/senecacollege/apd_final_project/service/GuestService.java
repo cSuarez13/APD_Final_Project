@@ -198,4 +198,20 @@ public class GuestService {
             return false;
         }
     }
+    /**
+     * Update a guest's feedback
+     *
+     * @param guestId The guest ID
+     * @param feedback The feedback text
+     * @throws DatabaseException If there's an error updating the feedback
+     */
+    public void updateGuestFeedback(int guestId, String feedback) throws DatabaseException {
+        try {
+            guestDAO.updateFeedback(guestId, feedback);
+            LoggingManager.logSystemInfo("Updated feedback for guest ID: " + guestId);
+        } catch (Exception e) {
+            LoggingManager.logException("Error updating feedback for guest ID: " + guestId, e);
+            throw new DatabaseException("Error updating guest feedback: " + e.getMessage(), e);
+        }
+    }
 }

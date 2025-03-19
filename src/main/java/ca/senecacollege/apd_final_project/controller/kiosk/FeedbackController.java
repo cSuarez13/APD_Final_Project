@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ResourceBundle;
+import javafx.scene.Node;
 
 public class FeedbackController implements Initializable {
 
@@ -70,7 +71,7 @@ public class FeedbackController implements Initializable {
     private Reservation currentReservation;
     private Guest currentGuest;
     private int selectedRating = 0;
-    private Control[] starControls = new Control[5];
+    private Node[] starControls = new Node[5];
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -94,30 +95,21 @@ public class FeedbackController implements Initializable {
         LoggingManager.logSystemInfo("FeedbackController initialized");
     }
 
-    /**
-     * Set up the star rating controls
-     */
     private void setupRatingStars() {
-        // Assuming there are 5 star controls (Label or any other Control) in the starsContainer
-        // with ids star1, star2, star3, star4, star5
-        for (int i = 0; i < 5; i++) {
+        // Modify the method to use Node instead of Control
+        for (int i = 0; i < 5 && i < starsContainer.getChildren().size(); i++) {
             final int rating = i + 1;
-            Control star = starsContainer.getChildren().get(i);
+            Node star = starsContainer.getChildren().get(i);
             starControls[i] = star;
 
             // Add style class for initial state
             star.getStyleClass().add("rating-star");
 
             // Add click event
-            star.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-                setRating(rating);
-            });
+            star.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> setRating(rating));
 
             // Add hover effects
-            star.addEventHandler(MouseEvent.MOUSE_ENTERED, event -> {
-                showTemporaryRating(rating);
-            });
-
+            star.addEventHandler(MouseEvent.MOUSE_ENTERED, event -> showTemporaryRating(rating));
             star.addEventHandler(MouseEvent.MOUSE_EXITED, event -> {
                 resetStars();
                 updateStarsForRating(selectedRating);
@@ -149,23 +141,19 @@ public class FeedbackController implements Initializable {
         updateStarsForRating(rating);
     }
 
-    /**
-     * Reset all stars to unselected state
-     */
     private void resetStars() {
-        for (Control star : starControls) {
-            star.getStyleClass().remove("rating-star-filled");
+        for (Node star : starControls) {
+            if (star != null) {
+                star.getStyleClass().remove("rating-star-filled");
+            }
         }
     }
 
-    /**
-     * Update the stars display for the given rating
-     *
-     * @param rating The rating (1-5)
-     */
     private void updateStarsForRating(int rating) {
-        for (int i = 0; i < rating; i++) {
-            starControls[i].getStyleClass().add("rating-star-filled");
+        for (int i = 0; i < rating && i < starControls.length; i++) {
+            if (starControls[i] != null) {
+                starControls[i].getStyleClass().add("rating-star-filled");
+            }
         }
     }
 
