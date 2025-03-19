@@ -25,11 +25,12 @@
     -fx-text-fill: -fx-text-primary;
 }
 
-/* Label styling */
-.label {
+/* Ensure all text is white */
+.label, .text, .text-field, .text-area, .password-field, .combo-box, .check-box, .radio-button, .table-cell, .menu-item, .menu, .dialog-pane, .tooltip, .tab, .tab-label {
     -fx-text-fill: -fx-text-primary;
 }
 
+/* Label styling */
 .label-secondary {
     -fx-text-fill: -fx-text-secondary;
     -fx-font-size: 10pt;
@@ -294,7 +295,7 @@
 
 .tab-pane .tab {
     -fx-background-color: -fx-bg-medium;
-    -fx-text-fill: -fx-text-secondary;
+    -fx-text-fill: -fx-text-primary;
 }
 
 .tab-pane .tab:selected {
@@ -302,7 +303,7 @@
 }
 
 .tab-pane .tab .tab-label {
-    -fx-text-fill: -fx-text-secondary;
+    -fx-text-fill: -fx-text-primary;
 }
 
 .tab-pane .tab:selected .tab-label {
@@ -419,4 +420,35 @@
 /* Make sure all text in dialogs is visible */
 .dialog-pane .content .label {
     -fx-text-fill: white;
+}
+
+/* Ensure all containers have dark backgrounds */
+.stack-pane, .anchor-pane, .flow-pane, .grid-pane .viewport {
+    -fx-background-color: -fx-bg-medium;
+}
+
+/* Fix for potential white backgrounds in specific components */
+.titled-pane > .content {
+    -fx-background-color: -fx-bg-medium;
+}
+
+/* Ensure tooltips are dark */
+.tooltip {
+    -fx-background-color: -fx-bg-dark;
+    -fx-text-fill: -fx-text-primary;
+}
+
+/* Fix for chart backgrounds */
+.chart {
+    -fx-background-color: transparent;
+}
+
+.chart-plot-background {
+    -fx-background-color: -fx-bg-medium;
+}
+
+/* Make sure alerts don't have white backgrounds */
+.alert .dialog-pane,
+.alert .dialog-pane .content {
+    -fx-background-color: -fx-bg-medium;
 }

@@ -11,8 +11,8 @@ public class DatabaseConnection {
 
     // Modified database connection settings
     private static final String DB_URL = "jdbc:mysql://localhost:3306/hotel_reservation?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true";
-    private static final String DB_USER = "root";  // Use your MySQL root username
-    private static final String DB_PASSWORD = "";  // Use your MySQL root password or leave empty if none
+    private static final String DB_USER = "hotel_admin";
+    private static final String DB_PASSWORD = "SecureHotel2025!";
 
     private static Connection connection;
 

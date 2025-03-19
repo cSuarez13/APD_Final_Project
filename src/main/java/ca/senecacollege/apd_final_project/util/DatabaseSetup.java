@@ -1,6 +1,7 @@
 package ca.senecacollege.apd_final_project.util;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Level;
@@ -12,6 +13,9 @@ import java.util.logging.Logger;
  */
 public class DatabaseSetup {
     private static final Logger LOGGER = Logger.getLogger(DatabaseSetup.class.getName());
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/hotel_reservation?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true";
+    private static final String DB_USER = "hotel_admin";
+    private static final String DB_PASSWORD = "SecureHotel2025!";
 
     public static void main(String[] args) {
         LoggingManager.initialize();
@@ -21,17 +25,11 @@ public class DatabaseSetup {
     public static void initializeDatabase() {
         LOGGER.info("Starting database initialization");
 
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            // Create the database tables if they don't exist
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            // Existing code remains the same
             createTables(conn);
-
-            // Insert room types
             insertRoomTypes(conn);
-
-            // Insert sample rooms
             insertSampleRooms(conn);
-
-            // Insert admin accounts
             insertAdminAccounts(conn);
 
             LOGGER.info("Database initialization completed successfully");

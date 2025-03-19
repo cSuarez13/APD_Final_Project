@@ -100,8 +100,9 @@
                                             </padding>
                                             <children>
                                                 <Label styleClass="card-header" text="Today's Check-ins"/>
-                                                <TableView fx:id="tblTodayCheckIns" prefHeight="200.0"/>
+                                                <TableView fx:id="tblTodayCheckIns" prefHeight="200.0" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS"/>
                                             </children>
+
                                         </VBox>
                                         <VBox styleClass="card">
                                             <padding>
@@ -109,8 +110,9 @@
                                             </padding>
                                             <children>
                                                 <Label styleClass="card-header" text="Today's Check-outs"/>
-                                                <TableView fx:id="tblTodayCheckOuts" prefHeight="200.0"/>
+                                                <TableView fx:id="tblTodayCheckOuts" prefHeight="200.0" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS"/>
                                             </children>
+
                                         </VBox>
                                     </children>
                                 </VBox>
@@ -318,15 +320,14 @@
                                                         <Label text="Tax (13%):" GridPane.rowIndex="1"/>
                                                         <Label text="Discount:" GridPane.rowIndex="2"/>
                                                         <Label text="Total:" GridPane.rowIndex="3"/>
-                                                        <Label fx:id="lblSubtotal" text="$0.00" GridPane.columnIndex="1"/>
-                                                        <Label fx:id="lblTax" text="$0.00" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                                        <Label fx:id="lblSubtotal" text="0.00" GridPane.columnIndex="1"/>
+                                                        <Label fx:id="lblTax" text="0.00" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
                                                         <HBox alignment="CENTER_LEFT" spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                                             <children>
                                                                 <TextField fx:id="txtDiscount" prefWidth="100.0" promptText="0.00"/>
-                                                                <Label text="$"/>
                                                             </children>
                                                         </HBox>
-                                                        <Label fx:id="lblTotal" styleClass="label-total" text="$0.00" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                                                        <Label fx:id="lblTotal" styleClass="label-total" text="0.00" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
                                                     </children>
                                                     <VBox.margin>
                                                         <Insets bottom="20.0" top="10.0"/>

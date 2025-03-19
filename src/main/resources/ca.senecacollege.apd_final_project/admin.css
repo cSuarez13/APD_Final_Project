@@ -1,150 +1,441 @@
-/* Admin Interface Styling with dark theme and blue accent colors */
+/* Admin Interface Styling with deep purple and dark theme */
 
-/* Color palette */
 * {
-    -fx-primary: #1976d2; /* Blue */
-    -fx-primary-dark: #0d47a1; /* Darker Blue */
-    -fx-primary-light: #bbdefb; /* Light Blue */
-    -fx-accent: #64b5f6; /* Accent Blue */
-    -fx-secondary: #2196f3; /* Secondary Blue */
-    -fx-bg-dark: #121212; /* Dark Background */
+    -fx-primary: #7b1fa2; /* Deep Purple */
+    -fx-primary-dark: #4a148c; /* Darker Purple */
+    -fx-primary-light: #e1bee7; /* Light Purple */
+    -fx-accent: #ce93d8; /* Accent Purple */
+    -fx-secondary: #673ab7; /* Secondary Purple */
+    -fx-bg-dark: #121212; /* Very Dark Background */
     -fx-bg-medium: #1e1e1e; /* Medium Dark Background */
     -fx-bg-light: #2d2d2d; /* Light Dark Background */
     -fx-text-primary: #ffffff; /* Primary Text */
-    -fx-text-secondary: #ffffff; /* Secondary Text - Changed to white */
+    -fx-text-secondary: #ffffff; /* Secondary Text - Changed to white for consistency */
     -fx-error: #cf6679; /* Error Color */
     -fx-success: #4caf50; /* Success Color */
     -fx-warning: #ffab00; /* Warning Color */
 }
 
-/* Import base styles */
-@import "application.css";
-
-/* Override and extend base styling for admin-specific components */
-
-/* Header styling */
-.header {
-    -fx-background-color: -fx-primary-dark;
-    -fx-padding: 10px;
-    -fx-spacing: 10px;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 8, 0, 0, 2);
-}
-
-/* Footer styling */
-.footer {
+.root {
     -fx-background-color: -fx-bg-dark;
-    -fx-padding: 5px;
-    -fx-border-width: 1px 0 0 0;
-    -fx-border-color: -fx-bg-light;
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    -fx-font-size: 12pt;
 }
 
-/* Tab styling */
-.tab-pane > .tab-header-area > .headers-region > .tab {
-    -fx-background-color: -fx-bg-medium;
-    -fx-background-radius: 0;
-    -fx-padding: 5px 15px;
-}
-
-.tab-pane > .tab-header-area > .headers-region > .tab:selected {
-    -fx-background-color: -fx-primary;
-}
-
-.tab-pane > .tab-header-area > .headers-region > .tab > .tab-container > .tab-label {
-    -fx-text-fill: -fx-text-secondary;
-}
-
-.tab-pane > .tab-header-area > .headers-region > .tab:selected > .tab-container > .tab-label {
+/* Ensure all text is visible */
+.label, .text, .text-field, .text-area, .combo-box, .check-box, .radio-button, .table-cell, .menu-item, .menu, .tab-label {
     -fx-text-fill: -fx-text-primary;
 }
 
-.tab-pane > .tab-header-area > .tab-header-background {
-    -fx-background-color: -fx-bg-dark;
+/* Label styling */
+.label {
+    -fx-text-fill: -fx-text-primary;
 }
 
-/* Table styling enhancements */
+.label-header {
+    -fx-text-fill: -fx-primary-light;
+    -fx-font-size: 24pt;
+    -fx-font-weight: bold;
+}
+
+.label-secondary {
+    -fx-text-fill: -fx-text-secondary;
+    -fx-font-size: 10pt;
+}
+
+/* Full-width table improvements */
 .table-view {
-    -fx-background-color: -fx-bg-medium;
+    -fx-background-color: transparent;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: -fx-primary-dark;
 }
 
 .table-view .column-header {
     -fx-background-color: -fx-primary-dark;
-    -fx-padding: 8px;
+    -fx-pref-height: 40px;
+    -fx-max-height: 40px;
 }
 
-.table-view .table-row-cell:even {
+.table-view .column-header .label {
+    -fx-text-fill: -fx-text-primary;
+    -fx-font-weight: bold;
+}
+
+.table-view .table-row-cell {
     -fx-background-color: -fx-bg-medium;
 }
 
 .table-view .table-row-cell:odd {
-    -fx-background-color: -fx-bg-dark;
+    -fx-background-color: derive(-fx-bg-medium, 10%);
 }
 
 .table-view .table-row-cell:selected {
     -fx-background-color: -fx-primary;
 }
 
-/* Stats cards styling */
+.table-view .table-cell {
+    -fx-text-fill: -fx-text-primary;
+    -fx-padding: 8px;
+}
+
+/* Ensure full width for tables and headers */
+.table-view,
+.table-view > .virtual-flow,
+.table-view > .virtual-flow > .scroll-bar:vertical,
+.table-view > .virtual-flow > .scroll-bar:horizontal {
+    -fx-pref-width: 100%;
+}
+
+.table-view .column-header-background .filler {
+    -fx-background-color: -fx-primary-dark;
+}
+
+/* Dashboard cards */
 .card {
     -fx-background-color: -fx-bg-medium;
     -fx-background-radius: 8px;
+    -fx-padding: 16px;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 3);
-    -fx-padding: 15px;
 }
 
 .card-header {
-    -fx-font-size: 16pt;
-    -fx-font-weight: bold;
     -fx-text-fill: -fx-primary-light;
+    -fx-font-weight: bold;
+    -fx-font-size: 16pt;
     -fx-padding: 0 0 10px 0;
 }
 
 .stat-number {
+    -fx-text-fill: -fx-primary-light;
     -fx-font-size: 36pt;
-    -fx-font-weight: bold;
-    -fx-text-fill: -fx-primary-light;
 }
 
-/* Dashboard-specific components */
-.dashboard-tile {
+/* Header and Footer */
+.header {
+    -fx-background-color: -fx-primary-dark;
+    -fx-padding: 10px;
+}
+
+.footer {
+    -fx-background-color: -fx-primary-dark;
+    -fx-padding: 8px;
+}
+
+/* Ensure no white backgrounds */
+.tab-pane {
+    -fx-background-color: transparent;
+}
+
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: -fx-bg-dark;
+    -fx-opacity: 0.8;
+}
+
+.tab {
     -fx-background-color: -fx-bg-medium;
-    -fx-background-radius: 8px;
-    -fx-padding: 15px;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 3);
+    -fx-background-radius: 4px 4px 0 0;
+    -fx-padding: 8px 15px;
 }
 
-.dashboard-tile-header {
-    -fx-font-size: 14pt;
-    -fx-font-weight: bold;
-    -fx-text-fill: -fx-primary-light;
-    -fx-padding: 0 0 10px 0;
-}
-
-/* Admin forms styling */
-.admin-form {
-    -fx-background-color: -fx-bg-medium;
-    -fx-padding: 20px;
-    -fx-spacing: 15px;
-}
-
-.admin-form-title {
-    -fx-font-size: 18pt;
-    -fx-font-weight: bold;
-    -fx-text-fill: -fx-primary-light;
-}
-
-.admin-form-subtitle {
+.tab .tab-label {
+    -fx-text-fill: -fx-text-primary;
     -fx-font-size: 12pt;
-    -fx-text-fill: -fx-text-secondary;
 }
 
-.form-section {
-    -fx-padding: 10px 0;
-    -fx-spacing: 10px;
+.tab:selected {
+    -fx-background-color: -fx-primary;
 }
 
-.form-section-title {
+.tab:selected .tab-label {
+    -fx-text-fill: -fx-text-primary;
     -fx-font-weight: bold;
-    -fx-text-fill: -fx-primary-light;
+}
+
+.tab-content-area {
+    -fx-background-color: -fx-bg-medium;
+    -fx-padding: 10px;
+}
+
+/* ScrollPane styling */
+.scroll-pane {
+    -fx-background-color: -fx-bg-medium;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: -fx-bg-medium;
+}
+
+.scroll-pane .content {
+    -fx-background-color: -fx-bg-medium;
+}
+
+.scroll-bar {
+    -fx-background-color: -fx-bg-dark;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: -fx-primary;
+    -fx-background-radius: 0;
+}
+
+.scroll-bar .increment-button, .scroll-bar .decrement-button {
+    -fx-background-color: -fx-bg-dark;
+}
+
+.scroll-bar .increment-arrow, .scroll-bar .decrement-arrow {
+    -fx-background-color: -fx-text-secondary;
+}
+
+/* Button styling */
+.button {
+    -fx-background-color: -fx-primary;
+    -fx-text-fill: -fx-text-primary;
+    -fx-background-radius: 4px;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 5, 0, 0, 1);
+}
+
+.button:hover {
+    -fx-background-color: derive(-fx-primary, 20%);
+}
+
+.button:pressed {
+    -fx-background-color: derive(-fx-primary, -10%);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 3, 0, 0, 1);
+}
+
+.button-secondary {
+    -fx-background-color: -fx-secondary;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.button-secondary:hover {
+    -fx-background-color: derive(-fx-secondary, 20%);
+}
+
+.button-secondary:pressed {
+    -fx-background-color: derive(-fx-secondary, -10%);
+}
+
+.button-danger {
+    -fx-background-color: -fx-error;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.button-danger:hover {
+    -fx-background-color: derive(-fx-error, 20%);
+}
+
+.button-danger:pressed {
+    -fx-background-color: derive(-fx-error, -10%);
+}
+
+.button-success {
+    -fx-background-color: -fx-success;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.button-success:hover {
+    -fx-background-color: derive(-fx-success, 20%);
+}
+
+.button-success:pressed {
+    -fx-background-color: derive(-fx-success, -10%);
+}
+
+/* ComboBox styling */
+.combo-box {
+    -fx-background-color: -fx-bg-medium;
+    -fx-text-fill: -fx-text-primary;
+    -fx-background-radius: 4px;
+    -fx-border-color: -fx-bg-light;
+    -fx-border-radius: 4px;
+    -fx-padding: 4px;
+}
+
+.combo-box:focused {
+    -fx-border-color: -fx-primary;
+}
+
+.combo-box .list-cell {
+    -fx-background-color: -fx-bg-medium;
+    -fx-text-fill: -fx-text-primary;
+    -fx-padding: 4px 8px;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: -fx-bg-medium;
+    -fx-border-color: -fx-bg-light;
+}
+
+.combo-box-popup .list-view .list-cell {
+    -fx-background-color: -fx-bg-medium;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.combo-box-popup .list-view .list-cell:filled:selected,
+.combo-box-popup .list-view .list-cell:filled:selected:hover {
+    -fx-background-color: -fx-primary;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.combo-box-popup .list-view .list-cell:filled:hover {
+    -fx-background-color: -fx-bg-light;
+    -fx-text-fill: -fx-text-primary;
+}
+
+/* TextField styling */
+.text-field {
+    -fx-background-color: -fx-bg-medium;
+    -fx-text-fill: -fx-text-primary;
+    -fx-prompt-text-fill: derive(-fx-text-primary, 50%);
+    -fx-background-radius: 4px;
+    -fx-border-color: -fx-bg-light;
+    -fx-border-radius: 4px;
+    -fx-padding: 6px;
+}
+
+.text-field:focused {
+    -fx-border-color: -fx-primary;
+}
+
+/* TextArea styling */
+.text-area {
+    -fx-background-color: -fx-bg-medium;
+}
+
+.text-area .content {
+    -fx-background-color: -fx-bg-medium;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.text-area:focused .content {
+    -fx-background-color: -fx-bg-medium;
+}
+
+/* DatePicker styling */
+.date-picker {
+    -fx-background-color: -fx-bg-medium;
+}
+
+.date-picker .arrow-button {
+    -fx-background-color: -fx-primary;
+    -fx-background-radius: 0 4px 4px 0;
+}
+
+.date-picker .arrow-button .arrow {
+    -fx-background-color: -fx-text-primary;
+}
+
+.date-picker .text-field {
+    -fx-background-color: -fx-bg-medium;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.date-picker-popup {
+    -fx-background-color: -fx-bg-medium;
+}
+
+.date-picker-popup .month-year-pane {
+    -fx-background-color: -fx-primary-dark;
+}
+
+.date-picker-popup .calendar-grid {
+    -fx-background-color: -fx-bg-medium;
+}
+
+.date-picker-popup .day-cell {
+    -fx-background-color: -fx-bg-medium;
+    -fx-text-fill: -fx-text-primary;
+    -fx-border-color: -fx-bg-light;
+}
+
+.date-picker-popup .day-cell:hover {
+    -fx-background-color: -fx-bg-light;
+}
+
+.date-picker-popup .day-cell.selected {
+    -fx-background-color: -fx-primary;
+}
+
+.date-picker-popup .day-cell:focused {
+    -fx-background-color: -fx-primary-dark;
+}
+
+/* Ensure no white backgrounds in other elements */
+.vbox, .hbox, .grid-pane, .border-pane, .stack-pane, .anchor-pane, .flow-pane {
+    -fx-background-color: -fx-bg-medium;
+}
+
+/* CheckBox styling */
+.check-box {
+    -fx-text-fill: -fx-text-primary;
+}
+
+.check-box .box {
+    -fx-background-color: -fx-bg-light;
+    -fx-border-color: -fx-text-secondary;
+    -fx-border-radius: 3px;
+}
+
+.check-box:selected .mark {
+    -fx-background-color: -fx-text-primary;
+}
+
+.check-box:selected .box {
+    -fx-background-color: -fx-primary;
+    -fx-border-color: -fx-primary;
+}
+
+/* RadioButton styling */
+.radio-button {
+    -fx-text-fill: -fx-text-primary;
+}
+
+.radio-button .radio {
+    -fx-background-color: -fx-bg-light;
+    -fx-border-color: -fx-text-secondary;
+}
+
+.radio-button:selected .dot {
+    -fx-background-color: -fx-text-primary;
+}
+
+.radio-button:selected .radio {
+    -fx-background-color: -fx-primary;
+    -fx-border-color: -fx-primary;
+}
+
+/* List view styling */
+.list-view {
+    -fx-background-color: -fx-bg-medium;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.list-view .list-cell {
+    -fx-background-color: -fx-bg-medium;
+    -fx-text-fill: -fx-text-primary;
+    -fx-padding: 8px;
+}
+
+.list-view .list-cell:odd {
+    -fx-background-color: derive(-fx-bg-medium, 10%);
+}
+
+.list-view .list-cell:filled:selected {
+    -fx-background-color: -fx-primary;
+}
+
+/* Tooltip styling */
+.tooltip {
+    -fx-background-color: -fx-bg-dark;
+    -fx-text-fill: -fx-text-primary;
+    -fx-background-radius: 4px;
+    -fx-padding: 6px 10px;
 }
 
 /* Dialog styling */
@@ -158,176 +449,284 @@
 
 .dialog-pane .header-panel .label {
     -fx-text-fill: -fx-text-primary;
-    -fx-font-weight: bold;
+    -fx-font-size: 16pt;
 }
 
 .dialog-pane .content {
-    -fx-padding: 15px;
-    -fx-text-fill: white;
+    -fx-background-color: -fx-bg-medium;
+    -fx-text-fill: -fx-text-primary;
+    -fx-font-size: 12pt;
 }
 
 .dialog-pane .content .label {
-    -fx-text-fill: white;
-}
-
-.dialog-pane .button-bar {
-    -fx-background-color: -fx-bg-medium;
-    -fx-padding: 10px;
-}
-
-/* Status badges */
-.status-badge {
-    -fx-background-radius: 3px;
-    -fx-padding: 3px 8px;
     -fx-text-fill: -fx-text-primary;
-    -fx-font-weight: bold;
 }
 
-.status-confirmed {
+.dialog-pane .button-bar .button {
+    -fx-background-color: -fx-primary;
+    -fx-text-fill: -fx-text-primary;
+}
+
+/* Alert styling */
+.alert {
+    -fx-background-color: -fx-bg-medium;
+}
+
+.alert .dialog-pane,
+.alert .dialog-pane .content {
+    -fx-background-color: -fx-bg-medium;
+}
+
+.alert .dialog-pane .header-panel {
+    -fx-background-color: -fx-primary-dark;
+}
+
+/* Menu styling */
+.menu-bar {
+    -fx-background-color: -fx-primary-dark;
+}
+
+.menu {
+    -fx-background-color: transparent;
+}
+
+.menu:hover, .menu:showing {
     -fx-background-color: -fx-primary;
 }
 
-.status-checked-in {
-    -fx-background-color: -fx-success;
+.menu .label {
+    -fx-text-fill: -fx-text-primary;
 }
 
-.status-checked-out {
-    -fx-background-color: -fx-secondary;
+.menu-item {
+    -fx-background-color: -fx-bg-medium;
 }
 
-.status-cancelled {
-    -fx-background-color: -fx-error;
+.menu-item .label {
+    -fx-text-fill: -fx-text-primary;
 }
 
-.status-pending {
-    -fx-background-color: -fx-warning;
+.menu-item:focused, .menu-item:hover {
+    -fx-background-color: -fx-primary;
 }
 
-/* Special text styling */
-.label-total {
-    -fx-font-weight: bold;
-    -fx-font-size: 16px;
-    -fx-text-fill: -fx-success;
+.context-menu {
+    -fx-background-color: -fx-bg-medium;
+    -fx-border-color: -fx-bg-light;
 }
 
-/* Special buttons */
-.icon-button {
+/* Chart styling */
+.chart {
     -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-cursor: hand;
 }
 
-.icon-button:hover {
-    -fx-background-color: -fx-bg-light;
-}
-
-.icon-button-primary {
-    -fx-text-fill: -fx-primary;
-}
-
-.icon-button-danger {
-    -fx-text-fill: -fx-error;
-}
-
-.icon-button-success {
-    -fx-text-fill: -fx-success;
-}
-
-/* Report styling */
 .chart-plot-background {
     -fx-background-color: -fx-bg-medium;
 }
 
-.chart-vertical-grid-lines {
-    -fx-stroke: -fx-bg-light;
-}
-
-.chart-horizontal-grid-lines {
-    -fx-stroke: -fx-bg-light;
-}
-
-.chart-title {
-    -fx-text-fill: -fx-text-primary;
-    -fx-font-size: 14pt;
-}
-
-.axis {
-    -fx-tick-label-fill: -fx-text-secondary;
-}
-
 .chart-legend {
-    -fx-background-color: transparent;
+    -fx-background-color: -fx-bg-light;
 }
 
 .chart-legend-item {
-    -fx-text-fill: -fx-text-secondary;
+    -fx-text-fill: -fx-text-primary;
 }
 
-/* Split pane styling */
-.split-pane {
-    -fx-background-color: -fx-bg-dark;
+.axis {
+    -fx-tick-label-fill: -fx-text-primary;
 }
 
-.split-pane > .split-pane-divider {
-    -fx-background-color: -fx-bg-light;
-    -fx-padding: 0 1px 0 1px;
+/* Titled pane (collapsible panel) */
+.titled-pane {
+    -fx-text-fill: -fx-text-primary;
 }
 
-/* Admin-specific scroll pane styling */
-.scroll-pane > .viewport {
-    -fx-background-color: transparent;
+.titled-pane .title {
+    -fx-background-color: -fx-primary-dark;
+    -fx-text-fill: -fx-text-primary;
 }
 
-.scroll-pane {
-    -fx-background-color: transparent;
-    -fx-padding: 5px;
-}
-
-/* Fix for text in dialogs */
-.dialog-pane .label {
-    -fx-text-fill: white;
-}
-
-/* Make alerts centered */
-.alert {
-    -fx-alignment: center;
-}
-
-.alert .dialog-pane {
-    -fx-min-width: 400px;
-}
-
-/* Login screen specific styling */
-.login-box {
+.titled-pane .content {
     -fx-background-color: -fx-bg-medium;
-    -fx-background-radius: 8px;
-    -fx-padding: 20px;
-    -fx-spacing: 15px;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 3);
 }
 
-.login-header {
-    -fx-font-size: 24pt;
-    -fx-font-weight: bold;
+/* Specific styling for the Search Guests tab */
+#tabSearch {
+    -fx-background-color: -fx-bg-medium;
+}
+
+#tabSearch .content {
+    -fx-background-color: -fx-bg-medium;
+}
+
+#tabSearch .split-pane {
+    -fx-background-color: -fx-bg-medium;
+}
+
+#tabSearch .split-pane .split-pane-divider {
+    -fx-background-color: -fx-bg-light;
+}
+
+#tabSearch .table-view {
+    -fx-background-color: -fx-bg-medium;
+}
+
+#tabSearch .table-view .column-header-background {
+    -fx-background-color: -fx-primary-dark;
+}
+
+#tabSearch .table-view .table-row-cell {
+    -fx-background-color: -fx-bg-medium;
+}
+
+#tabSearch .table-view .table-row-cell:odd {
+    -fx-background-color: derive(-fx-bg-medium, 10%);
+}
+
+#tabSearch .table-view .table-cell {
+    -fx-text-fill: -fx-text-primary;
+}
+
+/* Progress indicator */
+.progress-indicator {
+    -fx-progress-color: -fx-primary;
+}
+
+.progress-bar {
+    -fx-background-color: -fx-bg-light;
+}
+
+.progress-bar .track {
+    -fx-background-color: -fx-bg-light;
+}
+
+.progress-bar .bar {
+    -fx-background-color: -fx-primary;
+}
+
+/* Tree view styling */
+.tree-view {
+    -fx-background-color: -fx-bg-medium;
+}
+
+.tree-view .tree-cell {
+    -fx-background-color: -fx-bg-medium;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.tree-view .tree-cell:odd {
+    -fx-background-color: derive(-fx-bg-medium, 10%);
+}
+
+.tree-view .tree-cell:filled:selected {
+    -fx-background-color: -fx-primary;
+}
+
+/* Slider styling */
+.slider .track {
+    -fx-background-color: -fx-bg-light;
+}
+
+.slider .thumb {
+    -fx-background-color: -fx-primary;
+}
+
+/* Spinner styling */
+.spinner {
+    -fx-background-color: -fx-bg-medium;
+    -fx-border-color: -fx-bg-light;
+}
+
+.spinner .text-field {
+    -fx-background-color: -fx-bg-medium;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.spinner .increment-arrow-button, .spinner .decrement-arrow-button {
+    -fx-background-color: -fx-primary;
+}
+
+.spinner .increment-arrow, .spinner .decrement-arrow {
+    -fx-background-color: -fx-text-primary;
+}
+
+/* Separator styling */
+.separator .line {
+    -fx-border-color: -fx-bg-light;
+    -fx-border-width: 1px;
+}
+
+/* Hyperlink styling */
+.hyperlink {
     -fx-text-fill: -fx-primary-light;
 }
 
-.login-subheader {
-    -fx-font-size: 14pt;
-    -fx-text-fill: -fx-text-secondary;
+.hyperlink:hover {
+    -fx-text-fill: -fx-accent;
 }
 
-/* Make sure text is visible in all labels */
-.label {
-    -fx-text-fill: white;
+.hyperlink:visited {
+    -fx-text-fill: -fx-secondary;
 }
 
-.label-secondary {
-    -fx-text-fill: white;
+/* Status bar */
+.status-bar {
+    -fx-background-color: -fx-primary-dark;
+    -fx-padding: 5px;
 }
 
-/* Improve error messages visibility */
-.label-error {
-    -fx-text-fill: -fx-error;
-    -fx-font-weight: bold;
+.status-bar .label {
+    -fx-text-fill: -fx-text-primary;
+}
+
+/* Search Guest Results and Reservation Containers */
+.search-results-container,
+.reservation-container,
+.search-results-pane,
+.details-pane {
+    -fx-background-color: -fx-bg-medium;
+}
+
+/* Additional styling for any nested content within these containers */
+.search-results-container .content,
+.reservation-container .content,
+.search-results-pane .content,
+.details-pane .content {
+    -fx-background-color: -fx-bg-medium;
+}
+
+/* Target any ListView or TableView within search results or reservation areas */
+.search-results-container .list-view,
+.reservation-container .list-view,
+.search-results-container .table-view,
+.reservation-container .table-view {
+    -fx-background-color: -fx-bg-medium;
+}
+
+/* Ensure any split panes in these areas have dark backgrounds */
+.split-pane,
+.split-pane .split-pane-divider,
+.split-pane > * {
+    -fx-background-color: -fx-bg-medium;
+}
+
+/* Target any VBox or HBox containers that might be in these areas */
+.search-results-container .vbox,
+.search-results-container .hbox,
+.reservation-container .vbox,
+.reservation-container .hbox {
+    -fx-background-color: -fx-bg-medium;
+}
+
+/* Ensure any scrollpanes in these areas have dark backgrounds */
+.scroll-pane,
+.scroll-pane .viewport,
+.scroll-pane .content {
+    -fx-background-color: -fx-bg-medium;
+}
+
+/* Target any specific custom components you might have in search results */
+.guest-details-card,
+.reservation-details-card {
+    -fx-background-color: -fx-bg-medium;
 }

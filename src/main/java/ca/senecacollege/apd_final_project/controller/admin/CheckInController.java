@@ -21,6 +21,9 @@ public class CheckInController implements Initializable {
     private Label lblGuestName;
 
     @FXML
+    private TextField txtReservationId;
+
+    @FXML
     private Label lblReservationDetails;
 
     @FXML
@@ -97,5 +100,46 @@ public class CheckInController implements Initializable {
     private void showError(String message) {
         lblError.setText(message);
         lblError.setVisible(true);
+    }
+
+    @FXML
+    private void handleSearchButton(ActionEvent event) {
+        try {
+            // Get the reservation ID from the text field
+            int reservationId = Integer.parseInt(txtReservationId.getText().trim());
+
+            // Fetch the reservation details using the reservation ID
+            currentReservation = reservationService.getReservationById(reservationId);
+
+            if (currentReservation == null) {
+                showError("Reservation not found");
+                return;
+            }
+
+            // Fetch the guest details using the guest ID from the reservation
+            Guest guest = guestService.getGuestById(currentReservation.getGuestID());
+
+            if (guest == null) {
+                showError("Guest not found");
+                return;
+            }
+
+            // Update the UI with the guest and reservation details
+            lblGuestName.setText(guest.getName());
+            lblReservationDetails.setText(
+                    "Reservation #" + reservationId + "\n" +
+                            "Check-in: " + currentReservation.getCheckInDate() + "\n" +
+                            "Check-out: " + currentReservation.getCheckOutDate() + "\n" +
+                            "Room: " + currentReservation.getRoomID()
+            );
+
+            // Hide any previous error messages
+            lblError.setVisible(false);
+
+        } catch (NumberFormatException e) {
+            showError("Invalid reservation ID. Please enter a valid number.");
+        } catch (DatabaseException e) {
+            showError("Error retrieving reservation: " + e.getMessage());
+        }
     }
 }
