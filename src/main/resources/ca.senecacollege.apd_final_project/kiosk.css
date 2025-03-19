@@ -92,19 +92,30 @@
     background-color: var(--color-primary);
 }
 
-/* Input Styling for Kiosk */
-.text-field, .date-picker, .combo-box, .spinner {
+/* Input Styling for Kiosk - Improved for better visibility */
+.text-field, .date-picker, .combo-box, .spinner, .kiosk-input {
     -fx-background-color: #2a2a2a;
     -fx-border-color: #7b1fa2;
     -fx-border-width: 1px;
     -fx-border-radius: 4px;
     -fx-text-fill: white;
     -fx-prompt-text-fill: #a0a0a0;
+    -fx-font-size: 14px;
 }
 
-.text-field:focused, .date-picker:focused, .combo-box:focused, .spinner:focused {
+/* Important: Explicitly override the text color for text fields */
+.text-field .text {
+    -fx-fill: white !important;
+}
+
+.text-field:focused, .date-picker:focused, .combo-box:focused, .spinner:focused, .kiosk-input:focused {
     -fx-border-color: #9c27b0;
     -fx-effect: dropshadow(gaussian, rgba(156, 39, 176, 0.4), 10, 0, 0, 0);
+}
+
+/* TextField inside components should have black text */
+.date-picker > .text-field, .combo-box > .text-field, .spinner > .text-field {
+    -fx-text-fill: black;
 }
 
 /* Spinner arrows */
@@ -123,6 +134,37 @@
 
 .date-picker .arrow {
     -fx-background-color: #b491c8;
+}
+
+/* Improved date picker pop-up styling */
+.date-picker-popup {
+    -fx-background-color: #2a2a2a;
+    -fx-border-color: #7b1fa2;
+}
+
+.date-picker-popup .month-year-pane {
+    -fx-background-color: #3a3a3a;
+}
+
+.date-picker-popup .month-year-pane .label {
+    -fx-text-fill: white;
+}
+
+.date-picker-popup .week-number-cell {
+    -fx-text-fill: #a0a0a0;
+}
+
+.date-picker-popup .day-cell {
+    -fx-background-color: #2a2a2a;
+    -fx-text-fill: white;
+}
+
+.date-picker-popup .day-cell:hover {
+    -fx-background-color: #7b1fa2;
+}
+
+.date-picker-popup .day-cell.selected {
+    -fx-background-color: #7b1fa2;
 }
 
 /* Combo box styling */
@@ -146,6 +188,40 @@
 
 .combo-box-popup .list-cell:selected {
     -fx-background-color: #7b1fa2;
+}
+
+/* Text area styling */
+.text-area {
+    -fx-background-color: #2a2a2a;
+    -fx-border-color: #7b1fa2;
+    -fx-text-fill: white;
+}
+
+.text-area .content {
+    -fx-background-color: #2a2a2a;
+}
+
+/* Dialog styling */
+.dialog-pane {
+    -fx-background-color: #2a2a2a;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: #3a3a3a;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-text-fill: #b491c8;
+    -fx-font-weight: bold;
+}
+
+.dialog-pane .content.label {
+    -fx-text-fill: white;
+}
+
+.dialog-pane .button {
+    -fx-background-color: #7b1fa2;
+    -fx-text-fill: white;
 }
 
 /* Button Styling */
@@ -176,6 +252,12 @@
 
 .button-secondary:pressed {
     -fx-background-color: #212121;
+}
+
+/* Label error styling */
+.label-error {
+    -fx-text-fill: #cf6679;
+    -fx-font-size: 14px;
 }
 
 /* Footer styling */

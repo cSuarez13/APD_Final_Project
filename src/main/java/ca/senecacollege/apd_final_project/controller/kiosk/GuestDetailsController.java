@@ -8,6 +8,8 @@ import ca.senecacollege.apd_final_project.service.ReservationService;
 import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 import ca.senecacollege.apd_final_project.util.ValidationUtils;
+import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
+import ca.senecacollege.apd_final_project.util.ScreenSizeManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -17,6 +19,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -70,10 +73,40 @@ public class GuestDetailsController implements Initializable {
         // Hide error label initially
         lblError.setVisible(false);
 
+        // Apply proper text styling to ensure visibility
+        applyStyles();
+
         LoggingManager.logSystemInfo("GuestDetailsController initialized");
 
         // Make sure the current stage has proper size and position
         adjustStageSize();
+    }
+
+    /**
+     * Apply styles to ensure text is visible
+     */
+    private void applyStyles() {
+        // Set explicit styling for text fields to ensure text is visible
+        String textFieldStyle = "-fx-text-fill: black; -fx-font-size: 14px;";
+        txtName.setStyle(textFieldStyle);
+        txtPhone.setStyle(textFieldStyle);
+        txtEmail.setStyle(textFieldStyle);
+        txtAddress.setStyle(textFieldStyle);
+
+        // Make sure labels have white text
+        lblError.setStyle("-fx-text-fill: #cf6679; -fx-font-size: 14px;");
+
+        // Set all field labels to white text explicitly when scene is available
+        txtName.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                // Find all labels in the GridPane and set their text fill to white
+                txtName.getParent().getParent().lookupAll(".label").forEach(node -> {
+                    if (node instanceof Label && !(node.equals(lblError))) {
+                        ((Label) node).setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+                    }
+                });
+            }
+        });
     }
 
     /**
@@ -86,20 +119,18 @@ public class GuestDetailsController implements Initializable {
             if (newScene != null) {
                 Stage stage = (Stage) newScene.getWindow();
 
-                // Get the screen bounds
-                Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+                // Use ScreenSizeManager to set appropriate dimensions
+                double stageWidth = ScreenSizeManager.calculateStageWidth(900);
+                double stageHeight = ScreenSizeManager.calculateStageHeight(750);
 
-                // Set preferred dimensions that are more appropriate for a form
-                double prefWidth = Math.min(900, screenBounds.getWidth() * 0.8);
-                double prefHeight = Math.min(750, screenBounds.getHeight() * 0.85); // Increased height
+                // Get center position
+                double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
 
-                // Set the stage's size
-                stage.setWidth(prefWidth);
-                stage.setHeight(prefHeight);
-
-                // Center the stage on the screen
-                stage.setX((screenBounds.getWidth() - prefWidth) / 2);
-                stage.setY((screenBounds.getHeight() - prefHeight) / 2);
+                // Set the stage's size and position
+                stage.setWidth(stageWidth);
+                stage.setHeight(stageHeight);
+                stage.setX(centerPos[0]);
+                stage.setY(centerPos[1]);
 
                 // Make sure it's not maximized
                 stage.setMaximized(false);
@@ -160,26 +191,30 @@ public class GuestDetailsController implements Initializable {
 
             // Create new scene
             Scene confirmationScene = new Scene(confirmationRoot);
+            confirmationScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
             confirmationScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
 
             // Set the new scene
             stage.setScene(confirmationScene);
 
-            // Keep the stage properly sized and centered
-            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-            double prefWidth = Math.min(900, screenBounds.getWidth() * 0.8);
-            double prefHeight = Math.min(700, screenBounds.getHeight() * 0.8);
+            // Use ScreenSizeManager to set proper size and position
+            double stageWidth = ScreenSizeManager.calculateStageWidth(900);
+            double stageHeight = ScreenSizeManager.calculateStageHeight(700);
+            double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
 
-            stage.setWidth(prefWidth);
-            stage.setHeight(prefHeight);
-            stage.setX((screenBounds.getWidth() - prefWidth) / 2);
-            stage.setY((screenBounds.getHeight() - prefHeight) / 2);
+            stage.setWidth(stageWidth);
+            stage.setHeight(stageHeight);
+            stage.setX(centerPos[0]);
+            stage.setY(centerPos[1]);
 
             LoggingManager.logSystemInfo("Navigated to confirmation screen with reservation ID: " + reservationId);
 
         } catch (Exception e) {
             LoggingManager.logException("Error processing guest details", e);
-            showError("System error. Please try again or contact front desk.");
+
+            // Use ErrorPopupManager instead of directly showing error on lblError
+            Stage stage = (Stage) btnNext.getScene().getWindow();
+            ErrorPopupManager.showSystemErrorPopup(stage, "GUEST-001", "Error processing guest details");
         }
     }
 
@@ -198,25 +233,30 @@ public class GuestDetailsController implements Initializable {
 
             // Create new scene
             Scene bookingScene = new Scene(bookingRoot);
+            bookingScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
             bookingScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
 
             // Set the new scene
             stage.setScene(bookingScene);
 
-            // Keep the stage properly sized and centered
-            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-            double prefWidth = Math.min(900, screenBounds.getWidth() * 0.8);
-            double prefHeight = Math.min(700, screenBounds.getHeight() * 0.8);
+            // Use ScreenSizeManager for proper sizing and positioning
+            double stageWidth = ScreenSizeManager.calculateStageWidth(900);
+            double stageHeight = ScreenSizeManager.calculateStageHeight(700);
+            double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
 
-            stage.setWidth(prefWidth);
-            stage.setHeight(prefHeight);
-            stage.setX((screenBounds.getWidth() - prefWidth) / 2);
-            stage.setY((screenBounds.getHeight() - prefHeight) / 2);
+            stage.setWidth(stageWidth);
+            stage.setHeight(stageHeight);
+            stage.setX(centerPos[0]);
+            stage.setY(centerPos[1]);
 
             LoggingManager.logSystemInfo("Navigated back to booking screen");
 
         } catch (IOException e) {
             LoggingManager.logException("Error navigating back to booking screen", e);
+
+            // Use ErrorPopupManager
+            Stage stage = (Stage) btnBack.getScene().getWindow();
+            ErrorPopupManager.showSystemErrorPopup(stage, "NAV-002", "Error returning to booking screen");
         }
     }
 
@@ -227,48 +267,73 @@ public class GuestDetailsController implements Initializable {
                 javafx.scene.control.Alert.AlertType.INFORMATION);
         alert.setTitle("Hotel Rules & Regulations");
         alert.setHeaderText("Please Read Our Rules & Regulations");
-        alert.setContentText(Constants.RULES_REGULATIONS);
+
+        // Create text area for rules content
+        TextArea textArea = new TextArea(Constants.RULES_REGULATIONS);
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
+        textArea.setStyle("-fx-control-inner-background: #2a2a2a; -fx-text-fill: white;");
+
+        // Use ScreenSizeManager to set appropriate dialog size
+        Rectangle2D screenBounds = ScreenSizeManager.getPrimaryScreenBounds();
+        double dialogWidth = Math.min(800, screenBounds.getWidth() * 0.7);
+        double dialogHeight = Math.min(500, screenBounds.getHeight() * 0.6);
+
+        textArea.setPrefWidth(dialogWidth);
+        textArea.setPrefHeight(dialogHeight);
+
+        alert.getDialogPane().setContent(textArea);
 
         // Apply CSS to the dialog
         javafx.scene.control.DialogPane dialogPane = alert.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
         dialogPane.getStyleClass().add("root");
+        dialogPane.setStyle("-fx-background-color: #2a2a2a;");
+
+        // Explicitly set header text color
+        Label headerLabel = (Label) dialogPane.lookup(".header-panel .label");
+        if (headerLabel != null) {
+            headerLabel.setStyle("-fx-text-fill: #b491c8; -fx-font-weight: bold;");
+        }
 
         alert.showAndWait();
     }
 
     private boolean validateInputs() {
+        // Get the current stage for error popups
+        Stage stage = (Stage) btnNext.getScene().getWindow();
+
         // Validate name
         if (!ValidationUtils.isNotNullOrEmpty(txtName.getText())) {
-            showError("Please enter your name.");
+            ErrorPopupManager.showValidationErrorPopup(stage, "Name", "Please enter your name");
             return false;
         }
 
         // Validate phone
         if (!ValidationUtils.isNotNullOrEmpty(txtPhone.getText())) {
-            showError("Please enter your phone number.");
+            ErrorPopupManager.showValidationErrorPopup(stage, "Phone", "Please enter your phone number");
             return false;
         }
 
         if (!ValidationUtils.isValidPhoneNumber(txtPhone.getText())) {
-            showError("Please enter a valid phone number.");
+            ErrorPopupManager.showValidationErrorPopup(stage, "Phone", "Please enter a valid phone number");
             return false;
         }
 
         // Validate email
         if (!ValidationUtils.isNotNullOrEmpty(txtEmail.getText())) {
-            showError("Please enter your email.");
+            ErrorPopupManager.showValidationErrorPopup(stage, "Email", "Please enter your email");
             return false;
         }
 
         if (!ValidationUtils.isValidEmail(txtEmail.getText())) {
-            showError("Please enter a valid email address.");
+            ErrorPopupManager.showValidationErrorPopup(stage, "Email", "Please enter a valid email address");
             return false;
         }
 
         // Validate address
         if (!ValidationUtils.isNotNullOrEmpty(txtAddress.getText())) {
-            showError("Please enter your address.");
+            ErrorPopupManager.showValidationErrorPopup(stage, "Address", "Please enter your address");
             return false;
         }
 
@@ -276,6 +341,7 @@ public class GuestDetailsController implements Initializable {
         return true;
     }
 
+    // Helper method that's no longer needed as we use ErrorPopupManager now
     private void showError(String message) {
         lblError.setText(message);
         lblError.setVisible(true);
