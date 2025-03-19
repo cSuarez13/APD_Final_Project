@@ -12,12 +12,14 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Popup;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
@@ -224,8 +226,21 @@ public class BookingScreenController implements Initializable {
             Scene guestDetailsScene = new Scene(guestDetailsRoot);
             guestDetailsScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
 
-            // Set the new scene
+            // Configure and show the stage - properly fit to screen
             stage.setScene(guestDetailsScene);
+
+            // Get screen dimensions
+            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+
+            // Set stage size to fit screen (or use a percentage of screen)
+            stage.setX(screenBounds.getMinX());
+            stage.setY(screenBounds.getMinY());
+            stage.setWidth(screenBounds.getWidth());
+            stage.setHeight(screenBounds.getHeight());
+
+            // Set minimum size to ensure elements don't get squished
+            stage.setMinWidth(800);
+            stage.setMinHeight(600);
 
             LoggingManager.logSystemInfo("Navigated to guest details screen");
 
