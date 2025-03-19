@@ -11,7 +11,7 @@
     -fx-bg-medium: #1e1e1e; /* Medium Dark Background */
     -fx-bg-light: #2d2d2d; /* Light Dark Background */
     -fx-text-primary: #ffffff; /* Primary Text */
-    -fx-text-secondary: #b3b3b3; /* Secondary Text */
+    -fx-text-secondary: #ffffff; /* Secondary Text - Changed to white */
     -fx-error: #cf6679; /* Error Color */
     -fx-success: #4caf50; /* Success Color */
     -fx-warning: #ffab00; /* Warning Color */
@@ -80,21 +80,25 @@
 /* Larger text for kiosk */
 .label {
     -fx-font-size: 14pt;
+    -fx-text-fill: white;
 }
 
 .label-header {
     -fx-font-size: 32pt;
     -fx-font-weight: bold;
     -fx-effect: dropshadow(three-pass-box, rgba(206, 147, 216, 0.6), 10, 0, 0, 0);
+    -fx-text-fill: -fx-primary-light;
 }
 
 .label-subheader {
     -fx-font-size: 22pt;
     -fx-font-weight: bold;
+    -fx-text-fill: -fx-primary-light;
 }
 
 .label-secondary {
     -fx-font-size: 16pt;
+    -fx-text-fill: white;
 }
 
 .label-error {
@@ -149,6 +153,7 @@
 
 .detail-value {
     -fx-font-size: 14pt;
+    -fx-text-fill: white;
 }
 
 /* Bottom bar with hints and help */
@@ -169,6 +174,7 @@
     -fx-font-size: 18pt;
     -fx-text-alignment: center;
     -fx-wrap-text: true;
+    -fx-text-fill: white;
 }
 
 .room-selector {
@@ -203,10 +209,12 @@
 .room-type-name {
     -fx-font-weight: bold;
     -fx-font-size: 18pt;
+    -fx-text-fill: white;
 }
 
 .room-price {
     -fx-font-size: 16pt;
+    -fx-text-fill: white;
 }
 
 /* Booking summary styling */
@@ -317,8 +325,29 @@
 .dialog-pane .content {
     -fx-padding: 20px;
     -fx-font-size: 16pt;
+    -fx-text-fill: white;
+}
+
+.dialog-pane .content .label {
+    -fx-text-fill: white;
 }
 
 .dialog-pane .button-bar .button {
     -fx-min-width: 120px;
+}
+
+/* Make alerts centered and proper size */
+.alert {
+    -fx-alignment: center;
+}
+
+.alert .dialog-pane {
+    -fx-min-width: 400px;
+    -fx-min-height: 300px;
+}
+
+/* Label suggestion styling */
+.label-suggestion {
+    -fx-font-style: italic;
+    -fx-text-fill: white;
 }

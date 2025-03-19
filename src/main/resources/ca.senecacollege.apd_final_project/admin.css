@@ -11,7 +11,7 @@
     -fx-bg-medium: #1e1e1e; /* Medium Dark Background */
     -fx-bg-light: #2d2d2d; /* Light Dark Background */
     -fx-text-primary: #ffffff; /* Primary Text */
-    -fx-text-secondary: #b3b3b3; /* Secondary Text */
+    -fx-text-secondary: #ffffff; /* Secondary Text - Changed to white */
     -fx-error: #cf6679; /* Error Color */
     -fx-success: #4caf50; /* Success Color */
     -fx-warning: #ffab00; /* Warning Color */
@@ -163,6 +163,11 @@
 
 .dialog-pane .content {
     -fx-padding: 15px;
+    -fx-text-fill: white;
+}
+
+.dialog-pane .content .label {
+    -fx-text-fill: white;
 }
 
 .dialog-pane .button-bar {
@@ -276,4 +281,53 @@
 .scroll-pane {
     -fx-background-color: transparent;
     -fx-padding: 5px;
+}
+
+/* Fix for text in dialogs */
+.dialog-pane .label {
+    -fx-text-fill: white;
+}
+
+/* Make alerts centered */
+.alert {
+    -fx-alignment: center;
+}
+
+.alert .dialog-pane {
+    -fx-min-width: 400px;
+}
+
+/* Login screen specific styling */
+.login-box {
+    -fx-background-color: -fx-bg-medium;
+    -fx-background-radius: 8px;
+    -fx-padding: 20px;
+    -fx-spacing: 15px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 3);
+}
+
+.login-header {
+    -fx-font-size: 24pt;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-primary-light;
+}
+
+.login-subheader {
+    -fx-font-size: 14pt;
+    -fx-text-fill: -fx-text-secondary;
+}
+
+/* Make sure text is visible in all labels */
+.label {
+    -fx-text-fill: white;
+}
+
+.label-secondary {
+    -fx-text-fill: white;
+}
+
+/* Improve error messages visibility */
+.label-error {
+    -fx-text-fill: -fx-error;
+    -fx-font-weight: bold;
 }

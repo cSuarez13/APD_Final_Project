@@ -11,7 +11,7 @@
     -fx-bg-medium: #1e1e1e; /* Medium Dark Background */
     -fx-bg-light: #2d2d2d; /* Light Dark Background */
     -fx-text-primary: #ffffff; /* Primary Text */
-    -fx-text-secondary: #b3b3b3; /* Secondary Text */
+    -fx-text-secondary: #ffffff; /* Secondary Text - Changed to white */
     -fx-error: #cf6679; /* Error Color */
     -fx-success: #4caf50; /* Success Color */
     -fx-warning: #ffab00; /* Warning Color */
@@ -391,16 +391,32 @@
     -fx-background-color: -fx-warning;
 }
 
-
-* {
-    -fx-text-primary: #ffffff;
-    -fx-text-secondary: #ffffff;
+/* Dialog styling */
+.dialog-pane {
+    -fx-background-color: -fx-bg-medium;
 }
 
-.label {
+.dialog-pane .header-panel {
+    -fx-background-color: -fx-primary-dark;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-text-fill: -fx-text-primary;
+    -fx-font-size: 16pt;
+}
+
+.dialog-pane .content {
+    -fx-background-color: -fx-bg-medium;
+    -fx-text-fill: -fx-text-primary;
+    -fx-font-size: 12pt;
+}
+
+.dialog-pane .button-bar .button {
+    -fx-background-color: -fx-primary;
     -fx-text-fill: -fx-text-primary;
 }
 
-.label-secondary {
-    -fx-text-fill: -fx-text-secondary;
+/* Make sure all text in dialogs is visible */
+.dialog-pane .content .label {
+    -fx-text-fill: white;
 }

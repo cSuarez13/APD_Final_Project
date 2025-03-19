@@ -3,6 +3,7 @@ module ca.senecacollege.apd_final_project {
     requires javafx.fxml;
     requires java.sql;
     requires java.logging;
+    requires mysql.connector.j;
 
     opens ca.senecacollege.apd_final_project to javafx.fxml;
     opens ca.senecacollege.apd_final_project.controller to javafx.fxml;

@@ -9,10 +9,13 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.scene.Node;
 
 import java.io.IOException;
 import java.net.URL;
@@ -68,22 +71,47 @@ public class WelcomeScreenController implements Initializable {
 
         } catch (IOException e) {
             LoggingManager.logException("Error navigating to booking screen", e);
+
+            // More detailed error information for debugging
+            System.err.println("Error details: " + e.getMessage());
+            e.printStackTrace();
+
+            // Create an alert to show the error
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Navigation Error");
+            alert.setHeaderText("Error Loading Booking Screen");
+            alert.setContentText("Error: " + e.getMessage() + "\nPlease contact technical support.");
+            alert.showAndWait();
         }
     }
 
     @FXML
     private void handleRulesButton(ActionEvent event) {
         // Show rules and regulations dialog
-        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                javafx.scene.control.Alert.AlertType.INFORMATION);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Hotel Rules & Regulations");
         alert.setHeaderText("Please Read Our Rules & Regulations");
         alert.setContentText(Constants.RULES_REGULATIONS);
 
         // Apply CSS to the dialog
-        javafx.scene.control.DialogPane dialogPane = alert.getDialogPane();
+        DialogPane dialogPane = alert.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
         dialogPane.getStyleClass().add("root");
+
+        for (Node node : dialogPane.getChildren()) {
+            if (node instanceof Label) {
+                ((Label) node).setTextFill(javafx.scene.paint.Color.WHITE);
+            }
+        }
+
+        // Set preferred width for better readability
+        dialogPane.setPrefWidth(500);
+
+        // Center the alert dialog on screen when it appears
+        alert.setOnShown(e -> {
+            Stage stage = (Stage) dialogPane.getScene().getWindow();
+            stage.centerOnScreen();
+        });
 
         alert.showAndWait();
     }
