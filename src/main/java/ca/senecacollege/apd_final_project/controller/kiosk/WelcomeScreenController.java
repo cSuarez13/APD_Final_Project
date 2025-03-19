@@ -13,8 +13,10 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 
 import java.io.IOException;
@@ -53,6 +55,8 @@ public class WelcomeScreenController implements Initializable {
     @FXML
     private void handleStartButton(ActionEvent event) {
         try {
+            LoggingManager.logSystemInfo("Opening booking interface");
+
             // Load the booking screen
             FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_BOOKING));
             Parent bookingRoot = loader.load();
@@ -64,8 +68,21 @@ public class WelcomeScreenController implements Initializable {
             Scene bookingScene = new Scene(bookingRoot);
             bookingScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
 
-            // Set the new scene
+            // Configure and show the stage - properly fit to screen
             stage.setScene(bookingScene);
+
+            // Get screen dimensions
+            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+
+            // Set stage size to fit screen (or use a percentage of screen)
+            stage.setX(screenBounds.getMinX());
+            stage.setY(screenBounds.getMinY());
+            stage.setWidth(screenBounds.getWidth());
+            stage.setHeight(screenBounds.getHeight());
+
+            // Set minimum size to ensure elements don't get squished
+            stage.setMinWidth(800);
+            stage.setMinHeight(600);
 
             LoggingManager.logSystemInfo("Navigated to booking screen");
 

@@ -5,6 +5,7 @@ import ca.senecacollege.apd_final_project.service.RoomService;
 import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 import ca.senecacollege.apd_final_project.util.ValidationUtils;
+import javafx.animation.FadeTransition;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -13,7 +14,12 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+import javafx.geometry.Insets;
 
 import java.io.IOException;
 import java.net.URL;
@@ -52,6 +58,7 @@ public class BookingScreenController implements Initializable {
     private Button btnRules;
 
     private RoomService roomService;
+    private TextFlow suggestionTextFlow;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -100,6 +107,10 @@ public class BookingScreenController implements Initializable {
         // Hide error label initially
         lblError.setVisible(false);
 
+        // Initialize suggestion TextFlow (for highlighting)
+        suggestionTextFlow = new TextFlow();
+        suggestionTextFlow.getStyleClass().add("suggestion-textflow");
+
         // Make initial room suggestion
         updateRoomSuggestion();
 
@@ -109,41 +120,42 @@ public class BookingScreenController implements Initializable {
     private void updateRoomSuggestion() {
         int guestCount = spnGuests.getValue();
         List<RoomType> recommendedRooms = new ArrayList<>();
-        String suggestionText = "";
+
+        StringBuilder suggestion = new StringBuilder("Based on your party size, we recommend ");
 
         if (guestCount <= Constants.MAX_GUESTS_SINGLE_ROOM) {
             // Single room is sufficient
             recommendedRooms.add(RoomType.SINGLE);
-            suggestionText = "Based on your party size, we recommend a Single Room.";
+            suggestion.append("a Single Room.");
         } else if (guestCount <= Constants.MAX_GUESTS_DOUBLE_ROOM) {
             // Double room is sufficient
             recommendedRooms.add(RoomType.DOUBLE);
-            suggestionText = "Based on your party size, we recommend a Double Room.";
+            suggestion.append("a Double Room.");
         } else {
             // Multiple rooms needed
             int doubleRooms = guestCount / Constants.MAX_GUESTS_DOUBLE_ROOM;
             int remainingGuests = guestCount % Constants.MAX_GUESTS_DOUBLE_ROOM;
 
-            suggestionText = "Based on your party size, we recommend ";
-
             if (doubleRooms > 0) {
-                suggestionText += doubleRooms + " Double Room" + (doubleRooms > 1 ? "s" : "");
+                suggestion.append(doubleRooms)
+                        .append(" Double Room")
+                        .append(doubleRooms > 1 ? "s" : "");
 
                 if (remainingGuests > 0) {
-                    suggestionText += " and ";
+                    suggestion.append(" and ");
                 }
             }
 
             if (remainingGuests > 0) {
-                suggestionText += "1 " + (remainingGuests <= Constants.MAX_GUESTS_SINGLE_ROOM ?
-                        "Single" : "Double") + " Room";
+                String roomType = (remainingGuests <= Constants.MAX_GUESTS_SINGLE_ROOM ? "Single" : "Double");
+                suggestion.append("1 ").append(roomType).append(" Room");
             }
 
-            suggestionText += ".";
+            suggestion.append(".");
         }
 
-        // Update suggestion label
-        lblSuggestion.setText(suggestionText);
+        // Update the suggestion label with the full, plain text message
+        lblSuggestion.setText(suggestion.toString());
 
         // Set first recommended room type as default if nothing is selected
         if (cmbRoomType.getValue() == null && !recommendedRooms.isEmpty()) {
@@ -186,7 +198,11 @@ public class BookingScreenController implements Initializable {
 
         } catch (IOException e) {
             LoggingManager.logException("Error navigating to guest details screen", e);
-            showError("System error. Please try again or contact front desk.");
+            showError("Error loading next screen: " + e.getMessage());
+
+            // More detailed error information for debugging
+            System.err.println("Error details: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -216,18 +232,42 @@ public class BookingScreenController implements Initializable {
 
     @FXML
     private void handleRulesButton(ActionEvent event) {
-        // Show rules and regulations dialog
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Hotel Rules & Regulations");
-        alert.setHeaderText("Please Read Our Rules & Regulations");
-        alert.setContentText(Constants.RULES_REGULATIONS);
+        // Create an improved rules and regulations dialog
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Hotel Rules & Regulations");
 
-        // Apply CSS to the dialog
-        DialogPane dialogPane = alert.getDialogPane();
+        // Create a custom dialog pane
+        DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
-        dialogPane.getStyleClass().add("root");
+        dialogPane.getStyleClass().addAll("root", "rules-dialog");
 
-        alert.showAndWait();
+        // Create a VBox for content
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        // Add header
+        Label header = new Label("Please Read Our Rules & Regulations");
+        header.getStyleClass().add("header");
+
+        // Add scrollable text area for rules content
+        TextArea rulesText = new TextArea(Constants.RULES_REGULATIONS);
+        rulesText.setEditable(false);
+        rulesText.setWrapText(true);
+        rulesText.setPrefHeight(400);
+        rulesText.setPrefWidth(600);
+        rulesText.getStyleClass().add("content");
+
+        // Add components to content
+        content.getChildren().addAll(header, rulesText);
+
+        // Set the content
+        dialogPane.setContent(content);
+
+        // Add the close button
+        dialogPane.getButtonTypes().add(ButtonType.CLOSE);
+
+        // Show the dialog
+        dialog.showAndWait();
     }
 
     private boolean validateInputs() {
@@ -295,5 +335,11 @@ public class BookingScreenController implements Initializable {
     private void showError(String message) {
         lblError.setText(message);
         lblError.setVisible(true);
+
+        // Add fade-in animation for error message
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(200), lblError);
+        fadeIn.setFromValue(0.0);
+        fadeIn.setToValue(1.0);
+        fadeIn.play();
     }
 }
