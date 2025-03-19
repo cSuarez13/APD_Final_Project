@@ -7,12 +7,11 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.DialogPane;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -20,7 +19,6 @@ import javafx.geometry.Rectangle2D;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.scene.control.TextArea;
 
 public class WelcomeScreenController implements Initializable {
 
@@ -103,43 +101,45 @@ public class WelcomeScreenController implements Initializable {
 
     @FXML
     private void handleRulesButton(ActionEvent event) {
-        // Create the alert
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Hotel Rules & Regulations");
-        alert.setHeaderText("Please Read Our Rules & Regulations");
+        // Create an improved rules and regulations dialog
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Hotel Rules & Regulations");
 
-        // Create a TextArea
-        TextArea textArea = new TextArea();
-        textArea.setText(Constants.RULES_REGULATIONS);
-        textArea.setEditable(false);
-        textArea.setWrapText(true);
-
-        // Set explicit text color and background to ensure visibility
-        textArea.setStyle("-fx-text-fill: white; -fx-control-inner-background: #333333;");
-
-        // Get screen dimensions
-        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-
-        // Increase dimensions for the text area - make it larger
-        textArea.setPrefWidth(screenBounds.getWidth() * 0.7);  // Increased from 0.6 to 0.7
-        textArea.setPrefHeight(screenBounds.getHeight() * 0.6); // Increased from 0.5 to 0.6
-
-        // Replace the content with our text area
-        alert.getDialogPane().setContent(textArea);
-
-        // Apply styling to the dialog pane
-        DialogPane dialogPane = alert.getDialogPane();
+        // Create a custom dialog pane
+        DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
-        dialogPane.getStyleClass().add("root");
+        dialogPane.getStyleClass().addAll("root", "rules-dialog");
 
-        // Increase the dialog size
-        dialogPane.setPrefWidth(750);
-        dialogPane.setPrefHeight(550);
+        // Set size for dialog
+        dialogPane.setPrefWidth(800);
+        dialogPane.setPrefHeight(600);
 
-        // Make sure the stage resizes properly
-        alert.setResizable(true);
+        // Create a VBox for content
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        // Add header
+        Label header = new Label("Please Read Our Rules & Regulations");
+        header.getStyleClass().add("header");
+
+        // Add scrollable text area for rules content
+        TextArea rulesText = new TextArea(Constants.RULES_REGULATIONS);
+        rulesText.setEditable(false);
+        rulesText.setWrapText(true);
+        rulesText.setPrefHeight(350);
+        rulesText.setPrefWidth(600);
+        rulesText.getStyleClass().add("content");
+
+        // Add components to content
+        content.getChildren().addAll(header, rulesText);
+
+        // Set the content
+        dialogPane.setContent(content);
+
+        // Add the close button
+        dialogPane.getButtonTypes().add(ButtonType.CLOSE);
 
         // Show the dialog
-        alert.showAndWait();
+        dialog.showAndWait();
     }
 }

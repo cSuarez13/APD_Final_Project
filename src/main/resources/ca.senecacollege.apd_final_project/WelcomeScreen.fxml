@@ -36,7 +36,7 @@
                             </font>
                         </Button>
                         <Button fx:id="btnRules" mnemonicParsing="false" onAction="#handleRulesButton"
-                                prefHeight="80.0" prefWidth="300.0" styleClass="button-secondary" text="Rules &amp; Regulations">
+                                prefHeight="60.0" prefWidth="300.0" styleClass="button-secondary" text="Rules &amp; Regulations">
                             <font>
                                 <Font size="20.0" />
                             </font>

@@ -510,3 +510,224 @@
     -fx-min-width: 400px;
     -fx-min-height: 300px;
 }
+
+/*//////////////////////////////////////////////
+
+/* Room suggestion styling with highlighting */
+.label-suggestion {
+    -fx-font-style: italic;
+    -fx-text-fill: white;
+    -fx-background-color: rgba(123, 31, 162, 0.2);
+    -fx-background-radius: 8px;
+    -fx-padding: 15px;
+    -fx-border-color: rgba(123, 31, 162, 0.4);
+    -fx-border-radius: 8px;
+    -fx-font-size: 14pt;
+}
+
+/* Highlighted room type */
+.suggested-room-type {
+    -fx-text-fill: #ce93d8; /* Accent color */
+    -fx-font-weight: bold;
+    -fx-underline: true;
+}
+
+/* Rules button styling */
+#btnRules {
+    -fx-min-width: 350px;
+    -fx-pref-width: 350px;
+    -fx-pref-height: 80px;
+    -fx-wrap-text: true;
+    -fx-font-size: 20pt;
+}
+
+/* Dialog styling */
+.rules-dialog {
+    -fx-background-color: -fx-bg-medium;
+    -fx-padding: 20px;
+}
+
+.rules-dialog .header {
+    -fx-font-size: 22pt;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-primary-light;
+    -fx-padding: 0 0 15px 0;
+}
+
+.rules-dialog .content {
+    -fx-font-size: 14pt;
+    -fx-text-fill: -fx-text-primary;
+    -fx-background-color: rgba(30, 30, 30, 0.8);
+    -fx-background-radius: 8px;
+    -fx-padding: 15px;
+}
+
+/* Improve ComboBox styling */
+.combo-box {
+    -fx-font-size: 14pt;
+    -fx-background-color: -fx-bg-light;
+    -fx-text-fill: -fx-text-primary;
+    -fx-prompt-text-fill: #aaaaaa;
+}
+
+.combo-box .list-cell {
+    -fx-text-fill: -fx-text-primary;
+    -fx-background-color: -fx-bg-light;
+    -fx-padding: 8px 12px;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: -fx-bg-medium;
+    -fx-border-color: -fx-primary;
+}
+
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: -fx-primary;
+}
+
+.combo-box-popup .list-cell:selected {
+    -fx-background-color: -fx-primary;
+}
+
+/* Animation for error message */
+@keyframes fadeInOut {
+    0% { -fx-opacity: 0; }
+    10% { -fx-opacity: 1; }
+    90% { -fx-opacity: 1; }
+    100% { -fx-opacity: 0; }
+}
+
+.label-error {
+    -fx-text-fill: -fx-error;
+    -fx-background-color: rgba(207, 102, 121, 0.2);
+    -fx-background-radius: 4px;
+    -fx-padding: 10px;
+    -fx-animation: fadeInOut 5s;
+}
+
+/* Additional CSS for improved input fields styling */
+
+/* Ensure input controls use all available space */
+.text-field, .combo-box, .date-picker, .spinner {
+    -fx-max-width: Infinity;
+    -fx-padding: 0;
+}
+
+/* Remove internal padding from fields */
+.text-field, .combo-box .text-field, .date-picker .text-field, .spinner .text-field {
+    -fx-padding: 0 5px;
+    -fx-alignment: center-left;
+}
+
+/* Ensure input field labels are clearly visible */
+.form-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-primary-light;
+    -fx-font-size: 18px;
+}
+
+/* Make suggestion box stand out more */
+.label-suggestion {
+    -fx-background-color: rgba(123, 31, 162, 0.2);
+    -fx-background-radius: 5px;
+    -fx-padding: 10px;
+    -fx-border-color: rgba(123, 31, 162, 0.4);
+    -fx-border-radius: 5px;
+    -fx-font-size: 18px;
+}
+
+
+/* Compact spacing for content container */
+.content-container {
+    -fx-spacing: 10px;
+    -fx-padding: 15px;
+}
+
+/* Remove excess padding from form fields */
+.date-picker > .text-field {
+    -fx-padding: 0 5px;
+}
+
+.spinner > .text-field {
+    -fx-padding: 0 5px;
+}
+
+.combo-box > .text-field {
+    -fx-padding: 0 5px;
+}
+
+/* Ensure input controls use all available space */
+.text-field, .combo-box, .date-picker, .spinner {
+    -fx-max-width: Infinity;
+    -fx-padding: 0;
+}
+
+/* Remove internal padding from fields */
+.text-field, .combo-box .text-field, .date-picker .text-field, .spinner .text-field {
+    -fx-padding: 0 5px;
+    -fx-alignment: center-left;
+}
+
+/* Ensure input field labels are clearly visible */
+.form-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-primary-light;
+    -fx-font-size: 18px;
+}
+
+/* Make suggestion box stand out more */
+.label-suggestion {
+    -fx-background-color: rgba(123, 31, 162, 0.2);
+    -fx-background-radius: 5px;
+    -fx-padding: 10px;
+    -fx-border-color: rgba(123, 31, 162, 0.4);
+    -fx-border-radius: 5px;
+    -fx-font-size: 18px;
+}
+
+/* Error message popup styling */
+.error-popup {
+    -fx-background-color: rgba(207, 102, 121, 0.9);
+    -fx-background-radius: 5px;
+    -fx-padding: 15px;
+    -fx-border-color: #cf6679;
+    -fx-border-radius: 5px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 10, 0.2, 0, 5);
+}
+
+.error-popup .label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+}
+
+/* Input field height adjustments */
+.spinner, .date-picker, .combo-box {
+    -fx-min-height: 55px;
+    -fx-pref-height: 55px;
+}
+
+/* Ensure text in input fields is vertically centered */
+.spinner .text-field, .date-picker .text-field, .combo-box .text-field {
+    -fx-alignment: center-left;
+    -fx-font-size: 16px;
+}
+
+/* Compact spacing for content container */
+.content-container {
+    -fx-spacing: 10px;
+    -fx-padding: 15px;
+}
+
+/* Remove excess padding from form fields */
+.date-picker > .text-field {
+    -fx-padding: 0 5px;
+}
+
+.spinner > .text-field {
+    -fx-padding: 0 5px;
+}
+
+.combo-box > .text-field {
+    -fx-padding: 0 5px;
+}

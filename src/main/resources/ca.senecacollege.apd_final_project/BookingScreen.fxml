@@ -21,9 +21,9 @@
             fx:controller="ca.senecacollege.apd_final_project.controller.kiosk.BookingScreenController">
 
     <center>
-        <VBox alignment="CENTER" spacing="15.0" styleClass="content-container">
+        <VBox alignment="CENTER" spacing="10.0" styleClass="content-container">
             <padding>
-                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
             </padding>
 
             <!-- Header -->
@@ -37,83 +37,85 @@
                 <font>
                     <Font size="18.0" />
                 </font>
+                <VBox.margin>
+                    <Insets bottom="5.0" />
+                </VBox.margin>
             </Label>
 
-            <Label fx:id="lblError" styleClass="label-error" text="Error message goes here"
-                   visible="false">
-                <font>
-                    <Font size="14.0" />
-                </font>
-            </Label>
+            <!-- Error message is hidden by default and will appear as a popup -->
 
             <!-- Main content grid -->
-            <GridPane hgap="20.0" vgap="20.0" VBox.vgrow="ALWAYS" alignment="CENTER">
+            <GridPane hgap="15.0" vgap="10.0" VBox.vgrow="ALWAYS" alignment="CENTER">
                 <columnConstraints>
                     <ColumnConstraints hgrow="SOMETIMES" minWidth="200.0" prefWidth="350.0" />
                     <ColumnConstraints hgrow="SOMETIMES" minWidth="200.0" prefWidth="350.0" />
                 </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints minHeight="30.0" prefHeight="30.0" />
+                    <RowConstraints minHeight="50.0" prefHeight="55.0" />
+                    <RowConstraints minHeight="30.0" prefHeight="30.0" />
+                    <RowConstraints minHeight="50.0" prefHeight="55.0" />
+                </rowConstraints>
 
-                <!-- Row 1: Number of Guests / Check-in Date -->
+                <!-- Row 1: Number of Guests field label -->
                 <Label text="Number of Guests:" GridPane.rowIndex="0" GridPane.columnIndex="0"
                        styleClass="form-label">
                     <font>
-                        <Font size="16.0" />
+                        <Font size="18.0" />
                     </font>
-                    <GridPane.margin>
-                        <Insets bottom="5.0" />
-                    </GridPane.margin>
                 </Label>
 
-                <Spinner fx:id="spnGuests" GridPane.rowIndex="0" GridPane.columnIndex="0"
-                         GridPane.rowSpan="1" GridPane.valignment="BOTTOM" />
-
+                <!-- Row 1: Check-in Date field label -->
                 <Label text="Check-in Date:" GridPane.rowIndex="0" GridPane.columnIndex="1"
                        styleClass="form-label">
                     <font>
-                        <Font size="16.0" />
+                        <Font size="18.0" />
                     </font>
-                    <GridPane.margin>
-                        <Insets bottom="5.0" />
-                    </GridPane.margin>
                 </Label>
+
+                <!-- Row 2: Input fields -->
+                <Spinner fx:id="spnGuests" GridPane.rowIndex="1" GridPane.columnIndex="0"
+                         prefHeight="55.0" prefWidth="350.0" maxWidth="Infinity" />
 
                 <DatePicker fx:id="dpCheckIn" promptText="Select check-in date"
-                            GridPane.rowIndex="0" GridPane.columnIndex="1"
-                            GridPane.valignment="BOTTOM" />
+                            GridPane.rowIndex="1" GridPane.columnIndex="1"
+                            prefHeight="55.0" maxWidth="Infinity" />
 
-                <!-- Row 2: Room Type / Check-out Date -->
-                <Label text="Room Type:" GridPane.rowIndex="1" GridPane.columnIndex="0"
+                <!-- Row 3: Room Type / Check-out Date labels -->
+                <Label text="Room Type:" GridPane.rowIndex="2" GridPane.columnIndex="0"
                        styleClass="form-label">
                     <font>
-                        <Font size="16.0" />
+                        <Font size="18.0" />
                     </font>
                     <GridPane.margin>
-                        <Insets bottom="5.0" top="20.0" />
+                        <Insets top="15.0" />
                     </GridPane.margin>
                 </Label>
 
+                <Label text="Check-out Date:" GridPane.rowIndex="2" GridPane.columnIndex="1"
+                       styleClass="form-label">
+                    <font>
+                        <Font size="18.0" />
+                    </font>
+                    <GridPane.margin>
+                        <Insets top="15.0" />
+                    </GridPane.margin>
+                </Label>
+
+                <!-- Row 4: Input fields -->
                 <ComboBox fx:id="cmbRoomType" promptText="Select room type"
-                          GridPane.rowIndex="1" GridPane.columnIndex="0"
-                          GridPane.valignment="BOTTOM" />
-
-                <Label text="Check-out Date:" GridPane.rowIndex="1" GridPane.columnIndex="1"
-                       styleClass="form-label">
-                    <font>
-                        <Font size="16.0" />
-                    </font>
-                    <GridPane.margin>
-                        <Insets bottom="5.0" top="20.0" />
-                    </GridPane.margin>
-                </Label>
+                          GridPane.rowIndex="3" GridPane.columnIndex="0"
+                          GridPane.hgrow="ALWAYS"
+                          prefHeight="55.0" prefWidth="350.0" maxWidth="Infinity" />
 
                 <DatePicker fx:id="dpCheckOut" promptText="Select check-out date"
-                            GridPane.rowIndex="1" GridPane.columnIndex="1"
-                            GridPane.valignment="BOTTOM" />
+                            GridPane.rowIndex="3" GridPane.columnIndex="1"
+                            prefHeight="55.0" maxWidth="Infinity" />
             </GridPane>
 
             <Separator>
                 <VBox.margin>
-                    <Insets top="20.0" bottom="10.0" />
+                    <Insets top="15.0" bottom="10.0" />
                 </VBox.margin>
             </Separator>
 
@@ -122,42 +124,45 @@
                    text="Based on your party size, we recommend a Single Room."
                    wrapText="true">
                 <font>
-                    <Font size="16.0" />
+                    <Font size="18.0" />
                 </font>
                 <VBox.margin>
                     <Insets left="10.0" right="10.0" />
                 </VBox.margin>
+                <padding>
+                    <Insets top="10.0" bottom="10.0" left="10.0" right="10.0" />
+                </padding>
             </Label>
 
             <Separator>
                 <VBox.margin>
-                    <Insets top="10.0" bottom="20.0" />
+                    <Insets top="10.0" bottom="15.0" />
                 </VBox.margin>
             </Separator>
 
             <!-- Buttons -->
-            <HBox alignment="CENTER" spacing="20.0">
+            <HBox alignment="CENTER" spacing="15.0">
                 <Button fx:id="btnBack" cancelButton="true" mnemonicParsing="false"
-                        onAction="#handleBackButton" prefHeight="50.0" prefWidth="150.0"
+                        onAction="#handleBackButton" prefHeight="60.0" prefWidth="250.0"
                         styleClass="button-secondary" text="Back">
                     <font>
-                        <Font size="16.0" />
+                        <Font size="20.0" />
                     </font>
                 </Button>
 
                 <Button fx:id="btnRules" mnemonicParsing="false" onAction="#handleRulesButton"
-                        prefHeight="50.0" prefWidth="220.0" styleClass="button-secondary"
-                        text="Rules &amp; Regulations">
+                        prefHeight="60.0" prefWidth="300.0" styleClass="button-secondary"
+                        text="Rules &amp; Regulations" wrapText="true">
                     <font>
-                        <Font size="16.0" />
+                        <Font size="20.0" />
                     </font>
                 </Button>
 
                 <Button fx:id="btnNext" defaultButton="true" mnemonicParsing="false"
-                        onAction="#handleNextButton" prefHeight="50.0" prefWidth="150.0"
+                        onAction="#handleNextButton" prefHeight="60.0" prefWidth="250.0"
                         styleClass="button" text="Next">
                     <font>
-                        <Font size="16.0" />
+                        <Font size="20.0" />
                     </font>
                 </Button>
             </HBox>

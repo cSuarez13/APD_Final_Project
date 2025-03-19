@@ -5,23 +5,22 @@ import ca.senecacollege.apd_final_project.service.RoomService;
 import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 import ca.senecacollege.apd_final_project.util.ValidationUtils;
-import javafx.animation.FadeTransition;
+import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Rectangle2D;
+import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import javafx.stage.Screen;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import javafx.geometry.Insets;
+import javafx.util.StringConverter;
 
 import java.io.IOException;
 import java.net.URL;
@@ -48,9 +47,6 @@ public class BookingScreenController implements Initializable {
     private Label lblSuggestion;
 
     @FXML
-    private Label lblError;
-
-    @FXML
     private Button btnNext;
 
     @FXML
@@ -61,6 +57,7 @@ public class BookingScreenController implements Initializable {
 
     private RoomService roomService;
     private TextFlow suggestionTextFlow;
+    private RoomType suggestedRoomType;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -71,12 +68,20 @@ public class BookingScreenController implements Initializable {
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10, 1);
         spnGuests.setValueFactory(valueFactory);
 
+        // Remove padding from spinner editor
+        TextField spinnerEditor = spnGuests.getEditor();
+        spinnerEditor.setPadding(new Insets(0));
+
         // Add listener to guest count to update room suggestions
         spnGuests.valueProperty().addListener((obs, oldValue, newValue) -> updateRoomSuggestion());
 
         // Setup date pickers
         dpCheckIn.setValue(LocalDate.now());
         dpCheckOut.setValue(LocalDate.now().plusDays(1));
+
+        // Remove internal padding from date pickers
+        dpCheckIn.getEditor().setPadding(new Insets(0));
+        dpCheckOut.getEditor().setPadding(new Insets(0));
 
         // Ensure check-in date is not before today
         dpCheckIn.setDayCellFactory(picker -> new DateCell() {
@@ -103,11 +108,28 @@ public class BookingScreenController implements Initializable {
             }
         });
 
-        // Setup room type combo box
+        // Setup room type combo box with custom string converter
         cmbRoomType.setItems(FXCollections.observableArrayList(RoomType.values()));
+        cmbRoomType.setConverter(new StringConverter<RoomType>() {
+            @Override
+            public String toString(RoomType roomType) {
+                if (roomType != null) {
+                    return roomType.getDisplayName() + " - $" + roomType.getBasePrice() +
+                            " (Max " + roomType.getMaxOccupancy() + " guests)";
+                }
+                return null;
+            }
 
-        // Hide error label initially
-        lblError.setVisible(false);
+            @Override
+            public RoomType fromString(String string) {
+                for (RoomType type : RoomType.values()) {
+                    if (string.startsWith(type.getDisplayName())) {
+                        return type;
+                    }
+                }
+                return null;
+            }
+        });
 
         // Initialize suggestion TextFlow (for highlighting)
         suggestionTextFlow = new TextFlow();
@@ -123,41 +145,50 @@ public class BookingScreenController implements Initializable {
         int guestCount = spnGuests.getValue();
         List<RoomType> recommendedRooms = new ArrayList<>();
 
-        StringBuilder suggestion = new StringBuilder("Based on your party size, we recommend ");
+        StringBuilder suggestionBuilder = new StringBuilder("Based on your party size, we recommend ");
 
         if (guestCount <= Constants.MAX_GUESTS_SINGLE_ROOM) {
             // Single room is sufficient
             recommendedRooms.add(RoomType.SINGLE);
-            suggestion.append("a Single Room.");
+            suggestedRoomType = RoomType.SINGLE;
+            suggestionBuilder.append("a Single Room.");
         } else if (guestCount <= Constants.MAX_GUESTS_DOUBLE_ROOM) {
             // Double room is sufficient
             recommendedRooms.add(RoomType.DOUBLE);
-            suggestion.append("a Double Room.");
+            suggestedRoomType = RoomType.DOUBLE;
+            suggestionBuilder.append("a Double Room.");
         } else {
             // Multiple rooms needed
             int doubleRooms = guestCount / Constants.MAX_GUESTS_DOUBLE_ROOM;
             int remainingGuests = guestCount % Constants.MAX_GUESTS_DOUBLE_ROOM;
 
             if (doubleRooms > 0) {
-                suggestion.append(doubleRooms)
+                suggestionBuilder.append(doubleRooms)
                         .append(" Double Room")
                         .append(doubleRooms > 1 ? "s" : "");
 
                 if (remainingGuests > 0) {
-                    suggestion.append(" and ");
+                    suggestionBuilder.append(" and ");
                 }
             }
 
             if (remainingGuests > 0) {
                 String roomType = (remainingGuests <= Constants.MAX_GUESTS_SINGLE_ROOM ? "Single" : "Double");
-                suggestion.append("1 ").append(roomType).append(" Room");
+                suggestionBuilder.append("1 ").append(roomType).append(" Room");
+                suggestedRoomType = (roomType.equals("Single") ? RoomType.SINGLE : RoomType.DOUBLE);
+            } else {
+                suggestedRoomType = RoomType.DOUBLE;
             }
 
-            suggestion.append(".");
+            suggestionBuilder.append(".");
         }
 
-        // Update the suggestion label with the full, plain text message
-        lblSuggestion.setText(suggestion.toString());
+        // Update the suggestion label with the complete text
+        String suggestion = suggestionBuilder.toString();
+        lblSuggestion.setText(suggestion);
+
+        // Apply CSS class to suggestion label
+        lblSuggestion.getStyleClass().add("label-suggestion");
 
         // Set first recommended room type as default if nothing is selected
         if (cmbRoomType.getValue() == null && !recommendedRooms.isEmpty()) {
@@ -247,6 +278,10 @@ public class BookingScreenController implements Initializable {
         dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
         dialogPane.getStyleClass().addAll("root", "rules-dialog");
 
+        // Set size for dialog
+        dialogPane.setPrefWidth(800);
+        dialogPane.setPrefHeight(600);
+
         // Create a VBox for content
         VBox content = new VBox(15);
         content.setPadding(new Insets(20));
@@ -259,7 +294,7 @@ public class BookingScreenController implements Initializable {
         TextArea rulesText = new TextArea(Constants.RULES_REGULATIONS);
         rulesText.setEditable(false);
         rulesText.setWrapText(true);
-        rulesText.setPrefHeight(400);
+        rulesText.setPrefHeight(350);
         rulesText.setPrefWidth(600);
         rulesText.getStyleClass().add("content");
 
@@ -339,13 +374,31 @@ public class BookingScreenController implements Initializable {
     }
 
     private void showError(String message) {
-        lblError.setText(message);
-        lblError.setVisible(true);
+        // Create a popup instead of using the static error label
+        Popup errorPopup = new Popup();
+        errorPopup.setAutoHide(true);
+        errorPopup.setHideOnEscape(true);
 
-        // Add fade-in animation for error message
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(200), lblError);
-        fadeIn.setFromValue(0.0);
-        fadeIn.setToValue(1.0);
-        fadeIn.play();
+        // Create content for the popup
+        VBox content = new VBox();
+        content.getStyleClass().add("error-popup");
+
+        Label errorMessage = new Label(message);
+        errorMessage.setWrapText(true);
+        errorMessage.setMaxWidth(400);
+
+        content.getChildren().add(errorMessage);
+        errorPopup.getContent().add(content);
+
+        // Show the popup
+        Stage stage = (Stage) btnNext.getScene().getWindow();
+        errorPopup.show(stage,
+                stage.getX() + stage.getWidth()/2 - 200,
+                stage.getY() + 150);
+
+        // Auto-hide after 5 seconds
+        PauseTransition delay = new PauseTransition(Duration.seconds(5));
+        delay.setOnFinished(e -> errorPopup.hide());
+        delay.play();
     }
 }
