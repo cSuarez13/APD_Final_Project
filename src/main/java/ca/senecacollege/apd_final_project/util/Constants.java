@@ -50,8 +50,7 @@ public class Constants {
             "Follow the simple steps to secure your perfect room.";
 
     // Rules and regulations message
-    public static final String RULES_REGULATIONS = "Hotel Rules and Regulations:\n\n" +
-            "• Check-in time: 3:00 PM\n" +
+    public static final String RULES_REGULATIONS = "• Check-in time: 3:00 PM\n" +
             "• Check-out time: 11:00 AM\n" +
             "• Single rooms accommodate maximum 2 adults\n" +
             "• Double rooms accommodate maximum 4 adults\n" +

@@ -17,11 +17,10 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.Node;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.scene.control.TextArea;
 
 public class WelcomeScreenController implements Initializable {
 
@@ -104,32 +103,43 @@ public class WelcomeScreenController implements Initializable {
 
     @FXML
     private void handleRulesButton(ActionEvent event) {
-        // Show rules and regulations dialog
+        // Create the alert
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Hotel Rules & Regulations");
         alert.setHeaderText("Please Read Our Rules & Regulations");
-        alert.setContentText(Constants.RULES_REGULATIONS);
 
-        // Apply CSS to the dialog
+        // Create a TextArea
+        TextArea textArea = new TextArea();
+        textArea.setText(Constants.RULES_REGULATIONS);
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
+
+        // Set explicit text color and background to ensure visibility
+        textArea.setStyle("-fx-text-fill: white; -fx-control-inner-background: #333333;");
+
+        // Get screen dimensions
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+
+        // Increase dimensions for the text area - make it larger
+        textArea.setPrefWidth(screenBounds.getWidth() * 0.7);  // Increased from 0.6 to 0.7
+        textArea.setPrefHeight(screenBounds.getHeight() * 0.6); // Increased from 0.5 to 0.6
+
+        // Replace the content with our text area
+        alert.getDialogPane().setContent(textArea);
+
+        // Apply styling to the dialog pane
         DialogPane dialogPane = alert.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
         dialogPane.getStyleClass().add("root");
 
-        for (Node node : dialogPane.getChildren()) {
-            if (node instanceof Label) {
-                ((Label) node).setTextFill(javafx.scene.paint.Color.WHITE);
-            }
-        }
+        // Increase the dialog size
+        dialogPane.setPrefWidth(750);
+        dialogPane.setPrefHeight(550);
 
-        // Set preferred width for better readability
-        dialogPane.setPrefWidth(500);
+        // Make sure the stage resizes properly
+        alert.setResizable(true);
 
-        // Center the alert dialog on screen when it appears
-        alert.setOnShown(e -> {
-            Stage stage = (Stage) dialogPane.getScene().getWindow();
-            stage.centerOnScreen();
-        });
-
+        // Show the dialog
         alert.showAndWait();
     }
 }

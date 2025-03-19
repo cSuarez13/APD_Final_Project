@@ -730,3 +730,7 @@
 .reservation-details-card {
     -fx-background-color: -fx-bg-medium;
 }
+
+.root {
+    -fx-background-color: linear-gradient(to bottom right, derive(-fx-bg-dark, -10%), -fx-bg-dark);
+}

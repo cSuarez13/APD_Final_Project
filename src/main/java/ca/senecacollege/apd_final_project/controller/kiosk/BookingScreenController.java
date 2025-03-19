@@ -11,12 +11,14 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.geometry.Insets;
@@ -209,24 +211,28 @@ public class BookingScreenController implements Initializable {
     @FXML
     private void handleBackButton(ActionEvent event) {
         try {
-            // Load the welcome screen again
+            LoggingManager.logSystemInfo("Opening kiosk interface");
+
+            // Load the kiosk welcome screen
             FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_WELCOME));
-            Parent welcomeRoot = loader.load();
+            Parent kioskRoot = loader.load();
 
-            // Get the current stage
-            Stage stage = (Stage) btnBack.getScene().getWindow();
+            // Create a new stage for the kiosk
+            Stage kioskStage = new Stage();
+            Scene kioskScene = new Scene(kioskRoot);
 
-            // Create new scene
-            Scene welcomeScene = new Scene(welcomeRoot);
-            welcomeScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
+            // Apply the kiosk CSS
+            kioskScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
 
-            // Set the new scene
-            stage.setScene(welcomeScene);
-
-            LoggingManager.logSystemInfo("Navigated back to welcome screen");
+            // Configure and show the kiosk stage
+            kioskStage.setTitle("Hotel ABC Kiosk");
+            kioskStage.setScene(kioskScene);
+            kioskStage.setMaximized(true); // Full screen for kiosk mode
+            kioskStage.show();
 
         } catch (IOException e) {
-            LoggingManager.logException("Error navigating back to welcome screen", e);
+            LoggingManager.logException("Error opening kiosk interface", e);
+            e.printStackTrace();
         }
     }
 
