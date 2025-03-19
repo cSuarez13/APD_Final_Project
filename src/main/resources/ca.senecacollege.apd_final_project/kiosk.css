@@ -9,6 +9,35 @@
     background: linear-gradient(to bottom right, var(--color-bg-darkest), var(--color-bg-dark));
 }
 
+/* Override label colors */
+.label {
+    -fx-text-fill: white;
+}
+
+.label-header {
+    -fx-text-fill: #b491c8;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.label-secondary {
+    -fx-text-fill: #e0e0e0;
+    -fx-font-size: 16px;
+}
+
+.form-label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+/* Label with suggestion styling */
+.label-suggestion {
+    -fx-text-fill: #b491c8;
+    -fx-background-color: rgba(180, 145, 200, 0.2);
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+}
+
 /* Kiosk Header */
 .kiosk-header {
     background-color: var(--color-primary-dark);
@@ -36,6 +65,14 @@
     border: 1px solid rgba(123, 31, 162, 0.2);
 }
 
+.content-container {
+    background-color: rgba(46, 46, 46, 0.95);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    border: 1px solid rgba(123, 31, 162, 0.5);
+}
+
 /* Step Progression */
 .kiosk-step-indicator {
     display: flex;
@@ -56,39 +93,94 @@
 }
 
 /* Input Styling for Kiosk */
-.kiosk-input {
-    background-color: var(--color-bg-medium);
-    border: 1px solid var(--color-primary);
-    color: var(--color-text-primary);
-    font-size: var(--font-size-lg);
-    padding: var(--spacing-base);
-    width: 100%;
-    border-radius: var(--border-radius-base);
+.text-field, .date-picker, .combo-box, .spinner {
+    -fx-background-color: #2a2a2a;
+    -fx-border-color: #7b1fa2;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #a0a0a0;
 }
 
-/* Kiosk Button Variations */
-.kiosk-btn-primary {
-    background-color: var(--color-primary);
-    color: var(--color-text-primary);
-    font-size: var(--font-size-xl);
-    padding: var(--spacing-base) var(--spacing-xl);
-    width: 100%;
-    max-width: 400px;
+.text-field:focused, .date-picker:focused, .combo-box:focused, .spinner:focused {
+    -fx-border-color: #9c27b0;
+    -fx-effect: dropshadow(gaussian, rgba(156, 39, 176, 0.4), 10, 0, 0, 0);
 }
 
-.kiosk-btn-secondary {
-    background-color: var(--color-secondary);
-    color: var(--color-text-primary);
-    font-size: var(--font-size-lg);
-    padding: var(--spacing-base);
+/* Spinner arrows */
+.spinner .increment-arrow-button, .spinner .decrement-arrow-button {
+    -fx-background-color: #3a3a3a;
 }
 
-/* Kiosk Footer */
-.kiosk-footer {
-    background-color: var(--color-bg-dark);
-    padding: var(--spacing-base);
-    text-align: center;
-    color: var(--color-text-secondary);
+.spinner .increment-arrow, .spinner .decrement-arrow {
+    -fx-background-color: #b491c8;
+}
+
+/* Date picker styling */
+.date-picker .arrow-button {
+    -fx-background-color: #3a3a3a;
+}
+
+.date-picker .arrow {
+    -fx-background-color: #b491c8;
+}
+
+/* Combo box styling */
+.combo-box .arrow {
+    -fx-background-color: #b491c8;
+}
+
+.combo-box .list-cell {
+    -fx-background-color: #2a2a2a;
+    -fx-text-fill: white;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #2a2a2a;
+    -fx-border-color: #7b1fa2;
+}
+
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: #3a3a3a;
+}
+
+.combo-box-popup .list-cell:selected {
+    -fx-background-color: #7b1fa2;
+}
+
+/* Button Styling */
+.button {
+    -fx-background-color: #7b1fa2;
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #9c27b0;
+}
+
+.button:pressed {
+    -fx-background-color: #6a1b9a;
+}
+
+.button-secondary {
+    -fx-background-color: #424242;
+    -fx-text-fill: white;
+}
+
+.button-secondary:hover {
+    -fx-background-color: #616161;
+}
+
+.button-secondary:pressed {
+    -fx-background-color: #212121;
+}
+
+/* Footer styling */
+.bg-dark {
+    -fx-background-color: #1a1a1a;
 }
 
 /* Animations */

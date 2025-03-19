@@ -3,9 +3,10 @@ package ca.senecacollege.apd_final_project.controller.kiosk;
 import ca.senecacollege.apd_final_project.model.RoomType;
 import ca.senecacollege.apd_final_project.service.RoomService;
 import ca.senecacollege.apd_final_project.util.Constants;
+import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
+import ca.senecacollege.apd_final_project.util.ScreenSizeManager;
 import ca.senecacollege.apd_final_project.util.ValidationUtils;
-import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -16,12 +17,8 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.TextFlow;
-import javafx.stage.Popup;
-import javafx.stage.Screen;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 import javafx.util.StringConverter;
 
 import java.io.IOException;
@@ -32,6 +29,9 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class BookingScreenController implements Initializable {
+
+    @FXML
+    private BorderPane mainPane;
 
     @FXML
     private Spinner<Integer> spnGuests;
@@ -58,12 +58,25 @@ public class BookingScreenController implements Initializable {
     private Button btnRules;
 
     private RoomService roomService;
-    private TextFlow suggestionTextFlow;
     private RoomType suggestedRoomType;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         roomService = new RoomService();
+
+        // Apply styles directly to the components
+        mainPane.setStyle("-fx-background-color: #121212;");
+
+        // Force text color in all form labels to be white
+        for (javafx.scene.Node node : mainPane.lookupAll(".label")) {
+            if (node instanceof Label) {
+                Label label = (Label)node;
+                label.setStyle("-fx-text-fill: white;");
+            }
+        }
+
+        // Adjust suggestion label styling
+        lblSuggestion.setStyle("-fx-text-fill: #b491c8; -fx-background-color: rgba(180, 145, 200, 0.2); -fx-background-radius: 5px; -fx-padding: 10px;");
 
         // Setup spinner for guest count
         SpinnerValueFactory<Integer> valueFactory =
@@ -73,6 +86,7 @@ public class BookingScreenController implements Initializable {
         // Remove padding from spinner editor
         TextField spinnerEditor = spnGuests.getEditor();
         spinnerEditor.setPadding(new Insets(0));
+        spinnerEditor.setStyle("-fx-text-fill: black; -fx-font-size: 14px;");
 
         // Add listener to guest count to update room suggestions
         spnGuests.valueProperty().addListener((obs, oldValue, newValue) -> updateRoomSuggestion());
@@ -84,6 +98,10 @@ public class BookingScreenController implements Initializable {
         // Remove internal padding from date pickers
         dpCheckIn.getEditor().setPadding(new Insets(0));
         dpCheckOut.getEditor().setPadding(new Insets(0));
+
+        // Set text color in date picker editors to black with larger font
+        dpCheckIn.getEditor().setStyle("-fx-text-fill: black; -fx-font-size: 14px;");
+        dpCheckOut.getEditor().setStyle("-fx-text-fill: black; -fx-font-size: 14px;");
 
         // Ensure check-in date is not before today
         dpCheckIn.setDayCellFactory(picker -> new DateCell() {
@@ -133,9 +151,9 @@ public class BookingScreenController implements Initializable {
             }
         });
 
-        // Initialize suggestion TextFlow (for highlighting)
-        suggestionTextFlow = new TextFlow();
-        suggestionTextFlow.getStyleClass().add("suggestion-textflow");
+        // Set combo box's font size
+        cmbRoomType.setStyle("-fx-font-size: 14px;");
+
 
         // Make initial room suggestion
         updateRoomSuggestion();
@@ -189,8 +207,8 @@ public class BookingScreenController implements Initializable {
         String suggestion = suggestionBuilder.toString();
         lblSuggestion.setText(suggestion);
 
-        // Apply CSS class to suggestion label
-        lblSuggestion.getStyleClass().add("label-suggestion");
+        // Ensure suggestion label has the desired style
+        lblSuggestion.setStyle("-fx-text-fill: #b491c8; -fx-background-color: rgba(180, 145, 200, 0.2); -fx-background-radius: 5px; -fx-padding: 10px;");
 
         // Set first recommended room type as default if nothing is selected
         if (cmbRoomType.getValue() == null && !recommendedRooms.isEmpty()) {
@@ -224,138 +242,152 @@ public class BookingScreenController implements Initializable {
 
             // Create new scene
             Scene guestDetailsScene = new Scene(guestDetailsRoot);
+            guestDetailsScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
             guestDetailsScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
 
             // Set the scene
             stage.setScene(guestDetailsScene);
 
-            // Size it properly
-            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-            double prefWidth = Math.min(900, screenBounds.getWidth() * 0.8);
-            double prefHeight = Math.min(700, screenBounds.getHeight() * 0.8);
+            // Size the stage properly using ScreenSizeManager
+            double stageWidth = ScreenSizeManager.calculateStageWidth(1024);
+            double stageHeight = ScreenSizeManager.calculateStageHeight(768);
 
-            stage.setWidth(prefWidth);
-            stage.setHeight(prefHeight);
-            stage.setX((screenBounds.getWidth() - prefWidth) / 2);
-            stage.setY((screenBounds.getHeight() - prefHeight) / 2);
-            stage.setMaximized(false);
+            // Calculate center position
+            double[] stagePosition = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
+
+            // Apply dimensions and position
+            stage.setWidth(stageWidth);
+            stage.setHeight(stageHeight);
+            stage.setX(stagePosition[0]);
+            stage.setY(stagePosition[1]);
 
             LoggingManager.logSystemInfo("Navigated to guest details screen");
 
         } catch (IOException e) {
             LoggingManager.logException("Error navigating to guest details screen", e);
-            showError("Error loading next screen: " + e.getMessage());
 
-            // More detailed error information for debugging
-            System.err.println("Error details: " + e.getMessage());
-            e.printStackTrace();
+            // Use ErrorPopupManager instead of custom error popup
+            Stage stage = (Stage) btnNext.getScene().getWindow();
+            ErrorPopupManager.showSystemErrorPopup(stage, "NAV-001", "Error loading guest details screen: " + e.getMessage());
         }
     }
 
     @FXML
     private void handleBackButton(ActionEvent event) {
         try {
-            LoggingManager.logSystemInfo("Opening kiosk interface");
-
             // Load the kiosk welcome screen
             FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_WELCOME));
-            Parent kioskRoot = loader.load();
+            Parent welcomeRoot = loader.load();
 
-            // Create a new stage for the kiosk
-            Stage kioskStage = new Stage();
-            Scene kioskScene = new Scene(kioskRoot);
+            // Get the current stage
+            Stage stage = (Stage) btnBack.getScene().getWindow();
 
-            // Apply the kiosk CSS
-            kioskScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
+            // Create new scene
+            Scene welcomeScene = new Scene(welcomeRoot);
+            welcomeScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
+            welcomeScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
 
-            // Configure and show the kiosk stage
-            kioskStage.setTitle("Hotel ABC Kiosk");
-            kioskStage.setScene(kioskScene);
-            kioskStage.setMaximized(true); // Full screen for kiosk mode
-            kioskStage.show();
+            // Set the scene
+            stage.setScene(welcomeScene);
+
+            // Size the stage properly using ScreenSizeManager
+            double stageWidth = ScreenSizeManager.calculateStageWidth(1024);
+            double stageHeight = ScreenSizeManager.calculateStageHeight(768);
+
+            // Calculate center position
+            double[] stagePosition = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
+
+            // Apply dimensions and position
+            stage.setWidth(stageWidth);
+            stage.setHeight(stageHeight);
+            stage.setX(stagePosition[0]);
+            stage.setY(stagePosition[1]);
+
+            LoggingManager.logSystemInfo("Navigated back to welcome screen");
 
         } catch (IOException e) {
-            LoggingManager.logException("Error opening kiosk interface", e);
-            e.printStackTrace();
+            LoggingManager.logException("Error navigating back to welcome screen", e);
+
+            // Use ErrorPopupManager
+            Stage stage = (Stage) btnBack.getScene().getWindow();
+            ErrorPopupManager.showSystemErrorPopup(stage, "NAV-002", "Error returning to welcome screen: " + e.getMessage());
         }
     }
 
     @FXML
     private void handleRulesButton(ActionEvent event) {
-        // Create an improved rules and regulations dialog
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Hotel Rules & Regulations");
+        // Show rules and regulations dialog
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+                javafx.scene.control.Alert.AlertType.INFORMATION);
+        alert.setTitle("Hotel Rules & Regulations");
+        alert.setHeaderText("Please Read Our Rules & Regulations");
 
-        // Create a custom dialog pane
-        DialogPane dialogPane = dialog.getDialogPane();
+        // Make the dialog content scrollable by putting it in a TextArea
+        TextArea textArea = new TextArea(Constants.RULES_REGULATIONS);
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
+        textArea.setStyle("-fx-control-inner-background: #2a2a2a; -fx-text-fill: white;");
+
+        // Set the size based on screen dimensions
+        Rectangle2D screenBounds = ScreenSizeManager.getPrimaryScreenBounds();
+        double dialogWidth = Math.min(800, screenBounds.getWidth() * 0.7);
+        double dialogHeight = Math.min(500, screenBounds.getHeight() * 0.6);
+
+        textArea.setPrefWidth(dialogWidth);
+        textArea.setPrefHeight(dialogHeight);
+
+        alert.getDialogPane().setContent(textArea);
+
+        // Apply CSS to the dialog
+        javafx.scene.control.DialogPane dialogPane = alert.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
-        dialogPane.getStyleClass().addAll("root", "rules-dialog");
+        dialogPane.getStyleClass().add("root");
+        dialogPane.setStyle("-fx-background-color: #2a2a2a;");
 
-        // Set size for dialog
-        dialogPane.setPrefWidth(800);
-        dialogPane.setPrefHeight(600);
+        // Set header text color explicitly
+        Label headerLabel = (Label) dialogPane.lookup(".header-panel .label");
+        if (headerLabel != null) {
+            headerLabel.setStyle("-fx-text-fill: #b491c8; -fx-font-weight: bold;");
+        }
 
-        // Create a VBox for content
-        VBox content = new VBox(15);
-        content.setPadding(new Insets(20));
-
-        // Add header
-        Label header = new Label("Please Read Our Rules & Regulations");
-        header.getStyleClass().add("header");
-
-        // Add scrollable text area for rules content
-        TextArea rulesText = new TextArea(Constants.RULES_REGULATIONS);
-        rulesText.setEditable(false);
-        rulesText.setWrapText(true);
-        rulesText.setPrefHeight(350);
-        rulesText.setPrefWidth(600);
-        rulesText.getStyleClass().add("content");
-
-        // Add components to content
-        content.getChildren().addAll(header, rulesText);
-
-        // Set the content
-        dialogPane.setContent(content);
-
-        // Add the close button
-        dialogPane.getButtonTypes().add(ButtonType.CLOSE);
-
-        // Show the dialog
-        dialog.showAndWait();
+        alert.showAndWait();
     }
 
     private boolean validateInputs() {
+        // Get the current stage for error popups
+        Stage stage = (Stage) btnNext.getScene().getWindow();
+
         // Validate guest count
         if (spnGuests.getValue() <= 0) {
-            showError("Please enter a valid number of guests.");
+            ErrorPopupManager.showValidationErrorPopup(stage, "Guest Count", "Please enter a valid number of guests.");
             return false;
         }
 
         // Validate check-in date
         if (dpCheckIn.getValue() == null) {
-            showError("Please select a check-in date.");
+            ErrorPopupManager.showValidationErrorPopup(stage, "Check-in Date", "Please select a check-in date.");
             return false;
         }
 
         if (!ValidationUtils.isValidFutureDate(dpCheckIn.getValue())) {
-            showError("Check-in date must be today or a future date.");
+            ErrorPopupManager.showValidationErrorPopup(stage, "Check-in Date", "Check-in date must be today or a future date.");
             return false;
         }
 
         // Validate check-out date
         if (dpCheckOut.getValue() == null) {
-            showError("Please select a check-out date.");
+            ErrorPopupManager.showValidationErrorPopup(stage, "Check-out Date", "Please select a check-out date.");
             return false;
         }
 
         if (!ValidationUtils.isValidDateRange(dpCheckIn.getValue(), dpCheckOut.getValue())) {
-            showError("Check-out date must be after check-in date.");
+            ErrorPopupManager.showValidationErrorPopup(stage, "Check-out Date", "Check-out date must be after check-in date.");
             return false;
         }
 
         // Validate room type selection
         if (cmbRoomType.getValue() == null) {
-            showError("Please select a room type.");
+            ErrorPopupManager.showValidationErrorPopup(stage, "Room Type", "Please select a room type.");
             return false;
         }
 
@@ -364,54 +396,29 @@ public class BookingScreenController implements Initializable {
         int guestCount = spnGuests.getValue();
 
         if (selectedRoomType == RoomType.SINGLE && guestCount > Constants.MAX_GUESTS_SINGLE_ROOM) {
-            showError("Single room can accommodate maximum " + Constants.MAX_GUESTS_SINGLE_ROOM + " guests.");
+            ErrorPopupManager.showValidationErrorPopup(stage, "Room Capacity",
+                    "Single room can accommodate maximum " + Constants.MAX_GUESTS_SINGLE_ROOM + " guests.");
             return false;
         } else if (selectedRoomType == RoomType.DOUBLE && guestCount > Constants.MAX_GUESTS_DOUBLE_ROOM) {
-            showError("Double room can accommodate maximum " + Constants.MAX_GUESTS_DOUBLE_ROOM + " guests.");
+            ErrorPopupManager.showValidationErrorPopup(stage, "Room Capacity",
+                    "Double room can accommodate maximum " + Constants.MAX_GUESTS_DOUBLE_ROOM + " guests.");
             return false;
         } else if ((selectedRoomType == RoomType.DELUXE || selectedRoomType == RoomType.PENT_HOUSE) &&
                 guestCount > Constants.MAX_GUESTS_DELUXE_ROOM) {
-            showError(selectedRoomType.getDisplayName() + " can accommodate maximum " +
-                    Constants.MAX_GUESTS_DELUXE_ROOM + " guests.");
+            ErrorPopupManager.showValidationErrorPopup(stage, "Room Capacity",
+                    selectedRoomType.getDisplayName() + " can accommodate maximum " +
+                            Constants.MAX_GUESTS_DELUXE_ROOM + " guests.");
             return false;
         }
 
         // Check room availability
         if (!roomService.checkRoomAvailability(selectedRoomType, dpCheckIn.getValue(), dpCheckOut.getValue())) {
-            showError("Sorry, no " + selectedRoomType.getDisplayName() + " is available for the selected dates.");
+            ErrorPopupManager.showValidationErrorPopup(stage, "Room Availability",
+                    "Sorry, no " + selectedRoomType.getDisplayName() + " is available for the selected dates.");
             return false;
         }
 
         // All validations passed
         return true;
-    }
-
-    private void showError(String message) {
-        // Create a popup instead of using the static error label
-        Popup errorPopup = new Popup();
-        errorPopup.setAutoHide(true);
-        errorPopup.setHideOnEscape(true);
-
-        // Create content for the popup
-        VBox content = new VBox();
-        content.getStyleClass().add("error-popup");
-
-        Label errorMessage = new Label(message);
-        errorMessage.setWrapText(true);
-        errorMessage.setMaxWidth(400);
-
-        content.getChildren().add(errorMessage);
-        errorPopup.getContent().add(content);
-
-        // Show the popup
-        Stage stage = (Stage) btnNext.getScene().getWindow();
-        errorPopup.show(stage,
-                stage.getX() + stage.getWidth()/2 - 200,
-                stage.getY() + 150);
-
-        // Auto-hide after 5 seconds
-        PauseTransition delay = new PauseTransition(Duration.seconds(5));
-        delay.setOnFinished(e -> errorPopup.hide());
-        delay.play();
     }
 }

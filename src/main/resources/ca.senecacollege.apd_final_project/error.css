@@ -1,19 +1,27 @@
 /* Error Popup Styling */
 .error-popup-container {
-    background-color: rgba(207, 102, 121, 0.9);
-    border-radius: 4px;
-    padding: 10px 20px;
-    max-width: 300px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    background-color: rgba(207, 102, 121, 0.95);
+    border-radius: 6px;
+    padding: 15px 20px;
+    min-width: 300px;
+    max-width: 400px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
     animation: fadeInOut 0.5s ease-in-out;
     z-index: 9999;
+    border: 1px solid rgb(240, 128, 148);
 }
 
 .popup-error {
     color: white;
     font-weight: bold;
+    font-size: 16px;
     text-align: center;
     word-wrap: break-word;
+}
+
+.error-message {
+    padding: 10px;
+    line-height: 1.4;
 }
 
 @keyframes fadeInOut {

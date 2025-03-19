@@ -2,9 +2,11 @@ package ca.senecacollege.apd_final_project.util;
 
 import javafx.application.Platform;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
@@ -33,20 +35,36 @@ public class ErrorPopupManager {
             // Create error message label
             Label errorLabel = new Label(message);
             errorLabel.getStyleClass().addAll("error-message", "popup-error");
+            errorLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
 
             // Create container
             VBox container = new VBox(errorLabel);
             container.setAlignment(Pos.CENTER);
             container.getStyleClass().add("error-popup-container");
+            container.setStyle("-fx-background-color: rgba(207, 102, 121, 0.9); " +
+                    "-fx-padding: 15px 20px; " +
+                    "-fx-background-radius: 6px; " +
+                    "-fx-border-radius: 6px; " +
+                    "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 10, 0, 0, 3);");
 
             // Add container to popup
             popup.getContent().add(container);
 
-            // Position popup
+            // Position popup in the center top of the screen
+            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+            double popupWidth = 400; // Estimated width
+            double popupHeight = 100; // Estimated height
+
+            popup.show(parentStage);
+            // Now we can get the actual dimensions
+            popupWidth = container.getWidth();
+            popupHeight = container.getHeight();
+
+            // Center horizontally, position at top quarter of screen
+            popup.hide();
             popup.show(parentStage,
-                    parentStage.getX() + parentStage.getWidth() / 2 - 150,
-                    parentStage.getY() + 50
-            );
+                    screenBounds.getMinX() + (screenBounds.getWidth() - popupWidth) / 2,
+                    screenBounds.getMinY() + screenBounds.getHeight() * 0.25);
 
             // Auto-hide after specified duration
             PauseTransition delay = new PauseTransition(Duration.seconds(durationSeconds));

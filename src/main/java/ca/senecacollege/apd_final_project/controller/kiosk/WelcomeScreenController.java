@@ -14,6 +14,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.geometry.Pos;
@@ -65,27 +66,31 @@ public class WelcomeScreenController implements Initializable {
             // Get the current stage
             Stage stage = (Stage) btnStart.getScene().getWindow();
 
-            // Create new scene
-            Scene bookingScene = new Scene(bookingRoot);
-            bookingScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
-
-            // Configure stage size using ScreenSizeManager
+            // Calculate dimensions using ScreenSizeManager - use 85% of screen height
             Rectangle2D screenBounds = ScreenSizeManager.getPrimaryScreenBounds();
-            double stageWidth = ScreenSizeManager.calculateStageWidth(1024);
-            double stageHeight = ScreenSizeManager.calculateStageHeight(768);
+            double aspectRatio = 1024.0 / 768.0; // Original aspect ratio
+            double targetHeight = screenBounds.getHeight() * 0.95; // 85% of screen height
+            double targetWidth = targetHeight * aspectRatio;
 
-            // Center the stage
-            double[] stagePosition = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
+            // Create new scene with calculated dimensions
+            Scene bookingScene = new Scene(bookingRoot, targetWidth, targetHeight);
+            // Apply both stylesheets - order matters
+            bookingScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
+            bookingScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
+            // Calculate center position
+            double[] centerPos = ScreenSizeManager.centerStageOnScreen(targetWidth, targetHeight);
 
-            // Set stage properties
-            stage.setWidth(stageWidth);
-            stage.setHeight(stageHeight);
-            stage.setX(stagePosition[0]);
-            stage.setY(stagePosition[1]);
+            // Apply position and scene
+            stage.setX(centerPos[0]);
+            stage.setY(centerPos[1]);
+            stage.setWidth(targetWidth);
+            stage.setHeight(targetHeight);
             stage.setScene(bookingScene);
+            stage.setMaximized(false);
+            stage.show();
 
-            LoggingManager.logSystemInfo("Navigated to booking screen");
-
+            LoggingManager.logSystemInfo("Navigated to booking screen with dimensions: " +
+                    targetWidth + "x" + targetHeight);
         } catch (IOException e) {
             LoggingManager.logException("Error navigating to booking screen", e);
 
