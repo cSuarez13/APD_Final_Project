@@ -1,579 +1,116 @@
-/* Color palette */
-* {
-    -fx-primary: #7b1fa2; /* Purple */
-    -fx-primary-dark: #4a148c; /* Darker Purple */
-    -fx-primary-light: #e1bee7; /* Light Purple */
-    -fx-accent: #ce93d8; /* Accent Purple */
-    -fx-secondary: #673ab7; /* Secondary Purple */
-    -fx-bg-dark: #121212; /* Dark Background */
-    -fx-bg-medium: #1e1e1e; /* Medium Dark Background */
-    -fx-bg-light: #2d2d2d; /* Light Dark Background */
-    -fx-text-primary: #ffffff; /* Primary Text */
-    -fx-text-secondary: #ffffff; /* Secondary Text */
-    -fx-error: #cf6679; /* Error Color */
-    -fx-success: #4caf50; /* Success Color */
-    -fx-warning: #ffab00; /* Warning Color */
-}
-
 /* Import base styles */
-@import "application.css";
+@import 'application.css';
 
-/* Root element styling */
-.root {
-    -fx-background-color: linear-gradient(to bottom right, derive(-fx-bg-dark, -10%), -fx-bg-dark);
+/* Kiosk Full-Screen Layout */
+.kiosk-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: linear-gradient(to bottom right, var(--color-bg-darkest), var(--color-bg-dark));
 }
 
-.bg-dark {
-    -fx-background-color: -fx-bg-dark;
-}
-
-/* Text styling */
-.label {
-    -fx-font-size: 14pt;
-    -fx-text-fill: -fx-text-primary;
-}
-
-.label-header {
-    -fx-font-size: 32pt;
-    -fx-font-weight: bold;
-    -fx-effect: dropshadow(three-pass-box, rgba(206, 147, 216, 0.6), 10, 0, 0, 0);
-    -fx-text-fill: -fx-primary-light;
-}
-
-.label-subheader {
-    -fx-font-size: 22pt;
-    -fx-font-weight: bold;
-    -fx-text-fill: -fx-primary-light;
-}
-
-.label-secondary {
-    -fx-font-size: 16pt;
-    -fx-text-fill: -fx-text-primary;
-}
-
-.label-error {
-    -fx-font-size: 16pt;
-    -fx-text-fill: -fx-error;
-    -fx-effect: dropshadow(three-pass-box, rgba(207, 102, 121, 0.6), 5, 0, 0, 0);
-    -fx-background-color: rgba(207, 102, 121, 0.2);
-    -fx-background-radius: 4px;
-    -fx-padding: 10px;
-    -fx-animation: fadeInOut 5s;
-}
-
-.label-success {
-    -fx-font-size: 18pt;
-    -fx-text-fill: -fx-success;
-    -fx-effect: dropshadow(three-pass-box, rgba(76, 175, 80, 0.6), 5, 0, 0, 0);
-}
-
-.label-suggestion {
-    -fx-font-style: italic;
-    -fx-text-fill: white;
-    -fx-background-color: rgba(123, 31, 162, 0.2);
-    -fx-background-radius: 8px;
-    -fx-padding: 15px;
-    -fx-border-color: rgba(123, 31, 162, 0.4);
-    -fx-border-radius: 8px;
-    -fx-font-size: 14pt;
-}
-
-.form-label {
-    -fx-padding: 0 0 5px 0;
-    -fx-font-weight: bold;
-    -fx-text-fill: -fx-primary-light;
-    -fx-font-size: 18px;
-}
-
-.accent-text {
-    -fx-fill: -fx-primary-light;
-    -fx-font-weight: bold;
-}
-
-/* Buttons */
-.button {
-    -fx-font-size: 16pt;
-    -fx-padding: 15px 25px;
-    -fx-background-radius: 8px;
-    -fx-min-height: 60px;
-    -fx-background-color: -fx-primary;
-    -fx-text-fill: -fx-text-primary;
-    -fx-font-weight: bold;
-}
-
-.button:hover {
-    -fx-background-color: -fx-accent;
-    -fx-text-fill: black;
-    -fx-scale-x: 1.05;
-    -fx-scale-y: 1.05;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 10, 0, 0, 3);
-    -fx-cursor: hand;
-}
-
-.button-secondary {
-    -fx-background-color: -fx-secondary;
-    -fx-text-fill: -fx-text-primary;
-}
-
-.button-secondary:hover {
-    -fx-background-color: -fx-accent;
-    -fx-text-fill: black;
-}
-
-/* Text inputs and form controls */
-.text-field, .password-field, .text-area, .combo-box, .date-picker, .spinner {
-    -fx-font-size: 14pt;
-    -fx-padding: 8px 12px;
-    -fx-background-color: #333333;
-    -fx-text-fill: -fx-text-primary;
-    -fx-prompt-text-fill: #aaaaaa;
-    -fx-background-radius: 0;
-    -fx-min-height: 45px;
-    -fx-border-color: -fx-primary;
-    -fx-border-width: 1px;
-    -fx-border-radius: 0;
-    -fx-max-width: 10000px;
-}
-
-.text-field:focused, .password-field:focused, .text-area:focused,
-.combo-box:focused, .date-picker:focused, .spinner:focused {
-    -fx-border-color: -fx-accent;
-    -fx-border-width: 1px;
-}
-
-.text-area {
-    -fx-min-height: 120px;
-}
-
-/* Ensure input controls use all available space */
-.text-field, .combo-box, .date-picker, .spinner {
-    -fx-max-width: Infinity;
-    -fx-padding: 0;
-}
-
-/* Remove internal padding from fields */
-.text-field, .combo-box .text-field, .date-picker .text-field, .spinner .text-field {
-    -fx-padding: 0 5px;
-    -fx-alignment: center-left;
-    -fx-font-size: 16px;
-}
-
-/* Input field height adjustments */
-.spinner, .date-picker, .combo-box {
-    -fx-min-height: 55px;
-    -fx-pref-height: 55px;
-}
-
-/* Combo Box styling */
-.combo-box {
-    -fx-font-size: 14pt;
-    -fx-background-color: -fx-bg-light;
-    -fx-text-fill: -fx-text-primary;
-    -fx-prompt-text-fill: #aaaaaa;
-}
-
-.combo-box .list-cell {
-    -fx-padding: 10px;
-    -fx-font-size: 16pt;
-    -fx-text-fill: -fx-text-primary;
-    -fx-background-color: -fx-bg-light;
-    -fx-padding: 8px 12px;
-}
-
-.combo-box .arrow-button {
-    -fx-background-color: -fx-primary;
-    -fx-background-radius: 0;
-}
-
-.combo-box .arrow {
-    -fx-background-color: -fx-text-primary;
-}
-
-.combo-box-popup .list-view {
-    -fx-background-color: -fx-bg-medium;
-    -fx-border-color: -fx-primary;
-}
-
-.combo-box-popup .list-cell {
-    -fx-background-color: #333333;
-    -fx-text-fill: -fx-text-primary;
-}
-
-.combo-box-popup .list-cell:hover {
-    -fx-background-color: -fx-primary;
-}
-
-.combo-box-popup .list-cell:selected {
-    -fx-background-color: -fx-primary;
-}
-
-/* Date Picker styling */
-.date-picker .arrow-button {
-    -fx-background-color: -fx-primary;
-    -fx-background-radius: 0;
-}
-
-.date-picker .arrow-button .arrow {
-    -fx-background-color: -fx-text-primary;
-}
-
-.date-picker .text-field {
-    -fx-border-width: 0;
-    -fx-background-color: #333333;
-}
-
-.date-picker-popup {
-    -fx-background-color: -fx-bg-medium;
-    -fx-border-color: -fx-primary;
-}
-
-.date-picker-popup .month-year-pane {
-    -fx-background-color: -fx-primary-dark;
-}
-
-.date-picker-popup .spinner .button {
-    -fx-background-color: transparent;
-    -fx-font-size: 12pt;
-}
-
-.date-picker-popup .spinner .button:hover {
-    -fx-background-color: -fx-primary;
-}
-
-.date-picker-popup .spinner .label {
-    -fx-font-size: 14pt;
-}
-
-.date-picker-popup .calendar-grid {
-    -fx-background-color: -fx-bg-medium;
-}
-
-.date-picker-popup .day-cell {
-    -fx-font-size: 14pt;
-    -fx-background-color: -fx-bg-light;
-    -fx-text-fill: -fx-text-primary;
-    -fx-border-color: -fx-bg-medium;
-}
-
-.date-picker-popup .day-cell:hover {
-    -fx-background-color: -fx-primary-dark;
-}
-
-.date-picker-popup .day-cell.selected {
-    -fx-background-color: -fx-primary;
-    -fx-text-fill: -fx-text-primary;
-}
-
-/* Spinner styling */
-.spinner .increment-arrow-button,
-.spinner .decrement-arrow-button {
-    -fx-background-color: -fx-primary;
-    -fx-background-radius: 0;
-}
-
-.spinner .increment-arrow,
-.spinner .decrement-arrow {
-    -fx-background-color: -fx-text-primary;
-}
-
-/* Card and container styling */
-.card {
-    -fx-background-color: rgba(46, 46, 46, 0.95);
-    -fx-background-radius: 15px;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 15, 0.2, 0, 8);
-    -fx-padding: 30px;
-    -fx-border-color: rgba(123, 31, 162, 0.2);
-    -fx-border-width: 1px;
-    -fx-border-radius: 15px;
-}
-
-.content-container {
-    -fx-background-color: -fx-bg-medium;
-    -fx-padding: 15px;
-    -fx-spacing: 10px;
-    -fx-alignment: center;
-    -fx-min-height: 500px;
-    -fx-pref-height: 700px;
-    -fx-max-height: 2000px;
-}
-
-/* Star rating for feedback */
-.rating-star {
-    -fx-font-size: 36pt;
-    -fx-text-fill: -fx-text-secondary;
-    -fx-cursor: hand;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 5, 0, 0, 0);
-}
-
-.rating-star:hover {
-    -fx-text-fill: -fx-warning;
-    -fx-effect: dropshadow(three-pass-box, rgba(255, 171, 0, 0.8), 10, 0, 0, 0);
-}
-
-.rating-star-filled {
-    -fx-text-fill: -fx-warning;
-    -fx-effect: dropshadow(three-pass-box, rgba(255, 171, 0, 0.8), 10, 0, 0, 0);
-}
-
-/* Progress indicators */
-.progress-indicator {
-    -fx-progress-color: -fx-primary;
-    -fx-min-width: 100px;
-    -fx-min-height: 100px;
-}
-
-/* Details panels for booking information */
-.details-panel {
-    -fx-background-color: rgba(30, 30, 30, 0.8);
-    -fx-background-radius: 8px;
-    -fx-padding: 15px;
-    -fx-spacing: 10px;
-}
-
-.detail-label {
-    -fx-font-weight: bold;
-    -fx-text-fill: -fx-primary-light;
-}
-
-.detail-value {
-    -fx-font-size: 14pt;
-    -fx-text-fill: -fx-text-primary;
-}
-
-/* Bottom bar with hints and help */
-.bottom-bar {
-    -fx-background-color: -fx-bg-dark;
-    -fx-border-width: 1px 0 0 0;
-    -fx-border-color: -fx-primary-dark;
-    -fx-padding: 15px;
-}
-
-/* Accent design elements */
-.accent-border {
-    -fx-border-color: -fx-primary;
-    -fx-border-width: 0 0 0 4px;
-    -fx-padding: 0 0 0 15px;
-}
-
-/* Welcome screen styling */
-.welcome-content {
-    -fx-spacing: 30px;
-    -fx-alignment: center;
-}
-
-.welcome-message {
-    -fx-font-size: 18pt;
-    -fx-text-alignment: center;
-    -fx-wrap-text: true;
-    -fx-text-fill: -fx-text-primary;
-}
-
-#btnStart {
-    -fx-background-color: -fx-primary;
-    -fx-text-fill: -fx-text-primary;
-}
-
-#btnStart:hover {
-    -fx-background-color: -fx-accent;
-    -fx-text-fill: black;
-}
-
-/* Room selection elements */
-.room-selector {
-    -fx-padding: 15px;
-    -fx-spacing: 15px;
-    -fx-background-color: -fx-bg-medium;
-    -fx-background-radius: 10px;
-    -fx-border-color: -fx-primary;
-    -fx-border-radius: 10px;
-    -fx-border-width: 2px;
-}
-
-.room-option {
-    -fx-padding: 20px;
-    -fx-background-color: -fx-bg-light;
-    -fx-background-radius: 8px;
-    -fx-spacing: 10px;
-    -fx-alignment: center;
-    -fx-cursor: hand;
-}
-
-.room-option:hover {
-    -fx-background-color: -fx-primary-dark;
-    -fx-effect: dropshadow(three-pass-box, -fx-primary, 10, 0, 0, 0);
-}
-
-.room-option-selected {
-    -fx-background-color: -fx-primary;
-    -fx-effect: dropshadow(three-pass-box, -fx-primary-light, 10, 0, 0, 0);
-}
-
-.room-type-name {
-    -fx-font-weight: bold;
-    -fx-font-size: 18pt;
-    -fx-text-fill: -fx-text-primary;
-}
-
-.room-price {
-    -fx-font-size: 16pt;
-    -fx-text-fill: -fx-text-primary;
-}
-
-/* Suggested room type styling */
-.suggested-room-type {
-    -fx-text-fill: #ce93d8; /* Accent color */
-    -fx-font-weight: bold;
-    -fx-underline: true;
-}
-
-@keyframes pulse {
-    0% { -fx-opacity: 1.0; }
-    50% { -fx-opacity: 0.7; }
-    100% { -fx-opacity: 1.0; }
-}
-
-.suggested-room-type-animated {
-    -fx-text-fill: -fx-accent;
-    -fx-font-weight: bold;
-    -fx-underline: true;
-    -animation: pulse 2s infinite;
-}
-
-/* Booking summary styling */
-.summary-table {
-    -fx-font-size: 16pt;
-}
-
-.summary-row {
-    -fx-padding: 10px 0;
-    -fx-border-width: 0 0 1px 0;
-    -fx-border-color: -fx-bg-light;
-}
-
-.summary-label {
-    -fx-font-weight: bold;
-    -fx-text-fill: -fx-primary-light;
-}
-
-.summary-value {
-    -fx-text-fill: -fx-text-primary;
-}
-
-.summary-total {
-    -fx-font-weight: bold;
-    -fx-font-size: 20pt;
-    -fx-text-fill: -fx-primary-light;
-}
-
-/* Animation for confirmation check */
-.confirmation-check {
-    -fx-fill: -fx-success;
-    -fx-stroke: -fx-success;
-    -fx-stroke-width: 2;
-    -fx-opacity: 0.9;
-    -fx-effect: dropshadow(gaussian, -fx-success, 10, 0.5, 0, 0);
-}
-
-/* Rules button and dialog */
-.rules-button-container {
-    -fx-border-color: transparent;
-    -fx-border-radius: 5px;
-    -fx-padding: 0;
-}
-
-.rules-button-container:hover {
-    -fx-border-color: -fx-primary;
-    -fx-background-color: rgba(156, 39, 176, 0.1);
-}
-
-.rules-dialog {
-    -fx-background-color: -fx-bg-medium;
-    -fx-padding: 20px;
-}
-
-.rules-dialog .header {
-    -fx-font-size: 22pt;
-    -fx-font-weight: bold;
-    -fx-text-fill: -fx-primary-light;
-    -fx-padding: 0 0 15px 0;
-}
-
-.rules-dialog .content {
-    -fx-font-size: 14pt;
-    -fx-text-fill: -fx-text-primary;
-    -fx-padding: 15px;
-    -fx-background-color: rgba(30, 30, 30, 0.8);
-    -fx-background-radius: 8px;
-}
-
-/* Dialog styling */
-.dialog-pane {
-    -fx-background-color: -fx-bg-medium;
-}
-
-.dialog-pane .header-panel {
-    -fx-background-color: -fx-primary-dark;
-}
-
-.dialog-pane .header-panel .label {
-    -fx-text-fill: -fx-text-primary;
-    -fx-font-size: 18pt;
-    -fx-font-weight: bold;
-}
-
-.dialog-pane .content {
-    -fx-padding: 20px;
-    -fx-font-size: 16pt;
-    -fx-text-fill: -fx-text-primary;
-}
-
-.dialog-pane .content .label {
-    -fx-text-fill: -fx-text-primary;
-}
-
-.dialog-pane .button-bar .button {
-    -fx-min-width: 120px;
-}
-
-/* Alert styling */
-.alert {
-    -fx-alignment: center;
-}
-
-.alert .dialog-pane {
-    -fx-min-width: 400px;
-    -fx-min-height: 300px;
-}
-
-/* Error message popup styling */
-.error-popup {
-    -fx-background-color: rgba(207, 102, 121, 0.9);
-    -fx-background-radius: 5px;
-    -fx-padding: 15px;
-    -fx-border-color: #cf6679;
-    -fx-border-radius: 5px;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 10, 0.2, 0, 5);
-}
-
-.error-popup .label {
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-font-size: 16px;
-}
-
-/* Rules button styling */
-#btnRules {
-    -fx-min-width: 350px;
-    -fx-pref-width: 350px;
-    -fx-pref-height: 80px;
-    -fx-wrap-text: true;
-    -fx-font-size: 20pt;
-}
+/* Kiosk Header */
+.kiosk-header {
+    background-color: var(--color-primary-dark);
+    padding: var(--spacing-base);
+    text-align: center;
+}
+
+/* Kiosk Main Content */
+.kiosk-main {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--spacing-lg);
+}
+
+/* Kiosk Card Style */
+.kiosk-card {
+    background-color: rgba(46, 46, 46, 0.95);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-xl);
+    max-width: 800px;
+    width: 100%;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border: 1px solid rgba(123, 31, 162, 0.2);
+}
+
+/* Step Progression */
+.kiosk-step-indicator {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--spacing-base);
+}
+
+.kiosk-step {
+    width: 10px;
+    height: 10px;
+    background-color: var(--color-bg-light);
+    border-radius: 50%;
+    margin: 0 var(--spacing-sm);
+}
+
+.kiosk-step.active {
+    background-color: var(--color-primary);
+}
+
+/* Input Styling for Kiosk */
+.kiosk-input {
+    background-color: var(--color-bg-medium);
+    border: 1px solid var(--color-primary);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-lg);
+    padding: var(--spacing-base);
+    width: 100%;
+    border-radius: var(--border-radius-base);
+}
+
+/* Kiosk Button Variations */
+.kiosk-btn-primary {
+    background-color: var(--color-primary);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-xl);
+    padding: var(--spacing-base) var(--spacing-xl);
+    width: 100%;
+    max-width: 400px;
+}
+
+.kiosk-btn-secondary {
+    background-color: var(--color-secondary);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-lg);
+    padding: var(--spacing-base);
+}
+
+/* Kiosk Footer */
+.kiosk-footer {
+    background-color: var(--color-bg-dark);
+    padding: var(--spacing-base);
+    text-align: center;
+    color: var(--color-text-secondary);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.kiosk-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
 
-/* Animation for error message */
-@keyframes fadeInOut {
-    0% { -fx-opacity: 0; }
-    10% { -fx-opacity: 1; }
-    90% { -fx-opacity: 1; }
-    100% { -fx-opacity: 0; }
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .kiosk-card {
+        margin: var(--spacing-base);
+        padding: var(--spacing-lg);
+    }
+
+    .kiosk-input,
+    .kiosk-btn-primary {
+        font-size: var(--font-size-base);
+        padding: var(--spacing-sm);
+    }
 }

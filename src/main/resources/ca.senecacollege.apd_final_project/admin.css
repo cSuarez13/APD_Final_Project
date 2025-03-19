@@ -1,736 +1,99 @@
-/* Admin Interface Styling with deep purple and dark theme */
+/* Import base styles */
+@import 'application.css';
 
-* {
-    -fx-primary: #7b1fa2; /* Deep Purple */
-    -fx-primary-dark: #4a148c; /* Darker Purple */
-    -fx-primary-light: #e1bee7; /* Light Purple */
-    -fx-accent: #ce93d8; /* Accent Purple */
-    -fx-secondary: #673ab7; /* Secondary Purple */
-    -fx-bg-dark: #121212; /* Very Dark Background */
-    -fx-bg-medium: #1e1e1e; /* Medium Dark Background */
-    -fx-bg-light: #2d2d2d; /* Light Dark Background */
-    -fx-text-primary: #ffffff; /* Primary Text */
-    -fx-text-secondary: #ffffff; /* Secondary Text - Changed to white for consistency */
-    -fx-error: #cf6679; /* Error Color */
-    -fx-success: #4caf50; /* Success Color */
-    -fx-warning: #ffab00; /* Warning Color */
+/* Admin-specific Dashboard Layout */
+.admin-dashboard {
+    display: grid;
+    grid-template-areas:
+        "header header"
+        "sidebar main";
+    grid-template-columns: 250px 1fr;
 }
 
-.root {
-    -fx-background-color: -fx-bg-dark;
-    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
-    -fx-font-size: 12pt;
+.admin-header {
+    grid-area: header;
+    background-color: var(--color-primary-dark);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-base);
 }
 
-/* Ensure all text is visible */
-.label, .text, .text-field, .text-area, .combo-box, .check-box, .radio-button, .table-cell, .menu-item, .menu, .tab-label {
-    -fx-text-fill: -fx-text-primary;
+.admin-sidebar {
+    grid-area: sidebar;
+    background-color: var(--color-bg-medium);
+    padding: var(--spacing-base);
 }
 
-/* Label styling */
-.label {
-    -fx-text-fill: -fx-text-primary;
+.admin-main-content {
+    grid-area: main;
+    padding: var(--spacing-base);
 }
 
-.label-header {
-    -fx-text-fill: -fx-primary-light;
-    -fx-font-size: 24pt;
-    -fx-font-weight: bold;
+/* Table Styles */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--color-bg-medium);
 }
 
-.label-secondary {
-    -fx-text-fill: -fx-text-secondary;
-    -fx-font-size: 10pt;
+.admin-table th {
+    background-color: var(--color-primary-dark);
+    color: var(--color-text-primary);
+    padding: var(--spacing-sm);
+    text-align: left;
 }
 
-/* Full-width table improvements */
-.table-view {
-    -fx-background-color: transparent;
+.admin-table tr:nth-child(even) {
+    background-color: var(--color-bg-dark);
 }
 
-.table-view .column-header-background {
-    -fx-background-color: -fx-primary-dark;
+.admin-table tr:hover {
+    background-color: var(--color-primary-accent);
 }
 
-.table-view .column-header {
-    -fx-background-color: -fx-primary-dark;
-    -fx-pref-height: 40px;
-    -fx-max-height: 40px;
+/* Modal Styles */
+.admin-modal {
+    background-color: var(--color-bg-medium);
+    border-radius: var(--border-radius-base);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-.table-view .column-header .label {
-    -fx-text-fill: -fx-text-primary;
-    -fx-font-weight: bold;
+/* Tab Styles */
+.admin-tab-container {
+    display: flex;
+    border-bottom: 2px solid var(--color-bg-light);
 }
 
-.table-view .table-row-cell {
-    -fx-background-color: -fx-bg-medium;
+.admin-tab {
+    padding: var(--spacing-sm) var(--spacing-base);
+    cursor: pointer;
+    background-color: transparent;
+    border: none;
+    color: var(--color-text-secondary);
 }
 
-.table-view .table-row-cell:odd {
-    -fx-background-color: derive(-fx-bg-medium, 10%);
+.admin-tab.active {
+    color: var(--color-primary-light);
+    border-bottom: 2px solid var(--color-primary);
 }
 
-.table-view .table-row-cell:selected {
-    -fx-background-color: -fx-primary;
+/* Card Styles */
+.admin-card {
+    background-color: var(--color-bg-medium);
+    border-radius: var(--border-radius-base);
+    padding: var(--spacing-base);
+    margin-bottom: var(--spacing-base);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.table-view .table-cell {
-    -fx-text-fill: -fx-text-primary;
-    -fx-padding: 8px;
-}
-
-/* Ensure full width for tables and headers */
-.table-view,
-.table-view > .virtual-flow,
-.table-view > .virtual-flow > .scroll-bar:vertical,
-.table-view > .virtual-flow > .scroll-bar:horizontal {
-    -fx-pref-width: 100%;
-}
-
-.table-view .column-header-background .filler {
-    -fx-background-color: -fx-primary-dark;
-}
-
-/* Dashboard cards */
-.card {
-    -fx-background-color: -fx-bg-medium;
-    -fx-background-radius: 8px;
-    -fx-padding: 16px;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 3);
-}
-
-.card-header {
-    -fx-text-fill: -fx-primary-light;
-    -fx-font-weight: bold;
-    -fx-font-size: 16pt;
-    -fx-padding: 0 0 10px 0;
-}
-
-.stat-number {
-    -fx-text-fill: -fx-primary-light;
-    -fx-font-size: 36pt;
-}
-
-/* Header and Footer */
-.header {
-    -fx-background-color: -fx-primary-dark;
-    -fx-padding: 10px;
-}
-
-.footer {
-    -fx-background-color: -fx-primary-dark;
-    -fx-padding: 8px;
-}
-
-/* Ensure no white backgrounds */
-.tab-pane {
-    -fx-background-color: transparent;
-}
-
-.tab-pane .tab-header-area .tab-header-background {
-    -fx-background-color: -fx-bg-dark;
-    -fx-opacity: 0.8;
-}
-
-.tab {
-    -fx-background-color: -fx-bg-medium;
-    -fx-background-radius: 4px 4px 0 0;
-    -fx-padding: 8px 15px;
-}
-
-.tab .tab-label {
-    -fx-text-fill: -fx-text-primary;
-    -fx-font-size: 12pt;
-}
-
-.tab:selected {
-    -fx-background-color: -fx-primary;
-}
-
-.tab:selected .tab-label {
-    -fx-text-fill: -fx-text-primary;
-    -fx-font-weight: bold;
-}
-
-.tab-content-area {
-    -fx-background-color: -fx-bg-medium;
-    -fx-padding: 10px;
-}
-
-/* ScrollPane styling */
-.scroll-pane {
-    -fx-background-color: -fx-bg-medium;
-}
-
-.scroll-pane .viewport {
-    -fx-background-color: -fx-bg-medium;
-}
-
-.scroll-pane .content {
-    -fx-background-color: -fx-bg-medium;
-}
-
-.scroll-bar {
-    -fx-background-color: -fx-bg-dark;
-}
-
-.scroll-bar .thumb {
-    -fx-background-color: -fx-primary;
-    -fx-background-radius: 0;
-}
-
-.scroll-bar .increment-button, .scroll-bar .decrement-button {
-    -fx-background-color: -fx-bg-dark;
-}
-
-.scroll-bar .increment-arrow, .scroll-bar .decrement-arrow {
-    -fx-background-color: -fx-text-secondary;
-}
-
-/* Button styling */
-.button {
-    -fx-background-color: -fx-primary;
-    -fx-text-fill: -fx-text-primary;
-    -fx-background-radius: 4px;
-    -fx-padding: 8px 16px;
-    -fx-cursor: hand;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 5, 0, 0, 1);
-}
-
-.button:hover {
-    -fx-background-color: derive(-fx-primary, 20%);
-}
-
-.button:pressed {
-    -fx-background-color: derive(-fx-primary, -10%);
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 3, 0, 0, 1);
-}
-
-.button-secondary {
-    -fx-background-color: -fx-secondary;
-    -fx-text-fill: -fx-text-primary;
-}
-
-.button-secondary:hover {
-    -fx-background-color: derive(-fx-secondary, 20%);
-}
-
-.button-secondary:pressed {
-    -fx-background-color: derive(-fx-secondary, -10%);
-}
-
-.button-danger {
-    -fx-background-color: -fx-error;
-    -fx-text-fill: -fx-text-primary;
-}
-
-.button-danger:hover {
-    -fx-background-color: derive(-fx-error, 20%);
-}
-
-.button-danger:pressed {
-    -fx-background-color: derive(-fx-error, -10%);
-}
-
-.button-success {
-    -fx-background-color: -fx-success;
-    -fx-text-fill: -fx-text-primary;
-}
-
-.button-success:hover {
-    -fx-background-color: derive(-fx-success, 20%);
-}
-
-.button-success:pressed {
-    -fx-background-color: derive(-fx-success, -10%);
-}
-
-/* ComboBox styling */
-.combo-box {
-    -fx-background-color: -fx-bg-medium;
-    -fx-text-fill: -fx-text-primary;
-    -fx-background-radius: 4px;
-    -fx-border-color: -fx-bg-light;
-    -fx-border-radius: 4px;
-    -fx-padding: 4px;
-}
-
-.combo-box:focused {
-    -fx-border-color: -fx-primary;
-}
-
-.combo-box .list-cell {
-    -fx-background-color: -fx-bg-medium;
-    -fx-text-fill: -fx-text-primary;
-    -fx-padding: 4px 8px;
-}
-
-.combo-box-popup .list-view {
-    -fx-background-color: -fx-bg-medium;
-    -fx-border-color: -fx-bg-light;
-}
-
-.combo-box-popup .list-view .list-cell {
-    -fx-background-color: -fx-bg-medium;
-    -fx-text-fill: -fx-text-primary;
-}
-
-.combo-box-popup .list-view .list-cell:filled:selected,
-.combo-box-popup .list-view .list-cell:filled:selected:hover {
-    -fx-background-color: -fx-primary;
-    -fx-text-fill: -fx-text-primary;
-}
-
-.combo-box-popup .list-view .list-cell:filled:hover {
-    -fx-background-color: -fx-bg-light;
-    -fx-text-fill: -fx-text-primary;
-}
-
-/* TextField styling */
-.text-field {
-    -fx-background-color: -fx-bg-medium;
-    -fx-text-fill: -fx-text-primary;
-    -fx-prompt-text-fill: derive(-fx-text-primary, 50%);
-    -fx-background-radius: 4px;
-    -fx-border-color: -fx-bg-light;
-    -fx-border-radius: 4px;
-    -fx-padding: 6px;
-}
-
-.text-field:focused {
-    -fx-border-color: -fx-primary;
-}
-
-/* TextArea styling */
-.text-area {
-    -fx-background-color: -fx-bg-medium;
-}
-
-.text-area .content {
-    -fx-background-color: -fx-bg-medium;
-    -fx-text-fill: -fx-text-primary;
-}
-
-.text-area:focused .content {
-    -fx-background-color: -fx-bg-medium;
-}
-
-/* DatePicker styling */
-.date-picker {
-    -fx-background-color: -fx-bg-medium;
-}
-
-.date-picker .arrow-button {
-    -fx-background-color: -fx-primary;
-    -fx-background-radius: 0 4px 4px 0;
-}
-
-.date-picker .arrow-button .arrow {
-    -fx-background-color: -fx-text-primary;
-}
-
-.date-picker .text-field {
-    -fx-background-color: -fx-bg-medium;
-    -fx-text-fill: -fx-text-primary;
-}
-
-.date-picker-popup {
-    -fx-background-color: -fx-bg-medium;
-}
-
-.date-picker-popup .month-year-pane {
-    -fx-background-color: -fx-primary-dark;
-}
-
-.date-picker-popup .calendar-grid {
-    -fx-background-color: -fx-bg-medium;
-}
-
-.date-picker-popup .day-cell {
-    -fx-background-color: -fx-bg-medium;
-    -fx-text-fill: -fx-text-primary;
-    -fx-border-color: -fx-bg-light;
-}
-
-.date-picker-popup .day-cell:hover {
-    -fx-background-color: -fx-bg-light;
-}
-
-.date-picker-popup .day-cell.selected {
-    -fx-background-color: -fx-primary;
-}
-
-.date-picker-popup .day-cell:focused {
-    -fx-background-color: -fx-primary-dark;
-}
-
-/* Ensure no white backgrounds in other elements */
-.vbox, .hbox, .grid-pane, .border-pane, .stack-pane, .anchor-pane, .flow-pane {
-    -fx-background-color: -fx-bg-medium;
-}
-
-/* CheckBox styling */
-.check-box {
-    -fx-text-fill: -fx-text-primary;
-}
-
-.check-box .box {
-    -fx-background-color: -fx-bg-light;
-    -fx-border-color: -fx-text-secondary;
-    -fx-border-radius: 3px;
-}
-
-.check-box:selected .mark {
-    -fx-background-color: -fx-text-primary;
-}
-
-.check-box:selected .box {
-    -fx-background-color: -fx-primary;
-    -fx-border-color: -fx-primary;
-}
-
-/* RadioButton styling */
-.radio-button {
-    -fx-text-fill: -fx-text-primary;
-}
-
-.radio-button .radio {
-    -fx-background-color: -fx-bg-light;
-    -fx-border-color: -fx-text-secondary;
-}
-
-.radio-button:selected .dot {
-    -fx-background-color: -fx-text-primary;
-}
-
-.radio-button:selected .radio {
-    -fx-background-color: -fx-primary;
-    -fx-border-color: -fx-primary;
-}
-
-/* List view styling */
-.list-view {
-    -fx-background-color: -fx-bg-medium;
-    -fx-background-insets: 0;
-    -fx-padding: 0;
-}
-
-.list-view .list-cell {
-    -fx-background-color: -fx-bg-medium;
-    -fx-text-fill: -fx-text-primary;
-    -fx-padding: 8px;
-}
-
-.list-view .list-cell:odd {
-    -fx-background-color: derive(-fx-bg-medium, 10%);
-}
-
-.list-view .list-cell:filled:selected {
-    -fx-background-color: -fx-primary;
-}
-
-/* Tooltip styling */
-.tooltip {
-    -fx-background-color: -fx-bg-dark;
-    -fx-text-fill: -fx-text-primary;
-    -fx-background-radius: 4px;
-    -fx-padding: 6px 10px;
-}
-
-/* Dialog styling */
-.dialog-pane {
-    -fx-background-color: -fx-bg-medium;
-}
-
-.dialog-pane .header-panel {
-    -fx-background-color: -fx-primary-dark;
-}
-
-.dialog-pane .header-panel .label {
-    -fx-text-fill: -fx-text-primary;
-    -fx-font-size: 16pt;
-}
-
-.dialog-pane .content {
-    -fx-background-color: -fx-bg-medium;
-    -fx-text-fill: -fx-text-primary;
-    -fx-font-size: 12pt;
-}
-
-.dialog-pane .content .label {
-    -fx-text-fill: -fx-text-primary;
-}
-
-.dialog-pane .button-bar .button {
-    -fx-background-color: -fx-primary;
-    -fx-text-fill: -fx-text-primary;
-}
-
-/* Alert styling */
-.alert {
-    -fx-background-color: -fx-bg-medium;
-}
-
-.alert .dialog-pane,
-.alert .dialog-pane .content {
-    -fx-background-color: -fx-bg-medium;
-}
-
-.alert .dialog-pane .header-panel {
-    -fx-background-color: -fx-primary-dark;
-}
-
-/* Menu styling */
-.menu-bar {
-    -fx-background-color: -fx-primary-dark;
-}
-
-.menu {
-    -fx-background-color: transparent;
-}
-
-.menu:hover, .menu:showing {
-    -fx-background-color: -fx-primary;
-}
-
-.menu .label {
-    -fx-text-fill: -fx-text-primary;
-}
-
-.menu-item {
-    -fx-background-color: -fx-bg-medium;
-}
-
-.menu-item .label {
-    -fx-text-fill: -fx-text-primary;
-}
-
-.menu-item:focused, .menu-item:hover {
-    -fx-background-color: -fx-primary;
-}
-
-.context-menu {
-    -fx-background-color: -fx-bg-medium;
-    -fx-border-color: -fx-bg-light;
-}
-
-/* Chart styling */
-.chart {
-    -fx-background-color: transparent;
-}
-
-.chart-plot-background {
-    -fx-background-color: -fx-bg-medium;
-}
-
-.chart-legend {
-    -fx-background-color: -fx-bg-light;
-}
-
-.chart-legend-item {
-    -fx-text-fill: -fx-text-primary;
-}
-
-.axis {
-    -fx-tick-label-fill: -fx-text-primary;
-}
-
-/* Titled pane (collapsible panel) */
-.titled-pane {
-    -fx-text-fill: -fx-text-primary;
-}
-
-.titled-pane .title {
-    -fx-background-color: -fx-primary-dark;
-    -fx-text-fill: -fx-text-primary;
-}
-
-.titled-pane .content {
-    -fx-background-color: -fx-bg-medium;
-}
-
-/* Specific styling for the Search Guests tab */
-#tabSearch {
-    -fx-background-color: -fx-bg-medium;
-}
-
-#tabSearch .content {
-    -fx-background-color: -fx-bg-medium;
-}
-
-#tabSearch .split-pane {
-    -fx-background-color: -fx-bg-medium;
-}
-
-#tabSearch .split-pane .split-pane-divider {
-    -fx-background-color: -fx-bg-light;
-}
-
-#tabSearch .table-view {
-    -fx-background-color: -fx-bg-medium;
-}
-
-#tabSearch .table-view .column-header-background {
-    -fx-background-color: -fx-primary-dark;
-}
-
-#tabSearch .table-view .table-row-cell {
-    -fx-background-color: -fx-bg-medium;
-}
-
-#tabSearch .table-view .table-row-cell:odd {
-    -fx-background-color: derive(-fx-bg-medium, 10%);
-}
-
-#tabSearch .table-view .table-cell {
-    -fx-text-fill: -fx-text-primary;
-}
-
-/* Progress indicator */
-.progress-indicator {
-    -fx-progress-color: -fx-primary;
-}
-
-.progress-bar {
-    -fx-background-color: -fx-bg-light;
-}
-
-.progress-bar .track {
-    -fx-background-color: -fx-bg-light;
-}
-
-.progress-bar .bar {
-    -fx-background-color: -fx-primary;
-}
-
-/* Tree view styling */
-.tree-view {
-    -fx-background-color: -fx-bg-medium;
-}
-
-.tree-view .tree-cell {
-    -fx-background-color: -fx-bg-medium;
-    -fx-text-fill: -fx-text-primary;
-}
-
-.tree-view .tree-cell:odd {
-    -fx-background-color: derive(-fx-bg-medium, 10%);
-}
-
-.tree-view .tree-cell:filled:selected {
-    -fx-background-color: -fx-primary;
-}
-
-/* Slider styling */
-.slider .track {
-    -fx-background-color: -fx-bg-light;
-}
-
-.slider .thumb {
-    -fx-background-color: -fx-primary;
-}
-
-/* Spinner styling */
-.spinner {
-    -fx-background-color: -fx-bg-medium;
-    -fx-border-color: -fx-bg-light;
-}
-
-.spinner .text-field {
-    -fx-background-color: -fx-bg-medium;
-    -fx-text-fill: -fx-text-primary;
-}
-
-.spinner .increment-arrow-button, .spinner .decrement-arrow-button {
-    -fx-background-color: -fx-primary;
-}
-
-.spinner .increment-arrow, .spinner .decrement-arrow {
-    -fx-background-color: -fx-text-primary;
-}
-
-/* Separator styling */
-.separator .line {
-    -fx-border-color: -fx-bg-light;
-    -fx-border-width: 1px;
-}
-
-/* Hyperlink styling */
-.hyperlink {
-    -fx-text-fill: -fx-primary-light;
-}
-
-.hyperlink:hover {
-    -fx-text-fill: -fx-accent;
-}
-
-.hyperlink:visited {
-    -fx-text-fill: -fx-secondary;
-}
-
-/* Status bar */
-.status-bar {
-    -fx-background-color: -fx-primary-dark;
-    -fx-padding: 5px;
-}
-
-.status-bar .label {
-    -fx-text-fill: -fx-text-primary;
-}
-
-/* Search Guest Results and Reservation Containers */
-.search-results-container,
-.reservation-container,
-.search-results-pane,
-.details-pane {
-    -fx-background-color: -fx-bg-medium;
-}
-
-/* Additional styling for any nested content within these containers */
-.search-results-container .content,
-.reservation-container .content,
-.search-results-pane .content,
-.details-pane .content {
-    -fx-background-color: -fx-bg-medium;
-}
-
-/* Target any ListView or TableView within search results or reservation areas */
-.search-results-container .list-view,
-.reservation-container .list-view,
-.search-results-container .table-view,
-.reservation-container .table-view {
-    -fx-background-color: -fx-bg-medium;
-}
-
-/* Ensure any split panes in these areas have dark backgrounds */
-.split-pane,
-.split-pane .split-pane-divider,
-.split-pane > * {
-    -fx-background-color: -fx-bg-medium;
-}
-
-/* Target any VBox or HBox containers that might be in these areas */
-.search-results-container .vbox,
-.search-results-container .hbox,
-.reservation-container .vbox,
-.reservation-container .hbox {
-    -fx-background-color: -fx-bg-medium;
-}
-
-/* Ensure any scrollpanes in these areas have dark backgrounds */
-.scroll-pane,
-.scroll-pane .viewport,
-.scroll-pane .content {
-    -fx-background-color: -fx-bg-medium;
-}
-
-/* Target any specific custom components you might have in search results */
-.guest-details-card,
-.reservation-details-card {
-    -fx-background-color: -fx-bg-medium;
-}
-
-.root {
-    -fx-background-color: linear-gradient(to bottom right, derive(-fx-bg-dark, -10%), -fx-bg-dark);
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .admin-dashboard {
+        grid-template-areas:
+            "header"
+            "sidebar"
+            "main";
+        grid-template-columns: 1fr;
+    }
 }

@@ -1,0 +1,75 @@
+/* Screen Size and Responsive Design Utilities */
+:root {
+    /* Breakpoints */
+    --screen-xs: 480px;
+    --screen-sm: 640px;
+    --screen-md: 768px;
+    --screen-lg: 1024px;
+    --screen-xl: 1280px;
+    --screen-2xl: 1536px;
+
+    /* View Heights */
+    --view-height-full: 100vh;
+    --view-height-90: 90vh;
+    --view-height-80: 80vh;
+    --view-height-70: 70vh;
+}
+
+/* Responsive Grid */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1rem;
+}
+
+/* Column Span Utilities */
+.col-xs-1 { grid-column: span 1; }
+.col-xs-2 { grid-column: span 2; }
+.col-xs-3 { grid-column: span 3; }
+.col-xs-4 { grid-column: span 4; }
+.col-xs-6 { grid-column: span 6; }
+.col-xs-12 { grid-column: span 12; }
+
+/* Responsive Breakpoints */
+@media (min-width: 640px) {
+    .col-sm-1 { grid-column: span 1; }
+    .col-sm-2 { grid-column: span 2; }
+    .col-sm-3 { grid-column: span 3; }
+    .col-sm-4 { grid-column: span 4; }
+    .col-sm-6 { grid-column: span 6; }
+    .col-sm-12 { grid-column: span 12; }
+}
+
+@media (min-width: 1024px) {
+    .col-lg-1 { grid-column: span 1; }
+    .col-lg-2 { grid-column: span 2; }
+    .col-lg-3 { grid-column: span 3; }
+    .col-lg-4 { grid-column: span 4; }
+    .col-lg-6 { grid-column: span 6; }
+    .col-lg-12 { grid-column: span 12; }
+}
+
+/* Responsive Visibility */
+.hidden-xs {
+    display: none;
+}
+
+@media (min-width: 480px) {
+    .hidden-xs {
+        display: block;
+    }
+}
+
+/* Screen Centering */
+.screen-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: var(--view-height-full);
+}
+
+/* Height Utilities */
+.full-height { height: var(--view-height-full); }
+.height-90 { height: var(--view-height-90); }
+.height-80 { height: var(--view-height-80); }
+.height-70 { height: var(--view-height-70); }

@@ -1,0 +1,36 @@
+/* Error Popup Styling */
+.error-popup-container {
+    background-color: rgba(207, 102, 121, 0.9);
+    border-radius: 4px;
+    padding: 10px 20px;
+    max-width: 300px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    animation: fadeInOut 0.5s ease-in-out;
+    z-index: 9999;
+}
+
+.popup-error {
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    word-wrap: break-word;
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    10% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    90% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
