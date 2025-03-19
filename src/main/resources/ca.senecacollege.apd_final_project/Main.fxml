@@ -9,6 +9,7 @@
 <?import javafx.scene.text.Font?>
 
 <BorderPane fx:id="mainBorderPane" prefHeight="600.0" prefWidth="800.0" styleClass="root"
+            stylesheets="@application.css"
             xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ca.senecacollege.apd_final_project.controller.MainController">
     <center>
@@ -26,12 +27,16 @@
                 </Label>
                 <HBox alignment="CENTER" spacing="50.0">
                     <children>
-                        <Button fx:id="btnKiosk" mnemonicParsing="false" onAction="#handleKioskButton" prefHeight="150.0" prefWidth="200.0" styleClass="button" text="Kiosk Mode">
+                        <Button fx:id="btnKiosk" mnemonicParsing="false" onAction="#handleKioskButton"
+                                prefHeight="150.0" prefWidth="200.0"
+                                styleClass="btn btn-primary" text="Kiosk Mode">
                             <font>
                                 <Font size="24.0" />
                             </font>
                         </Button>
-                        <Button fx:id="btnAdmin" mnemonicParsing="false" onAction="#handleAdminButton" prefHeight="150.0" prefWidth="200.0" styleClass="button-secondary" text="Admin Login">
+                        <Button fx:id="btnAdmin" mnemonicParsing="false" onAction="#handleAdminButton"
+                                prefHeight="150.0" prefWidth="200.0"
+                                styleClass="btn btn-secondary" text="Admin Login">
                             <font>
                                 <Font size="24.0" />
                             </font>

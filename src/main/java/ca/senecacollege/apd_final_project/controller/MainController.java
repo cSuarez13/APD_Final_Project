@@ -2,10 +2,13 @@ package ca.senecacollege.apd_final_project.controller;
 
 import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
+import ca.senecacollege.apd_final_project.util.ScreenSizeManager;
+import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -47,16 +50,34 @@ public class MainController implements Initializable {
 
             // Apply the kiosk CSS
             kioskScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
+            kioskScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
 
-            // Configure and show the kiosk stage
+            // Configure stage size using ScreenSizeManager
+            Rectangle2D screenBounds = ScreenSizeManager.getPrimaryScreenBounds();
+            double stageWidth = ScreenSizeManager.calculateStageWidth(1024);
+            double stageHeight = ScreenSizeManager.calculateStageHeight(768);
+
+            // Center the stage
+            double[] stagePosition = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
+
+            // Set stage properties
+            kioskStage.setWidth(stageWidth);
+            kioskStage.setHeight(stageHeight);
+            kioskStage.setX(stagePosition[0]);
+            kioskStage.setY(stagePosition[1]);
+
             kioskStage.setTitle("Hotel ABC Kiosk");
             kioskStage.setScene(kioskScene);
-            kioskStage.setMaximized(true); // Full screen for kiosk mode
             kioskStage.show();
+
+            LoggingManager.logSystemInfo("Kiosk interface opened");
 
         } catch (IOException e) {
             LoggingManager.logException("Error opening kiosk interface", e);
-            e.printStackTrace();
+
+            // Get the current stage
+            Stage stage = (Stage) btnKiosk.getScene().getWindow();
+            ErrorPopupManager.showSystemErrorPopup(stage, "NAV-001", "Error loading kiosk interface");
         }
     }
 
@@ -75,16 +96,34 @@ public class MainController implements Initializable {
 
             // Apply the admin CSS
             adminLoginScene.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
+            adminLoginScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
 
-            // Configure and show the admin login stage
+            // Configure stage size using ScreenSizeManager
+            Rectangle2D screenBounds = ScreenSizeManager.getPrimaryScreenBounds();
+            double stageWidth = ScreenSizeManager.calculateStageWidth(500);
+            double stageHeight = ScreenSizeManager.calculateStageHeight(600);
+
+            // Center the stage
+            double[] stagePosition = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
+
+            // Set stage properties
+            adminLoginStage.setWidth(stageWidth);
+            adminLoginStage.setHeight(stageHeight);
+            adminLoginStage.setX(stagePosition[0]);
+            adminLoginStage.setY(stagePosition[1]);
+
             adminLoginStage.setTitle("Admin Login");
             adminLoginStage.setScene(adminLoginScene);
-            adminLoginStage.setResizable(false);
             adminLoginStage.show();
+
+            LoggingManager.logSystemInfo("Admin login interface opened");
 
         } catch (IOException e) {
             LoggingManager.logException("Error opening admin login interface", e);
-            e.printStackTrace();
+
+            // Get the current stage
+            Stage stage = (Stage) btnAdmin.getScene().getWindow();
+            ErrorPopupManager.showSystemErrorPopup(stage, "NAV-002", "Error loading admin login interface");
         }
     }
 }

@@ -2,20 +2,24 @@ package ca.senecacollege.apd_final_project.controller.kiosk;
 
 import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
+import ca.senecacollege.apd_final_project.util.ScreenSizeManager;
+import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
 import javafx.animation.FadeTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import javafx.geometry.Rectangle2D;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.Node;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -65,81 +69,95 @@ public class WelcomeScreenController implements Initializable {
             Scene bookingScene = new Scene(bookingRoot);
             bookingScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
 
-            // Configure and show the stage - properly fit to screen
+            // Configure stage size using ScreenSizeManager
+            Rectangle2D screenBounds = ScreenSizeManager.getPrimaryScreenBounds();
+            double stageWidth = ScreenSizeManager.calculateStageWidth(1024);
+            double stageHeight = ScreenSizeManager.calculateStageHeight(768);
+
+            // Center the stage
+            double[] stagePosition = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
+
+            // Set stage properties
+            stage.setWidth(stageWidth);
+            stage.setHeight(stageHeight);
+            stage.setX(stagePosition[0]);
+            stage.setY(stagePosition[1]);
             stage.setScene(bookingScene);
-
-            // Get screen dimensions
-            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-
-            // Set stage size to fit screen (or use a percentage of screen)
-            stage.setX(screenBounds.getMinX());
-            stage.setY(screenBounds.getMinY());
-            stage.setWidth(screenBounds.getWidth());
-            stage.setHeight(screenBounds.getHeight());
-
-            // Set minimum size to ensure elements don't get squished
-            stage.setMinWidth(800);
-            stage.setMinHeight(600);
 
             LoggingManager.logSystemInfo("Navigated to booking screen");
 
         } catch (IOException e) {
             LoggingManager.logException("Error navigating to booking screen", e);
 
-            // More detailed error information for debugging
-            System.err.println("Error details: " + e.getMessage());
-            e.printStackTrace();
-
-            // Create an alert to show the error
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Navigation Error");
-            alert.setHeaderText("Error Loading Booking Screen");
-            alert.setContentText("Error: " + e.getMessage() + "\nPlease contact technical support.");
-            alert.showAndWait();
+            // Use ErrorPopupManager to show error
+            Stage stage = (Stage) btnStart.getScene().getWindow();
+            ErrorPopupManager.showSystemErrorPopup(stage, "NAV-001", "Error loading booking screen");
         }
     }
 
     @FXML
     private void handleRulesButton(ActionEvent event) {
-        // Create an improved rules and regulations dialog
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Hotel Rules & Regulations");
 
-        // Create a custom dialog pane
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
-        dialogPane.getStyleClass().addAll("root", "rules-dialog");
+        dialogPane.setStyle("-fx-background-color: #2d2d2d;");
 
-        // Set size for dialog
-        dialogPane.setPrefWidth(800);
-        dialogPane.setPrefHeight(600);
+        Rectangle2D screenBounds = ScreenSizeManager.getPrimaryScreenBounds();
+        double dialogWidth = Math.min(600, screenBounds.getWidth() * 0.7);
+        double dialogHeight = Math.min(700, screenBounds.getHeight() * 0.8);
 
-        // Create a VBox for content
-        VBox content = new VBox(15);
-        content.setPadding(new Insets(20));
+        dialogPane.setPrefWidth(dialogWidth);
+        dialogPane.setPrefHeight(dialogHeight);
 
-        // Add header
-        Label header = new Label("Please Read Our Rules & Regulations");
-        header.getStyleClass().add("header");
+        // Header
+        Label header = new Label("Hotel Rules & Regulations");
+        header.setStyle(
+                "-fx-text-fill: #b491c8;" +
+                        "-fx-font-size: 24px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-padding: 20px;"
+        );
+        header.setAlignment(Pos.CENTER);
+        header.setPrefWidth(dialogWidth);
 
-        // Add scrollable text area for rules content
+        // Rules TextArea
         TextArea rulesText = new TextArea(Constants.RULES_REGULATIONS);
         rulesText.setEditable(false);
+        rulesText.setPrefHeight(dialogHeight - 80);
+        rulesText.setMaxHeight(dialogHeight - 80);
+        rulesText.setPrefRowCount(Integer.MAX_VALUE);
         rulesText.setWrapText(true);
-        rulesText.setPrefHeight(350);
-        rulesText.setPrefWidth(600);
-        rulesText.getStyleClass().add("content");
+        rulesText.setStyle(
+                "-fx-control-inner-background: #2c2c2c;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 18px;" +
+                        "-fx-padding: 20px;" +
+                        "-fx-background-color: #2c2c2c;" +
+                        "-fx-background-insets: 0;" +
+                        "-fx-background-radius: 0;" +
+                        "-fx-box-border: none;"
+        );
 
-        // Add components to content
+        // Vertical layout
+        VBox content = new VBox(15);
+        content.setStyle("-fx-background-color: #2d2d2d;");
         content.getChildren().addAll(header, rulesText);
 
-        // Set the content
         dialogPane.setContent(content);
 
-        // Add the close button
+        // Customize close button
         dialogPane.getButtonTypes().add(ButtonType.CLOSE);
+        Node closeButton = dialogPane.lookupButton(ButtonType.CLOSE);
+        if (closeButton instanceof Button) {
+            ((Button) closeButton).setStyle(
+                    "-fx-background-color: #7b1fa2;" +
+                            "-fx-text-fill: white;" +
+                            "-fx-font-weight: bold;"
+            );
+        }
 
-        // Show the dialog
         dialog.showAndWait();
     }
 }
