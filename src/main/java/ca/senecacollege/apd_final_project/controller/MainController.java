@@ -12,6 +12,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
@@ -29,6 +30,9 @@ public class MainController implements Initializable {
 
     @FXML
     private Button btnAdmin;
+
+    @FXML
+    private Hyperlink lnkFeedback;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -124,6 +128,45 @@ public class MainController implements Initializable {
             // Get the current stage
             Stage stage = (Stage) btnAdmin.getScene().getWindow();
             ErrorPopupManager.showSystemErrorPopup(stage, "NAV-002", "Error loading admin login interface");
+        }
+    }
+
+    @FXML
+    private void handleFeedbackLink(ActionEvent event) {
+        try {
+            // Load the feedback screen
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_FEEDBACK));
+            Parent feedbackRoot = loader.load();
+
+            // Get the current stage
+            Stage stage = (Stage) lnkFeedback.getScene().getWindow();
+
+            // Create new scene
+            Scene feedbackScene = new Scene(feedbackRoot);
+            feedbackScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
+            feedbackScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
+
+            // Set the scene
+            stage.setScene(feedbackScene);
+
+            // Size the stage properly
+            double stageWidth = ScreenSizeManager.calculateStageWidth(1024);
+            double stageHeight = ScreenSizeManager.calculateStageHeight(768);
+            double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
+
+            stage.setWidth(stageWidth);
+            stage.setHeight(stageHeight);
+            stage.setX(centerPos[0]);
+            stage.setY(centerPos[1]);
+
+            LoggingManager.logSystemInfo("Navigated to feedback screen");
+
+        } catch (IOException e) {
+            LoggingManager.logException("Error loading feedback screen", e);
+
+            // Show error popup
+            Stage stage = (Stage) lnkFeedback.getScene().getWindow();
+            ErrorPopupManager.showSystemErrorPopup(stage, "NAV-004", "Error loading feedback screen");
         }
     }
 }

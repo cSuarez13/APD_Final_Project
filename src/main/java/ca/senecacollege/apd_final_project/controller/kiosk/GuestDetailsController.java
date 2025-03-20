@@ -5,11 +5,7 @@ import ca.senecacollege.apd_final_project.model.Reservation;
 import ca.senecacollege.apd_final_project.model.RoomType;
 import ca.senecacollege.apd_final_project.service.GuestService;
 import ca.senecacollege.apd_final_project.service.ReservationService;
-import ca.senecacollege.apd_final_project.util.Constants;
-import ca.senecacollege.apd_final_project.util.LoggingManager;
-import ca.senecacollege.apd_final_project.util.ValidationUtils;
-import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
-import ca.senecacollege.apd_final_project.util.ScreenSizeManager;
+import ca.senecacollege.apd_final_project.util.*;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -21,7 +17,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -77,9 +72,6 @@ public class GuestDetailsController implements Initializable {
         applyStyles();
 
         LoggingManager.logSystemInfo("GuestDetailsController initialized");
-
-        // Make sure the current stage has proper size and position
-        adjustStageSize();
     }
 
     /**
@@ -87,7 +79,7 @@ public class GuestDetailsController implements Initializable {
      */
     private void applyStyles() {
         // Set explicit styling for text fields to ensure text is visible
-        String textFieldStyle = "-fx-text-fill: black; -fx-font-size: 14px;";
+        String textFieldStyle = "-fx-text-fill: white; -fx-font-size: 16px;";
         txtName.setStyle(textFieldStyle);
         txtPhone.setStyle(textFieldStyle);
         txtEmail.setStyle(textFieldStyle);
@@ -105,6 +97,9 @@ public class GuestDetailsController implements Initializable {
                         ((Label) node).setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
                     }
                 });
+
+                // Now that we have a scene, we can adjust the stage size safely
+                adjustStageSize(newScene);
             }
         });
     }
@@ -112,13 +107,11 @@ public class GuestDetailsController implements Initializable {
     /**
      * Adjust the stage size to ensure it fits properly on screen
      */
-    private void adjustStageSize() {
-        // Get the current scene and stage, but wait until they're available
-        // This will be called when the scene exists
-        txtName.sceneProperty().addListener((obs, oldScene, newScene) -> {
-            if (newScene != null) {
-                Stage stage = (Stage) newScene.getWindow();
-
+    private void adjustStageSize(Scene scene) {
+        try {
+            // Get stage from the scene
+            Stage stage = (Stage) scene.getWindow();
+            if (stage != null) {
                 // Use ScreenSizeManager to set appropriate dimensions
                 double stageWidth = ScreenSizeManager.calculateStageWidth(900);
                 double stageHeight = ScreenSizeManager.calculateStageHeight(750);
@@ -137,7 +130,9 @@ public class GuestDetailsController implements Initializable {
 
                 LoggingManager.logSystemInfo("GuestDetailsScreen size adjusted to fit screen");
             }
-        });
+        } catch (Exception e) {
+            LoggingManager.logException("Error adjusting stage size", e);
+        }
     }
 
     public void initBookingData(int numberOfGuests, LocalDate checkInDate, LocalDate checkOutDate, RoomType roomType) {
@@ -187,7 +182,7 @@ public class GuestDetailsController implements Initializable {
             confirmationController.initReservationData(reservationId);
 
             // Get the current stage
-            Stage stage = (Stage) btnNext.getScene().getWindow();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
             // Create new scene
             Scene confirmationScene = new Scene(confirmationRoot);
@@ -213,7 +208,7 @@ public class GuestDetailsController implements Initializable {
             LoggingManager.logException("Error processing guest details", e);
 
             // Use ErrorPopupManager instead of directly showing error on lblError
-            Stage stage = (Stage) btnNext.getScene().getWindow();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             ErrorPopupManager.showSystemErrorPopup(stage, "GUEST-001", "Error processing guest details");
         }
     }
@@ -229,7 +224,7 @@ public class GuestDetailsController implements Initializable {
             BookingScreenController bookingController = loader.getController();
 
             // Get the current stage
-            Stage stage = (Stage) btnBack.getScene().getWindow();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
             // Create new scene
             Scene bookingScene = new Scene(bookingRoot);
@@ -255,75 +250,14 @@ public class GuestDetailsController implements Initializable {
             LoggingManager.logException("Error navigating back to booking screen", e);
 
             // Use ErrorPopupManager
-            Stage stage = (Stage) btnBack.getScene().getWindow();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             ErrorPopupManager.showSystemErrorPopup(stage, "NAV-002", "Error returning to booking screen");
         }
     }
 
     @FXML
     private void handleRulesButton(ActionEvent event) {
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Hotel Rules & Regulations");
-
-        DialogPane dialogPane = dialog.getDialogPane();
-        dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
-        dialogPane.setStyle("-fx-background-color: #2d2d2d;");
-
-        Rectangle2D screenBounds = ScreenSizeManager.getPrimaryScreenBounds();
-        double dialogWidth = Math.min(600, screenBounds.getWidth() * 0.7);
-        double dialogHeight = Math.min(700, screenBounds.getHeight() * 0.8);
-
-        dialogPane.setPrefWidth(dialogWidth);
-        dialogPane.setPrefHeight(dialogHeight);
-
-        // Header
-        Label header = new Label("Hotel Rules & Regulations");
-        header.setStyle(
-                "-fx-text-fill: #b491c8;" +
-                        "-fx-font-size: 24px;" +
-                        "-fx-font-weight: bold;" +
-                        "-fx-padding: 20px;"
-        );
-        header.setAlignment(Pos.CENTER);
-        header.setPrefWidth(dialogWidth);
-
-        // Rules TextArea
-        TextArea rulesText = new TextArea(Constants.RULES_REGULATIONS);
-        rulesText.setEditable(false);
-        rulesText.setPrefHeight(dialogHeight - 80);
-        rulesText.setMaxHeight(dialogHeight - 80);
-        rulesText.setPrefRowCount(Integer.MAX_VALUE);
-        rulesText.setWrapText(true);
-        rulesText.setStyle(
-                "-fx-control-inner-background: #2c2c2c;" +
-                        "-fx-text-fill: white;" +
-                        "-fx-font-size: 18px;" +
-                        "-fx-padding: 20px;" +
-                        "-fx-background-color: #2c2c2c;" +
-                        "-fx-background-insets: 0;" +
-                        "-fx-background-radius: 0;" +
-                        "-fx-box-border: none;"
-        );
-
-        // Vertical layout
-        VBox content = new VBox(15);
-        content.setStyle("-fx-background-color: #2d2d2d;");
-        content.getChildren().addAll(header, rulesText);
-
-        dialogPane.setContent(content);
-
-        // Customize close button
-        dialogPane.getButtonTypes().add(ButtonType.CLOSE);
-        Node closeButton = dialogPane.lookupButton(ButtonType.CLOSE);
-        if (closeButton instanceof Button) {
-            ((Button) closeButton).setStyle(
-                    "-fx-background-color: #7b1fa2;" +
-                            "-fx-text-fill: white;" +
-                            "-fx-font-weight: bold;"
-            );
-        }
-
-        dialog.showAndWait();
+        RulesDialogUtility.showRulesDialog(btnRules);
     }
 
     private boolean validateInputs() {

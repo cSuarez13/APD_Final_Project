@@ -38,3 +38,13 @@
 .bg-dark {
     -fx-background-color: #1e1e1e;
 }
+
+.feedback-link {
+    -fx-text-fill: #b491c8;
+    -fx-font-weight: bold;
+}
+
+.feedback-link:hover {
+    -fx-text-fill: #9c27b0;
+    -fx-underline: true;
+}
