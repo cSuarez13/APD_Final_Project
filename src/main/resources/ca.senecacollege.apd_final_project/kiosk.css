@@ -345,13 +345,29 @@
     -fx-background-color: #7b1fa2;
 }
 
+/* Rating Star Styling */
 .rating-star {
-    -fx-text-fill: #a0a0a0;
+    -fx-text-fill: #4a4a4a;
+    -fx-cursor: hand;
     -fx-font-size: 36px;
 }
 
 .rating-star-filled {
-    -fx-text-fill: #8e68ed;
+    -fx-text-fill: #b491c8 !important;
+}
+
+.rating-star:hover {
+    -fx-effect: dropshadow(gaussian, rgba(180,145,200,0.4), 5, 0, 0, 1);
+}
+
+.rating-star-filled:hover {
+    -fx-effect: dropshadow(gaussian, rgba(180,145,200,0.6), 8, 0, 0, 1);
+}
+
+/* Ensure labels are interactive */
+.rating-star {
+    -fx-background-color: transparent;
+    -fx-padding: 5px;
 }
 
 .button-small {

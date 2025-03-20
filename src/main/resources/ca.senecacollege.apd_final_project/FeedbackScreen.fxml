@@ -107,28 +107,29 @@
 
                                 <HBox fx:id="starsContainer" alignment="CENTER" spacing="15.0">
                                     <children>
-                                        <Label styleClass="rating-star" text="★" mouseTransparent="false">
-                                        <font>
+                                        <!-- Use Label with hover effect -->
+                                        <Label text="★" styleClass="rating-star">
+                                            <font>
                                                 <Font size="36.0" />
                                             </font>
                                         </Label>
-                                        <Label styleClass="rating-star" text="★" mouseTransparent="false">
-                                        <font>
+                                        <Label text="★" styleClass="rating-star">
+                                            <font>
                                                 <Font size="36.0" />
                                             </font>
                                         </Label>
-                                        <Label styleClass="rating-star" text="★" mouseTransparent="false">
-                                        <font>
+                                        <Label text="★" styleClass="rating-star">
+                                            <font>
                                                 <Font size="36.0" />
                                             </font>
                                         </Label>
-                                        <Label styleClass="rating-star" text="★" mouseTransparent="false">
-                                        <font>
+                                        <Label text="★" styleClass="rating-star">
+                                            <font>
                                                 <Font size="36.0" />
                                             </font>
                                         </Label>
-                                        <Label styleClass="rating-star" text="★" mouseTransparent="false">
-                                        <font>
+                                        <Label text="★" styleClass="rating-star">
+                                            <font>
                                                 <Font size="36.0" />
                                             </font>
                                         </Label>

@@ -11,6 +11,7 @@ import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 import ca.senecacollege.apd_final_project.util.ScreenSizeManager;
 import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -18,6 +19,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.scene.Node;
@@ -82,42 +84,92 @@ public class FeedbackController implements Initializable {
     }
 
     private void setupRatingStars() {
-        for (int i = 0; i < starsContainer.getChildren().size(); i++) {
-            Label star = (Label) starsContainer.getChildren().get(i);
-            final int rating = i + 1;
+        // Iterate through star labels and set up event handling
+        for (Node node : starsContainer.getChildren()) {
+            Label starLabel = (Label) node;
 
-            // Set mouse events directly on the star
-            star.setOnMouseClicked(event -> {
-                selectedRating = rating;
-                updateStarAppearance();
-                updateSubmitButtonState();
+            // Ensure label is clickable
+            starLabel.setPickOnBounds(true);
+
+            // Add mouse click event
+            starLabel.setOnMouseClicked(this::handleStarClick);
+
+            // Add hover effects
+            starLabel.setOnMouseEntered(event -> {
+                int starIndex = starsContainer.getChildren().indexOf(starLabel);
+                highlightStarsUpTo(starIndex + 1);
             });
 
-            star.setOnMouseEntered(event -> highlightStarsUpTo(rating));
-            star.setOnMouseExited(event -> updateStarAppearance());
+            starLabel.setOnMouseExited(event -> {
+                updateStarAppearance();
+            });
         }
     }
 
-    private void highlightStarsUpTo(int hoverRating) {
-        for (int i = 0; i < starsContainer.getChildren().size(); i++) {
-            Label star = (Label) starsContainer.getChildren().get(i);
-            if (i < hoverRating) {
-                star.getStyleClass().add("rating-star-filled");
-            } else {
-                star.getStyleClass().remove("rating-star-filled");
+    private void handleStarClick(MouseEvent event) {
+        Label clickedStar = (Label) event.getSource();
+        int starIndex = starsContainer.getChildren().indexOf(clickedStar);
+
+        // Set selected rating to the index + 1 (1-based indexing)
+        selectedRating = starIndex + 1;
+
+        // Update star appearance
+        updateStarAppearance();
+
+        // Update submit button state
+        updateSubmitButtonState();
+
+        // Log for debugging
+        System.out.println("Star clicked: " + selectedRating);
+    }
+
+    private void highlightStarsUpTo(int count) {
+        Platform.runLater(() -> {
+            for (int i = 0; i < starsContainer.getChildren().size(); i++) {
+                Label star = (Label) starsContainer.getChildren().get(i);
+
+                // Reset all stars
+                star.getStyleClass().removeAll("rating-star-filled");
+
+                // Fill stars up to the count
+                if (i < count) {
+                    if (!star.getStyleClass().contains("rating-star-filled")) {
+                        star.getStyleClass().add("rating-star-filled");
+                    }
+                }
             }
-        }
+        });
     }
 
     private void updateStarAppearance() {
-        for (int i = 0; i < starsContainer.getChildren().size(); i++) {
-            Label star = (Label) starsContainer.getChildren().get(i);
-            if (i < selectedRating) {
-                star.getStyleClass().add("rating-star-filled");
-            } else {
-                star.getStyleClass().remove("rating-star-filled");
+        Platform.runLater(() -> {
+            // Reset all stars first
+            for (Node node : starsContainer.getChildren()) {
+                Label star = (Label) node;
+                star.getStyleClass().removeAll("rating-star-filled");
             }
-        }
+
+            // Fill stars up to selected rating
+            for (int i = 0; i < selectedRating; i++) {
+                Label star = (Label) starsContainer.getChildren().get(i);
+                if (!star.getStyleClass().contains("rating-star-filled")) {
+                    star.getStyleClass().add("rating-star-filled");
+                }
+            }
+
+            // Log for debugging
+            System.out.println("Updating star appearance. Selected rating: " + selectedRating);
+        });
+    }
+
+    private void updateSubmitButtonState() {
+        Platform.runLater(() -> {
+            boolean canSubmit = currentReservation != null && selectedRating > 0;
+            btnSubmit.setDisable(!canSubmit);
+
+            // Log for debugging
+            System.out.println("Submit button state updated. Can submit: " + canSubmit);
+        });
     }
 
     private void resetStars() {
@@ -127,10 +179,6 @@ public class FeedbackController implements Initializable {
             star.getStyleClass().remove("rating-star-filled");
         }
         updateSubmitButtonState();
-    }
-
-    private void updateSubmitButtonState() {
-        btnSubmit.setDisable(currentReservation == null || selectedRating == 0);
     }
 
     /**
