@@ -37,7 +37,7 @@ public class ScreenSizeManager {
      */
     public static double calculateStageHeight(double maxHeight) {
         Rectangle2D screenBounds = getPrimaryScreenBounds();
-        return Math.min(maxHeight, screenBounds.getHeight() * 0.85);
+        return Math.min(maxHeight, screenBounds.getHeight() * 0.95);
     }
 
     /**

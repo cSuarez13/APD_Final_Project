@@ -14,13 +14,13 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
@@ -262,41 +262,68 @@ public class GuestDetailsController implements Initializable {
 
     @FXML
     private void handleRulesButton(ActionEvent event) {
-        // Show rules and regulations dialog
-        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                javafx.scene.control.Alert.AlertType.INFORMATION);
-        alert.setTitle("Hotel Rules & Regulations");
-        alert.setHeaderText("Please Read Our Rules & Regulations");
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Hotel Rules & Regulations");
 
-        // Create text area for rules content
-        TextArea textArea = new TextArea(Constants.RULES_REGULATIONS);
-        textArea.setEditable(false);
-        textArea.setWrapText(true);
-        textArea.setStyle("-fx-control-inner-background: #2a2a2a; -fx-text-fill: white;");
-
-        // Use ScreenSizeManager to set appropriate dialog size
-        Rectangle2D screenBounds = ScreenSizeManager.getPrimaryScreenBounds();
-        double dialogWidth = Math.min(800, screenBounds.getWidth() * 0.7);
-        double dialogHeight = Math.min(500, screenBounds.getHeight() * 0.6);
-
-        textArea.setPrefWidth(dialogWidth);
-        textArea.setPrefHeight(dialogHeight);
-
-        alert.getDialogPane().setContent(textArea);
-
-        // Apply CSS to the dialog
-        javafx.scene.control.DialogPane dialogPane = alert.getDialogPane();
+        DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
-        dialogPane.getStyleClass().add("root");
-        dialogPane.setStyle("-fx-background-color: #2a2a2a;");
+        dialogPane.setStyle("-fx-background-color: #2d2d2d;");
 
-        // Explicitly set header text color
-        Label headerLabel = (Label) dialogPane.lookup(".header-panel .label");
-        if (headerLabel != null) {
-            headerLabel.setStyle("-fx-text-fill: #b491c8; -fx-font-weight: bold;");
+        Rectangle2D screenBounds = ScreenSizeManager.getPrimaryScreenBounds();
+        double dialogWidth = Math.min(600, screenBounds.getWidth() * 0.7);
+        double dialogHeight = Math.min(700, screenBounds.getHeight() * 0.8);
+
+        dialogPane.setPrefWidth(dialogWidth);
+        dialogPane.setPrefHeight(dialogHeight);
+
+        // Header
+        Label header = new Label("Hotel Rules & Regulations");
+        header.setStyle(
+                "-fx-text-fill: #b491c8;" +
+                        "-fx-font-size: 24px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-padding: 20px;"
+        );
+        header.setAlignment(Pos.CENTER);
+        header.setPrefWidth(dialogWidth);
+
+        // Rules TextArea
+        TextArea rulesText = new TextArea(Constants.RULES_REGULATIONS);
+        rulesText.setEditable(false);
+        rulesText.setPrefHeight(dialogHeight - 80);
+        rulesText.setMaxHeight(dialogHeight - 80);
+        rulesText.setPrefRowCount(Integer.MAX_VALUE);
+        rulesText.setWrapText(true);
+        rulesText.setStyle(
+                "-fx-control-inner-background: #2c2c2c;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 18px;" +
+                        "-fx-padding: 20px;" +
+                        "-fx-background-color: #2c2c2c;" +
+                        "-fx-background-insets: 0;" +
+                        "-fx-background-radius: 0;" +
+                        "-fx-box-border: none;"
+        );
+
+        // Vertical layout
+        VBox content = new VBox(15);
+        content.setStyle("-fx-background-color: #2d2d2d;");
+        content.getChildren().addAll(header, rulesText);
+
+        dialogPane.setContent(content);
+
+        // Customize close button
+        dialogPane.getButtonTypes().add(ButtonType.CLOSE);
+        Node closeButton = dialogPane.lookupButton(ButtonType.CLOSE);
+        if (closeButton instanceof Button) {
+            ((Button) closeButton).setStyle(
+                    "-fx-background-color: #7b1fa2;" +
+                            "-fx-text-fill: white;" +
+                            "-fx-font-weight: bold;"
+            );
         }
 
-        alert.showAndWait();
+        dialog.showAndWait();
     }
 
     private boolean validateInputs() {

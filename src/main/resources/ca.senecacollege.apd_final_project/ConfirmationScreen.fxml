@@ -12,97 +12,105 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="768.0" prefWidth="1024.0" styleClass="root"
+<BorderPane prefHeight="800.0" prefWidth="1024.0" styleClass="root"
             xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ca.senecacollege.apd_final_project.controller.kiosk.ConfirmationController">
     <center>
-        <VBox alignment="CENTER" spacing="20.0" styleClass="card" BorderPane.alignment="CENTER">
+        <VBox alignment="CENTER" spacing="10.0" styleClass="content-container" BorderPane.alignment="CENTER">
             <children>
                 <Label styleClass="label-header" text="Booking Confirmed!">
                     <font>
-                        <Font name="System Bold" size="36.0" />
+                        <Font name="System Bold" size="32.0" />
                     </font>
+                    <VBox.margin>
+                        <Insets top="0.0" bottom="0.0" />
+                    </VBox.margin>
                 </Label>
-                <Label fx:id="lblReservationId" styleClass="label-subheader" text="Reservation #12345">
+                <Label fx:id="lblReservationId" styleClass="label-subheader" text="Reservation #12345"
+                       style="-fx-text-fill: #b491c8; -fx-font-weight: bold;">
                     <font>
-                        <Font size="24.0" />
+                        <Font size="22.0" />
                     </font>
+                    <VBox.margin>
+                        <Insets top="0.0" bottom="0.0" />
+                    </VBox.margin>
                 </Label>
-                <Label styleClass="label-secondary" text="Thank you for choosing Hotel ABC. Your reservation details are below.">
+                <Label styleClass="label-secondary" text="Thank you for choosing Hotel ABC. Your reservation details are below."
+                       style="-fx-text-fill: white;">
                     <font>
                         <Font size="18.0" />
                     </font>
                 </Label>
-                <GridPane hgap="20.0" vgap="10.0">
+                <GridPane hgap="20.0" vgap="8.0">
                     <columnConstraints>
                         <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="150.0" prefWidth="200.0" />
                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="400.0" />
                     </columnConstraints>
                     <rowConstraints>
-                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                     <children>
-                        <Label text="Guest Name:">
+                        <Label text="Guest Name:" style="-fx-text-fill: white;">
                             <font>
                                 <Font size="16.0" />
                             </font>
                         </Label>
-                        <Label text="Room:" GridPane.rowIndex="1">
+                        <Label text="Room:" GridPane.rowIndex="1" style="-fx-text-fill: white;">
                             <font>
                                 <Font size="16.0" />
                             </font>
                         </Label>
-                        <Label text="Check-in Date:" GridPane.rowIndex="2">
+                        <Label text="Check-in Date:" GridPane.rowIndex="2" style="-fx-text-fill: white;">
                             <font>
                                 <Font size="16.0" />
                             </font>
                         </Label>
-                        <Label text="Check-out Date:" GridPane.rowIndex="3">
+                        <Label text="Check-out Date:" GridPane.rowIndex="3" style="-fx-text-fill: white;">
                             <font>
                                 <Font size="16.0" />
                             </font>
                         </Label>
-                        <Label text="Number of Nights:" GridPane.rowIndex="4">
+                        <Label text="Number of Nights:" GridPane.rowIndex="4" style="-fx-text-fill: white;">
                             <font>
                                 <Font size="16.0" />
                             </font>
                         </Label>
-                        <Label text="Number of Guests:" GridPane.rowIndex="5">
+                        <Label text="Number of Guests:" GridPane.rowIndex="5" style="-fx-text-fill: white;">
                             <font>
                                 <Font size="16.0" />
                             </font>
                         </Label>
-                        <Label fx:id="lblGuestName" text="John Doe" GridPane.columnIndex="1">
+                        <Label fx:id="lblGuestName" text="John Doe" GridPane.columnIndex="1" style="-fx-text-fill: white;">
                             <font>
                                 <Font size="16.0" />
                             </font>
                         </Label>
-                        <Label fx:id="lblRoomInfo" text="Single Room (Room #101)" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <Label fx:id="lblRoomInfo" text="Single Room (Room #101)" GridPane.columnIndex="1" GridPane.rowIndex="1" style="-fx-text-fill: white;">
                             <font>
                                 <Font size="16.0" />
                             </font>
                         </Label>
-                        <Label fx:id="lblCheckIn" text="Monday, April 1, 2025" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                        <Label fx:id="lblCheckIn" text="Monday, April 1, 2025" GridPane.columnIndex="1" GridPane.rowIndex="2" style="-fx-text-fill: white;">
                             <font>
                                 <Font size="16.0" />
                             </font>
                         </Label>
-                        <Label fx:id="lblCheckOut" text="Wednesday, April 3, 2025" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                        <Label fx:id="lblCheckOut" text="Wednesday, April 3, 2025" GridPane.columnIndex="1" GridPane.rowIndex="3" style="-fx-text-fill: white;">
                             <font>
                                 <Font size="16.0" />
                             </font>
                         </Label>
-                        <Label fx:id="lblNights" text="2" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                        <Label fx:id="lblNights" text="2" GridPane.columnIndex="1" GridPane.rowIndex="4" style="-fx-text-fill: white;">
                             <font>
                                 <Font size="16.0" />
                             </font>
                         </Label>
-                        <Label fx:id="lblGuests" text="2" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                        <Label fx:id="lblGuests" text="2" GridPane.columnIndex="1" GridPane.rowIndex="5" style="-fx-text-fill: white;">
                             <font>
                                 <Font size="16.0" />
                             </font>
@@ -117,43 +125,44 @@
                         <Insets top="10.0" />
                     </VBox.margin>
                 </Separator>
-                <GridPane hgap="20.0" vgap="10.0">
+                <GridPane hgap="20.0" vgap="8.0">
                     <columnConstraints>
                         <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="150.0" prefWidth="200.0" />
                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="200.0" />
                     </columnConstraints>
                     <rowConstraints>
-                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                     <children>
-                        <Label text="Subtotal:">
+                        <Label text="Subtotal:" style="-fx-text-fill: white;">
                             <font>
                                 <Font size="16.0" />
                             </font>
                         </Label>
-                        <Label text="Tax (13%):" GridPane.rowIndex="1">
+                        <Label text="Tax (13%):" GridPane.rowIndex="1" style="-fx-text-fill: white;">
                             <font>
                                 <Font size="16.0" />
                             </font>
                         </Label>
-                        <Label text="Total Amount:" GridPane.rowIndex="2">
+                        <Label text="Total Amount:" GridPane.rowIndex="2" style="-fx-text-fill: white; -fx-font-weight: bold;">
                             <font>
                                 <Font name="System Bold" size="16.0" />
                             </font>
                         </Label>
-                        <Label fx:id="lblSubtotal" text="200.00" GridPane.columnIndex="1">
+                        <Label fx:id="lblSubtotal" text="200.00" GridPane.columnIndex="1" style="-fx-text-fill: white;">
                             <font>
                                 <Font size="16.0" />
                             </font>
                         </Label>
-                        <Label fx:id="lblTax" text="26.00" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <Label fx:id="lblTax" text="26.00" GridPane.columnIndex="1" GridPane.rowIndex="1" style="-fx-text-fill: white;">
                             <font>
                                 <Font size="16.0" />
                             </font>
                         </Label>
-                        <Label fx:id="lblTotal" styleClass="label-total" text="226.00" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                        <Label fx:id="lblTotal" styleClass="label-total" text="226.00" GridPane.columnIndex="1" GridPane.rowIndex="2"
+                               style="-fx-text-fill: #b491c8; -fx-font-weight: bold;">
                             <font>
                                 <Font name="System Bold" size="16.0" />
                             </font>
@@ -168,44 +177,46 @@
                         <Insets bottom="10.0" />
                     </VBox.margin>
                 </Separator>
-                <Label styleClass="label-secondary" text="Please visit the front desk for payment information and to complete check-in on your arrival date.">
+                <Label styleClass="label-secondary" text="Please visit the front desk for payment information and to complete check-in on your arrival date."
+                       style="-fx-text-fill: #e0e0e0;">
                     <font>
                         <Font name="System Italic" size="14.0" />
                     </font>
                 </Label>
-                <HBox alignment="CENTER" spacing="50.0">
+                <HBox alignment="CENTER" spacing="40.0">
                     <children>
-                        <Button fx:id="btnPrint" mnemonicParsing="false" onAction="#handlePrintButton" prefHeight="60.0" prefWidth="180.0" styleClass="button-secondary" text="Print Confirmation">
+                        <Button fx:id="btnPrint" mnemonicParsing="false" onAction="#handlePrintButton" prefHeight="50.0" prefWidth="200.0" styleClass="button-secondary" text="Print Confirmation">
                             <font>
-                                <Font size="18.0" />
+                                <Font size="16.0" />
                             </font>
                         </Button>
-                        <Button fx:id="btnDone" defaultButton="true" mnemonicParsing="false" onAction="#handleDoneButton" prefHeight="60.0" prefWidth="180.0" styleClass="button" text="Done">
+                        <Button fx:id="btnDone" defaultButton="true" mnemonicParsing="false" onAction="#handleDoneButton" prefHeight="50.0" prefWidth="180.0" styleClass="button" text="Done">
                             <font>
-                                <Font size="18.0" />
+                                <Font size="16.0" />
                             </font>
                         </Button>
                     </children>
                     <VBox.margin>
-                        <Insets top="20.0" />
+                        <Insets top="10.0" />
                     </VBox.margin>
                 </HBox>
             </children>
             <padding>
-                <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+                <Insets bottom="20.0" left="30.0" right="30.0" top="10.0" />
             </padding>
             <BorderPane.margin>
-                <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+                <Insets bottom="20.0" left="30.0" right="30.0" top="10.0" />
             </BorderPane.margin>
         </VBox>
     </center>
     <bottom>
         <HBox alignment="CENTER" styleClass="bg-dark">
             <children>
-                <Label styleClass="label-secondary" text="Thank you for choosing Hotel ABC. We look forward to your stay!" />
+                <Label styleClass="label-secondary" text="Thank you for choosing Hotel ABC. We look forward to your stay!"
+                       style="-fx-text-fill: #e0e0e0;"/>
             </children>
             <padding>
-                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
             </padding>
         </HBox>
     </bottom>
