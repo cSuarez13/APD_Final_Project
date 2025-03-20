@@ -9,6 +9,8 @@ import ca.senecacollege.apd_final_project.service.GuestService;
 import ca.senecacollege.apd_final_project.service.ReservationService;
 import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
+import ca.senecacollege.apd_final_project.util.ScreenSizeManager;
+import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -16,15 +18,14 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import javafx.scene.Node;
 
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ResourceBundle;
-import javafx.scene.Node;
 
 public class FeedbackController implements Initializable {
 
@@ -58,12 +59,6 @@ public class FeedbackController implements Initializable {
     @FXML
     private Button btnCancel;
 
-    @FXML
-    private Label lblError;
-
-    @FXML
-    private Label lblThankYou;
-
     private FeedbackService feedbackService;
     private GuestService guestService;
     private ReservationService reservationService;
@@ -71,95 +66,69 @@ public class FeedbackController implements Initializable {
     private Reservation currentReservation;
     private Guest currentGuest;
     private int selectedRating = 0;
-    private Node[] starControls = new Node[5];
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        // Initialize services
         feedbackService = new FeedbackService();
         guestService = new GuestService();
         reservationService = new ReservationService();
 
-        // Initialize rating stars
         setupRatingStars();
-
-        // Hide the thank you message initially
-        lblThankYou.setVisible(false);
-
-        // Hide error message initially
-        lblError.setVisible(false);
-
-        // Disable submit button initially
         btnSubmit.setDisable(true);
+        applyStyles();
+        adjustStageSize();
 
         LoggingManager.logSystemInfo("FeedbackController initialized");
     }
 
     private void setupRatingStars() {
-        // Modify the method to use Node instead of Control
-        for (int i = 0; i < 5 && i < starsContainer.getChildren().size(); i++) {
+        for (int i = 0; i < starsContainer.getChildren().size(); i++) {
+            Label star = (Label) starsContainer.getChildren().get(i);
             final int rating = i + 1;
-            Node star = starsContainer.getChildren().get(i);
-            starControls[i] = star;
 
-            // Add style class for initial state
-            star.getStyleClass().add("rating-star");
-
-            // Add click event
-            star.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> setRating(rating));
-
-            // Add hover effects
-            star.addEventHandler(MouseEvent.MOUSE_ENTERED, event -> showTemporaryRating(rating));
-            star.addEventHandler(MouseEvent.MOUSE_EXITED, event -> {
-                resetStars();
-                updateStarsForRating(selectedRating);
+            // Set mouse events directly on the star
+            star.setOnMouseClicked(event -> {
+                selectedRating = rating;
+                updateStarAppearance();
+                updateSubmitButtonState();
             });
+
+            star.setOnMouseEntered(event -> highlightStarsUpTo(rating));
+            star.setOnMouseExited(event -> updateStarAppearance());
         }
     }
 
-    /**
-     * Set the rating value
-     *
-     * @param rating The rating (1-5)
-     */
-    private void setRating(int rating) {
-        selectedRating = rating;
-        resetStars();
-        updateStarsForRating(rating);
-
-        // Enable submit button if reservation is verified and rating is selected
-        updateSubmitButtonState();
-    }
-
-    /**
-     * Show temporary rating when hovering
-     *
-     * @param rating The temporary rating to display
-     */
-    private void showTemporaryRating(int rating) {
-        resetStars();
-        updateStarsForRating(rating);
-    }
-
-    private void resetStars() {
-        for (Node star : starControls) {
-            if (star != null) {
+    private void highlightStarsUpTo(int hoverRating) {
+        for (int i = 0; i < starsContainer.getChildren().size(); i++) {
+            Label star = (Label) starsContainer.getChildren().get(i);
+            if (i < hoverRating) {
+                star.getStyleClass().add("rating-star-filled");
+            } else {
                 star.getStyleClass().remove("rating-star-filled");
             }
         }
     }
 
-    private void updateStarsForRating(int rating) {
-        for (int i = 0; i < rating && i < starControls.length; i++) {
-            if (starControls[i] != null) {
-                starControls[i].getStyleClass().add("rating-star-filled");
+    private void updateStarAppearance() {
+        for (int i = 0; i < starsContainer.getChildren().size(); i++) {
+            Label star = (Label) starsContainer.getChildren().get(i);
+            if (i < selectedRating) {
+                star.getStyleClass().add("rating-star-filled");
+            } else {
+                star.getStyleClass().remove("rating-star-filled");
             }
         }
     }
 
-    /**
-     * Update the state of the submit button
-     */
+    private void resetStars() {
+        selectedRating = 0;
+        for (Node node : starsContainer.getChildren()) {
+            Label star = (Label) node;
+            star.getStyleClass().remove("rating-star-filled");
+        }
+        updateSubmitButtonState();
+    }
+
     private void updateSubmitButtonState() {
         btnSubmit.setDisable(currentReservation == null || selectedRating == 0);
     }
@@ -173,10 +142,11 @@ public class FeedbackController implements Initializable {
         clearReservationInfo();
 
         String reservationIdText = txtReservationId.getText().trim();
+        Stage stage = (Stage) txtReservationId.getScene().getWindow();
 
         // Validate input
         if (reservationIdText.isEmpty()) {
-            showError("Please enter a reservation ID");
+            ErrorPopupManager.showValidationErrorPopup(stage, "Reservation ID", "Please enter a reservation ID");
             return;
         }
 
@@ -187,13 +157,14 @@ public class FeedbackController implements Initializable {
             currentReservation = reservationService.getReservationById(reservationId);
 
             if (currentReservation == null) {
-                showError("Reservation not found");
+                ErrorPopupManager.showValidationErrorPopup(stage, "Reservation ID", "Reservation not found");
                 return;
             }
 
             // Only checked-out reservations can leave feedback
             if (!currentReservation.getStatus().equals(Reservation.STATUS_CHECKED_OUT)) {
-                showError("Feedback can only be provided for completed stays");
+                ErrorPopupManager.showValidationErrorPopup(stage, "Reservation Status",
+                        "Feedback can only be provided for completed stays");
                 return;
             }
 
@@ -203,7 +174,8 @@ public class FeedbackController implements Initializable {
             // Check if feedback already exists
             boolean feedbackExists = feedbackService.checkFeedbackExists(reservationId);
             if (feedbackExists) {
-                showError("Feedback has already been submitted for this reservation");
+                ErrorPopupManager.showValidationErrorPopup(stage, "Feedback",
+                        "Feedback has already been submitted for this reservation");
                 return;
             }
 
@@ -216,13 +188,13 @@ public class FeedbackController implements Initializable {
             LoggingManager.logSystemInfo("Reservation verified for feedback: #" + reservationId);
 
         } catch (NumberFormatException e) {
-            showError("Please enter a valid reservation ID");
+            ErrorPopupManager.showValidationErrorPopup(stage, "Reservation ID", "Please enter a valid reservation ID");
         } catch (DatabaseException e) {
             LoggingManager.logException("Database error verifying reservation", e);
-            showError("Database error: " + e.getMessage());
+            ErrorPopupManager.showSystemErrorPopup(stage, "DB-ERROR", "Database error: " + e.getMessage());
         } catch (Exception e) {
             LoggingManager.logException("Error verifying reservation", e);
-            showError("An error occurred: " + e.getMessage());
+            ErrorPopupManager.showSystemErrorPopup(stage, "ERROR-001", "An error occurred: " + e.getMessage());
         }
     }
 
@@ -234,6 +206,8 @@ public class FeedbackController implements Initializable {
         if (currentReservation == null || currentGuest == null || selectedRating == 0) {
             return;
         }
+
+        Stage stage = (Stage) btnSubmit.getScene().getWindow();
 
         try {
             // Create feedback object
@@ -260,10 +234,10 @@ public class FeedbackController implements Initializable {
 
         } catch (DatabaseException e) {
             LoggingManager.logException("Database error saving feedback", e);
-            showError("Error saving feedback: " + e.getMessage());
+            ErrorPopupManager.showSystemErrorPopup(stage, "DB-ERROR", "Error saving feedback: " + e.getMessage());
         } catch (Exception e) {
             LoggingManager.logException("Error submitting feedback", e);
-            showError("An error occurred: " + e.getMessage());
+            ErrorPopupManager.showSystemErrorPopup(stage, "ERROR-002", "An error occurred: " + e.getMessage());
         }
     }
 
@@ -273,25 +247,32 @@ public class FeedbackController implements Initializable {
     @FXML
     private void handleCancelButton(ActionEvent event) {
         try {
-            // Return to welcome screen
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_WELCOME));
-            Parent welcomeRoot = loader.load();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_MAIN));
+            Parent mainRoot = loader.load();
 
-            // Get the current stage
             Stage stage = (Stage) btnCancel.getScene().getWindow();
 
-            // Create new scene
-            Scene welcomeScene = new Scene(welcomeRoot);
-            welcomeScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
+            Scene mainScene = new Scene(mainRoot);
+            mainScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
 
-            // Set the new scene
-            stage.setScene(welcomeScene);
+            stage.setScene(mainScene);
 
-            LoggingManager.logSystemInfo("Returned to welcome screen from feedback");
+            double stageWidth = ScreenSizeManager.calculateStageWidth(800);
+            double stageHeight = ScreenSizeManager.calculateStageHeight(600);
+            double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
+
+            stage.setWidth(stageWidth);
+            stage.setHeight(stageHeight);
+            stage.setX(centerPos[0]);
+            stage.setY(centerPos[1]);
+
+            LoggingManager.logSystemInfo("Returned to main screen from feedback");
 
         } catch (IOException e) {
-            LoggingManager.logException("Error returning to welcome screen", e);
-            showError("Error returning to welcome screen: " + e.getMessage());
+            LoggingManager.logException("Error returning to main screen", e);
+            Stage stage = (Stage) btnCancel.getScene().getWindow();
+            ErrorPopupManager.showSystemErrorPopup(stage, "NAV-004",
+                    "Error returning to main screen: " + e.getMessage());
         }
     }
 
@@ -309,9 +290,6 @@ public class FeedbackController implements Initializable {
 
         // In a real application, you would fetch the room information
         lblRoomInfo.setText("Room #" + currentReservation.getRoomID());
-
-        // Clear any previous error
-        lblError.setVisible(false);
     }
 
     /**
@@ -332,33 +310,133 @@ public class FeedbackController implements Initializable {
         btnSubmit.setDisable(true);
     }
 
-    /**
-     * Show error message
-     *
-     * @param message Error message to display
-     */
-    private void showError(String message) {
-        lblError.setText(message);
-        lblError.setVisible(true);
+    private void applyStyles() {
+        // Style labels to ensure text is white and visible
+        lblGuestName.setStyle("-fx-text-fill: white;");
+        lblCheckInDate.setStyle("-fx-text-fill: white;");
+        lblCheckOutDate.setStyle("-fx-text-fill: white;");
+        lblRoomInfo.setStyle("-fx-text-fill: white;");
+
+        // Style text fields and text area
+        txtReservationId.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+        txtComments.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+
+        // Apply styles to all labels when scene is available
+        txtReservationId.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                // Apply style to all labels
+                for (Node node : newScene.getRoot().lookupAll(".label")) {
+                    if (node instanceof Label && !((Label) node).getStyleClass().contains("label-header")) {
+                        ((Label) node).setStyle("-fx-text-fill: white;");
+                    }
+                }
+            }
+        });
+    }
+
+    private void adjustStageSize() {
+        // Add listener to wait for scene to be available
+        txtReservationId.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null && newScene.getWindow() != null) {
+                try {
+                    Stage stage = (Stage) newScene.getWindow();
+
+                    // Get screen dimensions - use 95% of screen height
+                    double screenHeight = ScreenSizeManager.getPrimaryScreenBounds().getHeight();
+                    double stageHeight = screenHeight * 0.95;
+
+                    // Calculate width based on appropriate aspect ratio
+                    double aspectRatio = 1024.0 / 768.0;
+                    double stageWidth = stageHeight * aspectRatio;
+
+                    // Limit width to 95% of screen width if necessary
+                    double screenWidth = ScreenSizeManager.getPrimaryScreenBounds().getWidth();
+                    if (stageWidth > screenWidth * 0.95) {
+                        stageWidth = screenWidth * 0.95;
+                    }
+
+                    // Get center position
+                    double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
+
+                    // Set size and position
+                    stage.setWidth(stageWidth);
+                    stage.setHeight(stageHeight);
+                    stage.setX(centerPos[0]);
+                    stage.setY(centerPos[1]);
+
+                    // Make sure it's not maximized
+                    stage.setMaximized(false);
+
+                    LoggingManager.logSystemInfo("FeedbackScreen size adjusted to " + stageWidth + "x" + stageHeight);
+                } catch (Exception e) {
+                    LoggingManager.logException("Error adjusting stage size", e);
+                }
+            }
+        });
     }
 
     /**
      * Show thank you message and reset form
      */
     private void showThankYouMessage() {
-        // Hide the form
-        txtReservationId.setDisable(true);
-        btnVerify.setDisable(true);
-        starsContainer.setDisable(true);
-        txtComments.setDisable(true);
-        btnSubmit.setDisable(true);
+        // Show a success dialog
+        Stage stage = (Stage) btnCancel.getScene().getWindow();
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Feedback Submitted");
+        alert.setHeaderText("Thank You!");
+        alert.setContentText("Your feedback has been successfully submitted. We appreciate your input and hope to see you again soon.");
 
-        // Show thank you message
-        lblThankYou.setVisible(true);
+        // Apply CSS styling
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
 
-        // Add a delay and then return to welcome screen
-        // In a real application, you would use a Timeline or similar
-        // For now, we'll just enable the cancel button as "Done"
-        btnCancel.setText("Done");
+        // Style the dialog content
+        dialogPane.lookup(".header-panel").setStyle("-fx-background-color: #2a2a2a;");
+        Label headerText = (Label) dialogPane.lookup(".header-panel .label");
+        if (headerText != null) {
+            headerText.setStyle("-fx-text-fill: #b491c8; -fx-font-weight: bold; -fx-font-size: 18px;");
+        }
+
+        Label contentText = (Label) dialogPane.lookup(".content.label");
+        if (contentText != null) {
+            contentText.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+        }
+
+        // Style the background
+        dialogPane.setStyle("-fx-background-color: #2a2a2a;");
+
+        // Style the button
+        Button okButton = (Button) dialogPane.lookupButton(ButtonType.OK);
+        if (okButton != null) {
+            okButton.setStyle("-fx-background-color: #7b1fa2; -fx-text-fill: white;");
+        }
+
+        alert.showAndWait();
+
+        // Return to main screen after dialog closes
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_MAIN));
+            Parent mainRoot = loader.load();
+
+            Scene mainScene = new Scene(mainRoot);
+            mainScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
+
+            stage.setScene(mainScene);
+
+            // Adjust stage size
+            double stageWidth = ScreenSizeManager.calculateStageWidth(800);
+            double stageHeight = ScreenSizeManager.calculateStageHeight(600);
+            double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
+
+            stage.setWidth(stageWidth);
+            stage.setHeight(stageHeight);
+            stage.setX(centerPos[0]);
+            stage.setY(centerPos[1]);
+
+        } catch (IOException e) {
+            LoggingManager.logException("Error returning to main screen", e);
+            ErrorPopupManager.showSystemErrorPopup(stage, "NAV-004",
+                    "Error returning to main screen: " + e.getMessage());
+        }
     }
 }
