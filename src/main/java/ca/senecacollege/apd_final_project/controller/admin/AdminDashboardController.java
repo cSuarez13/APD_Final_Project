@@ -144,7 +144,7 @@ public class AdminDashboardController implements Initializable {
 
             if (clickedButton.equals(btnDashboard)) {
                 // Dashboard is handled in this controller
-                loader = new FXMLLoader(getClass().getResource(Constants.FXML_DASHBOARD_CONTENT));
+                loader = new FXMLLoader(getClass().getResource(Constants.FXML_ADMIN_DASHBOARD));
                 Parent view = loader.load();
                 contentArea.getChildren().add(view);
                 refreshDashboard();

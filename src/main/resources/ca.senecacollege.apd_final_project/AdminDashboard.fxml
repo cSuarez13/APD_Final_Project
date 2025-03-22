@@ -127,12 +127,6 @@
                     </children>
                 </VBox>
 
-                <!-- Search View - initially hidden -->
-                <VBox fx:id="searchView" spacing="20.0" styleClass="content-area" visible="false">
-                    <!-- Search contents from original file... -->
-                </VBox>
-
-                <!-- Other views would be added here, initially hidden -->
             </children>
         </StackPane>
     </center>
