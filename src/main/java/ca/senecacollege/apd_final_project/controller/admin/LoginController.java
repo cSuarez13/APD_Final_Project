@@ -3,7 +3,9 @@ package ca.senecacollege.apd_final_project.controller.admin;
 import ca.senecacollege.apd_final_project.model.Admin;
 import ca.senecacollege.apd_final_project.service.AdminService;
 import ca.senecacollege.apd_final_project.util.Constants;
+import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
+import ca.senecacollege.apd_final_project.util.ScreenSizeManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -28,15 +30,11 @@ public class LoginController implements Initializable {
     @FXML
     private Button btnLogin;
 
-    @FXML
-    private Label lblError;
-
     private AdminService adminService;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         adminService = new AdminService();
-        lblError.setVisible(false);
 
         // Set up enter key event for password field
         txtPassword.setOnKeyPressed(event -> {
@@ -45,7 +43,41 @@ public class LoginController implements Initializable {
             }
         });
 
+        // Adjust window size when scene is available
+        txtUsername.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null && newScene.getWindow() != null) {
+                adjustStageSize((Stage) newScene.getWindow());
+            }
+        });
+
         LoggingManager.logSystemInfo("LoginController initialized");
+    }
+
+    /**
+     * Adjust the stage size to ensure it fits properly on screen
+     */
+    private void adjustStageSize(Stage stage) {
+        try {
+            // Calculate appropriate size
+            double stageWidth = ScreenSizeManager.calculateStageWidth(500);
+            double stageHeight = ScreenSizeManager.calculateStageHeight(400);
+
+            // Get center position
+            double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
+
+            // Set size and position
+            stage.setWidth(stageWidth);
+            stage.setHeight(stageHeight);
+            stage.setX(centerPos[0]);
+            stage.setY(centerPos[1]);
+
+            // Make sure it's not maximized
+            stage.setMaximized(false);
+
+            LoggingManager.logSystemInfo("Login screen size adjusted");
+        } catch (Exception e) {
+            LoggingManager.logException("Error adjusting login screen size", e);
+        }
     }
 
     @FXML
@@ -53,9 +85,12 @@ public class LoginController implements Initializable {
         String username = txtUsername.getText().trim();
         String password = txtPassword.getText().trim();
 
+        // Get current stage for error popups
+        Stage stage = (Stage) btnLogin.getScene().getWindow();
+
         // Basic validation
         if (username.isEmpty() || password.isEmpty()) {
-            showError("Username and password are required");
+            ErrorPopupManager.showValidationErrorPopup(stage, "Login", "Username and password are required");
             return;
         }
 
@@ -73,17 +108,12 @@ public class LoginController implements Initializable {
                 ((Stage) btnLogin.getScene().getWindow()).close();
             } else {
                 LoggingManager.logSystemWarning("Failed login attempt for username: " + username);
-                showError("Invalid username or password");
+                ErrorPopupManager.showValidationErrorPopup(stage, "Authentication", "Invalid username or password");
             }
         } catch (Exception e) {
             LoggingManager.logException("Error during login", e);
-            showError("Login error: " + e.getMessage());
+            ErrorPopupManager.showSystemErrorPopup(stage, "LOGIN-001", "Login error: " + e.getMessage());
         }
-    }
-
-    private void showError(String message) {
-        lblError.setText(message);
-        lblError.setVisible(true);
     }
 
     private void openAdminDashboard(Admin admin) {
@@ -101,10 +131,26 @@ public class LoginController implements Initializable {
             Scene dashboardScene = new Scene(dashboardRoot);
 
             // Apply the admin CSS
+            dashboardScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
             dashboardScene.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
 
             dashboardStage.setTitle("Admin Dashboard - " + admin.getName());
             dashboardStage.setScene(dashboardScene);
+
+            // Use ScreenSizeManager to set appropriate size
+            double stageWidth = ScreenSizeManager.calculateStageWidth(1200);
+            double stageHeight = ScreenSizeManager.calculateStageHeight(800);
+
+            // Get center position
+            double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
+
+            // Set size and position
+            dashboardStage.setWidth(stageWidth);
+            dashboardStage.setHeight(stageHeight);
+            dashboardStage.setX(centerPos[0]);
+            dashboardStage.setY(centerPos[1]);
+
+            // Show maximized for admin dashboard (large interface)
             dashboardStage.setMaximized(true);
             dashboardStage.show();
 
@@ -112,7 +158,9 @@ public class LoginController implements Initializable {
 
         } catch (IOException e) {
             LoggingManager.logException("Error opening admin dashboard", e);
-            showError("Error opening dashboard: " + e.getMessage());
+            // Get the main stage for error popup
+            Stage stage = (Stage) btnLogin.getScene().getWindow();
+            ErrorPopupManager.showSystemErrorPopup(stage, "DASHBOARD-001", "Error opening dashboard: " + e.getMessage());
         }
     }
 }

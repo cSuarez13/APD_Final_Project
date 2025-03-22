@@ -1,99 +1,126 @@
 /* Import base styles */
 @import 'application.css';
 
-/* Admin-specific Dashboard Layout */
-.admin-dashboard {
-    display: grid;
-    grid-template-areas:
-        "header header"
-        "sidebar main";
-    grid-template-columns: 250px 1fr;
+/* Admin Theme Colors */
+/* CSS variables must be within a selector in JavaFX CSS */
+.root {
+    /* Dark backgrounds */
+    -admin-bg-dark: #121212;
+    -admin-bg-medium: #2a2a2a;
+    -admin-bg-light: #3a3a3a;
+
+    /* Purple accents */
+    -admin-primary: #7b1fa2;
+    -admin-primary-light: #9c27b0;
+    -admin-primary-dark: #4a148c;
+    -admin-accent: #b491c8;
+
+    /* Text colors */
+    -admin-text-primary: white;
+    -admin-text-secondary: #e0e0e0;
+    -admin-text-hint: #a0a0a0;
+
+    /* Base background */
+    -fx-background-color: -admin-bg-dark;
 }
 
-.admin-header {
-    grid-area: header;
-    background-color: var(--color-primary-dark);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--spacing-base);
+/* Typography */
+.label {
+    -fx-text-fill: -admin-text-primary;
 }
 
-.admin-sidebar {
-    grid-area: sidebar;
-    background-color: var(--color-bg-medium);
-    padding: var(--spacing-base);
+.label-header {
+    -fx-text-fill: -admin-accent;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
 }
 
-.admin-main-content {
-    grid-area: main;
-    padding: var(--spacing-base);
+.label-subheader {
+    -fx-text-fill: -admin-accent;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
 }
 
-/* Table Styles */
-.admin-table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: var(--color-bg-medium);
+.label-secondary {
+    -fx-text-fill: -admin-text-secondary;
+    -fx-font-size: 16px;
 }
 
-.admin-table th {
-    background-color: var(--color-primary-dark);
-    color: var(--color-text-primary);
-    padding: var(--spacing-sm);
-    text-align: left;
-}
-
-.admin-table tr:nth-child(even) {
-    background-color: var(--color-bg-dark);
-}
-
-.admin-table tr:hover {
-    background-color: var(--color-primary-accent);
-}
-
-/* Modal Styles */
-.admin-modal {
-    background-color: var(--color-bg-medium);
-    border-radius: var(--border-radius-base);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-/* Tab Styles */
-.admin-tab-container {
-    display: flex;
-    border-bottom: 2px solid var(--color-bg-light);
-}
-
-.admin-tab {
-    padding: var(--spacing-sm) var(--spacing-base);
-    cursor: pointer;
-    background-color: transparent;
-    border: none;
-    color: var(--color-text-secondary);
-}
-
-.admin-tab.active {
-    color: var(--color-primary-light);
-    border-bottom: 2px solid var(--color-primary);
+.label-error {
+    -fx-text-fill: #cf6679;
+    -fx-font-size: 14px;
 }
 
 /* Card Styles */
-.admin-card {
-    background-color: var(--color-bg-medium);
-    border-radius: var(--border-radius-base);
-    padding: var(--spacing-base);
-    margin-bottom: var(--spacing-base);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+.card {
+    -fx-background-color: -admin-bg-medium;
+    -fx-background-radius: 5;
+    -fx-border-color: rgba(123, 31, 162, 0.3);
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
 }
 
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    .admin-dashboard {
-        grid-template-areas:
-            "header"
-            "sidebar"
-            "main";
-        grid-template-columns: 1fr;
-    }
+/* Button Styles */
+.button {
+    -fx-background-color: -admin-primary;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-background-radius: 5;
+}
+
+.button:hover {
+    -fx-background-color: -admin-primary-light;
+}
+
+.button:pressed {
+    -fx-background-color: -admin-primary-dark;
+}
+
+.button-secondary {
+    -fx-background-color: -admin-bg-light;
+    -fx-text-fill: white;
+}
+
+.button-secondary:hover {
+    -fx-background-color: #616161;
+}
+
+.button-danger {
+    -fx-background-color: #c62828;
+    -fx-text-fill: white;
+}
+
+.button-danger:hover {
+    -fx-background-color: #e53935;
+}
+
+/* Form Controls */
+.text-field, .password-field, .text-area, .combo-box, .date-picker, .spinner {
+    -fx-background-color: -admin-bg-light;
+    -fx-border-color: -admin-primary;
+    -fx-border-width: 1;
+    -fx-border-radius: 3;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: -admin-text-hint;
+}
+
+.text-field:focused, .password-field:focused, .text-area:focused,
+.combo-box:focused, .date-picker:focused, .spinner:focused {
+    -fx-border-color: -admin-primary-light;
+    -fx-effect: dropshadow(gaussian, rgba(156, 39, 176, 0.4), 10, 0, 0, 0);
+}
+
+/* Background Styles */
+.bg-dark {
+    -fx-background-color: -admin-bg-dark;
+}
+
+.bg-medium {
+    -fx-background-color: -admin-bg-medium;
+}
+
+.bg-light {
+    -fx-background-color: -admin-bg-light;
 }
