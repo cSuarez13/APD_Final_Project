@@ -5,8 +5,11 @@ import ca.senecacollege.apd_final_project.model.Reservation;
 import ca.senecacollege.apd_final_project.service.GuestService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+
+import java.util.function.Function;
 
 /**
  * Utility class for common TableView operations in the application
@@ -30,8 +33,8 @@ public class TableUtils {
     }
 
     /**
-     * Setup a reservations table with standard columns
-     * @param tableView The table view to setup
+     * Set up a reservations table with standard columns
+     * @param tableView The table view to set up
      * @param data The data to populate the table with
      * @param guestService The guest service to look up guest names
      */
@@ -41,59 +44,78 @@ public class TableUtils {
         // Clear existing columns
         tableView.getColumns().clear();
 
-        TableColumn<Reservation, String> colReservationId = new TableColumn<>("ID");
-        colReservationId.setCellValueFactory(cellData ->
-                new SimpleStringProperty(String.valueOf(cellData.getValue().getReservationID())));
+        // Define columns with detailed configuration
+        TableColumn<Reservation, String> colReservationId = createColumn("ID",
+                cellData -> String.valueOf(cellData.getValue().getReservationID()));
 
-        TableColumn<Reservation, String> colGuestName = new TableColumn<>("Guest");
-        colGuestName.setCellValueFactory(cellData -> {
-            try {
-                Guest guest = guestService.getGuestById(cellData.getValue().getGuestID());
-                return new SimpleStringProperty(guest.getName());
-            } catch (Exception e) {
-                return new SimpleStringProperty("Unknown");
-            }
-        });
+        TableColumn<Reservation, String> colGuestName = createColumn("Guest",
+                cellData -> {
+                    try {
+                        Guest guest = guestService.getGuestById(cellData.getValue().getGuestID());
+                        return guest != null ? guest.getName() : "Unknown";
+                    } catch (Exception e) {
+                        return "Error";
+                    }
+                });
 
-        TableColumn<Reservation, String> colCheckIn = new TableColumn<>("Check-in");
-        colCheckIn.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().getCheckInDate().toString()));
+        TableColumn<Reservation, String> colCheckIn = createColumn("Check-in",
+                cellData -> cellData.getValue().getCheckInDate().toString());
 
-        TableColumn<Reservation, String> colCheckOut = new TableColumn<>("Check-out");
-        colCheckOut.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().getCheckOutDate().toString()));
+        TableColumn<Reservation, String> colCheckOut = createColumn("Check-out",
+                cellData -> cellData.getValue().getCheckOutDate().toString());
 
+        TableColumn<Reservation, String> colStatus = createStatusColumn();
+
+        tableView.getColumns().addAll(colReservationId, colGuestName, colCheckIn, colCheckOut, colStatus);
+        tableView.setItems(data);
+    }
+
+    // Helper method to create standard columns
+    private static TableColumn<Reservation, String> createColumn(String title,
+                                                                 Function<TableColumn.CellDataFeatures<Reservation, String>, String> cellValueExtractor) {
+        TableColumn<Reservation, String> column = new TableColumn<>(title);
+        column.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellValueExtractor.apply(cellData)));
+        return column;
+    }
+
+    // Helper method to create status column with styling
+    private static TableColumn<Reservation, String> createStatusColumn() {
         TableColumn<Reservation, String> colStatus = new TableColumn<>("Status");
         colStatus.setCellValueFactory(cellData -> cellData.getValue().statusProperty());
 
-        // Add style class based on status
-        colStatus.setCellFactory(column -> new javafx.scene.control.TableCell<Reservation, String>() {
+        colStatus.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-
-                if (item == null || empty) {
+                if (empty || item == null) {
                     setText(null);
                     setStyle("");
-                } else {
-                    setText(item);
+                    return;
+                }
 
-                    // Apply appropriate style class based on status
-                    if (item.equals(Reservation.STATUS_CONFIRMED)) {
+                setText(item);
+                getStyleClass().removeAll("status-confirmed", "status-checked-in",
+                        "status-checked-out", "status-cancelled");
+
+                switch (item) {
+                    case Reservation.STATUS_CONFIRMED:
                         getStyleClass().add("status-confirmed");
-                    } else if (item.equals(Reservation.STATUS_CHECKED_IN)) {
+                        break;
+                    case Reservation.STATUS_CHECKED_IN:
                         getStyleClass().add("status-checked-in");
-                    } else if (item.equals(Reservation.STATUS_CHECKED_OUT)) {
+                        break;
+                    case Reservation.STATUS_CHECKED_OUT:
                         getStyleClass().add("status-checked-out");
-                    } else if (item.equals(Reservation.STATUS_CANCELLED)) {
+                        break;
+                    case Reservation.STATUS_CANCELLED:
                         getStyleClass().add("status-cancelled");
-                    }
+                        break;
                 }
             }
         });
 
-        tableView.getColumns().addAll(colReservationId, colGuestName, colCheckIn, colCheckOut, colStatus);
-        tableView.setItems(data);
+        return colStatus;
     }
 
     /**

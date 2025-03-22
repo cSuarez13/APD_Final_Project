@@ -92,24 +92,29 @@ public class AdminDashboardController implements Initializable {
         guestService = new GuestService();
         reservationService = new ReservationService();
 
+        // Initialize data collections
+        todayCheckIns = FXCollections.observableArrayList();
+        todayCheckOuts = FXCollections.observableArrayList();
+
         // Set up tables for dashboard
         setupDashboardTables();
 
-        // Show dashboard view by default
-        handleNavigation(new ActionEvent(btnDashboard, null));
+        // Ensure data is loaded
+        refreshDashboard();
 
         LoggingManager.logSystemInfo("AdminDashboardController initialized");
     }
 
-    /**
-     * Initialize the controller with admin data
-     */
     public void initData(Admin admin) {
         this.currentAdmin = admin;
 
-        // Set admin info
+        // Set admin info - add null check for lblAdminRole
         lblAdminName.setText(admin.getName());
-        lblAdminRole.setText(admin.getRole());
+
+        // Check if lblAdminRole exists before setting text
+        if (lblAdminRole != null) {
+            lblAdminRole.setText(admin.getRole());
+        }
 
         // Load initial data
         refreshDashboard();

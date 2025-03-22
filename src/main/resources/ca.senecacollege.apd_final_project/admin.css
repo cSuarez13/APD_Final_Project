@@ -254,7 +254,6 @@
 /* Make table columns stretch to fill space */
 .admin-table .table-column, .table-view .table-column {
     -fx-alignment: CENTER-LEFT;
-    -fx-pref-width: 1000; /* Large value to make columns expand */
 }
 
 /* Tab Pane Styling */
