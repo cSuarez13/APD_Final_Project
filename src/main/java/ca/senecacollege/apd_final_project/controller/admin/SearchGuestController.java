@@ -1,6 +1,7 @@
 package ca.senecacollege.apd_final_project.controller.admin;
 
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
+import ca.senecacollege.apd_final_project.model.Admin;
 import ca.senecacollege.apd_final_project.model.Guest;
 import ca.senecacollege.apd_final_project.model.Reservation;
 import ca.senecacollege.apd_final_project.service.GuestService;
@@ -73,6 +74,8 @@ public class SearchGuestController implements Initializable {
 
     private DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    private Admin currentAdmin;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         // Initialize services
@@ -112,6 +115,14 @@ public class SearchGuestController implements Initializable {
         lblError.setVisible(false);
 
         LoggingManager.logSystemInfo("SearchGuestController initialized");
+    }
+
+    /**
+     * Initialize controller with admin data
+     */
+    public void initData(Admin admin) {
+        this.currentAdmin = admin;
+        LoggingManager.logSystemInfo("SearchGuestController initialized with admin: " + admin.getUsername());
     }
 
     /**

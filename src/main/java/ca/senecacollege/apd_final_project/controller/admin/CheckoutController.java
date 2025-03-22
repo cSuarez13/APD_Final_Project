@@ -2,10 +2,7 @@ package ca.senecacollege.apd_final_project.controller.admin;
 
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
 import ca.senecacollege.apd_final_project.exception.ReservationException;
-import ca.senecacollege.apd_final_project.model.Billing;
-import ca.senecacollege.apd_final_project.model.Guest;
-import ca.senecacollege.apd_final_project.model.Reservation;
-import ca.senecacollege.apd_final_project.model.Room;
+import ca.senecacollege.apd_final_project.model.*;
 import ca.senecacollege.apd_final_project.service.BillingService;
 import ca.senecacollege.apd_final_project.service.GuestService;
 import ca.senecacollege.apd_final_project.service.ReservationService;
@@ -80,6 +77,8 @@ public class CheckoutController implements Initializable {
     private Room currentRoom;
     private Billing currentBill;
 
+    private Admin currentAdmin;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         // Initialize services
@@ -109,6 +108,14 @@ public class CheckoutController implements Initializable {
         });
 
         LoggingManager.logSystemInfo("CheckoutController initialized");
+    }
+
+    /**
+     * Initialize controller with admin data
+     */
+    public void initData(Admin admin) {
+        this.currentAdmin = admin;
+        LoggingManager.logSystemInfo("CheckoutController initialized with admin: " + admin.getUsername());
     }
 
     @FXML

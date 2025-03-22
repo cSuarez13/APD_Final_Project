@@ -1,6 +1,7 @@
 package ca.senecacollege.apd_final_project.controller.admin;
 
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
+import ca.senecacollege.apd_final_project.model.Admin;
 import ca.senecacollege.apd_final_project.model.Guest;
 import ca.senecacollege.apd_final_project.model.Reservation;
 import ca.senecacollege.apd_final_project.service.GuestService;
@@ -39,12 +40,22 @@ public class CheckInController implements Initializable {
     private GuestService guestService;
     private Reservation currentReservation;
 
+    private Admin currentAdmin;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         reservationService = new ReservationService();
         guestService = new GuestService();
 
         lblError.setVisible(false);
+    }
+
+    /**
+     * Initialize controller with admin data
+     */
+    public void initData(Admin admin) {
+        this.currentAdmin = admin;
+        LoggingManager.logSystemInfo("CheckInController initialized with admin: " + admin.getUsername());
     }
 
     /**

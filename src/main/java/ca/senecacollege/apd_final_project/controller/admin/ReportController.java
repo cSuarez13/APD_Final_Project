@@ -1,12 +1,7 @@
 package ca.senecacollege.apd_final_project.controller.admin;
 
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
-import ca.senecacollege.apd_final_project.model.Billing;
-import ca.senecacollege.apd_final_project.model.Feedback;
-import ca.senecacollege.apd_final_project.model.Guest;
-import ca.senecacollege.apd_final_project.model.Reservation;
-import ca.senecacollege.apd_final_project.model.Room;
-import ca.senecacollege.apd_final_project.model.RoomType;
+import ca.senecacollege.apd_final_project.model.*;
 import ca.senecacollege.apd_final_project.service.BillingService;
 import ca.senecacollege.apd_final_project.service.FeedbackService;
 import ca.senecacollege.apd_final_project.service.GuestService;
@@ -129,6 +124,8 @@ public class ReportController implements Initializable {
     private String currentReportType;
     private LocalDate currentStartDate;
     private LocalDate currentEndDate;
+
+    private Admin currentAdmin;
 
     // Data classes for tables
     public static class RoomOccupancyData {
@@ -908,5 +905,13 @@ public class ReportController implements Initializable {
     private void showError(String message) {
         lblError.setText(message);
         lblError.setVisible(true);
+    }
+
+    /**
+     * Initialize controller with admin data
+     */
+    public void initData(Admin admin) {
+        this.currentAdmin = admin;
+        LoggingManager.logSystemInfo("ReportController initialized with admin: " + admin.getUsername());
     }
 }
