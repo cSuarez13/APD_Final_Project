@@ -7,6 +7,7 @@ import ca.senecacollege.apd_final_project.model.Reservation;
 import ca.senecacollege.apd_final_project.service.GuestService;
 import ca.senecacollege.apd_final_project.service.ReservationService;
 import ca.senecacollege.apd_final_project.util.Constants;
+import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -63,9 +64,6 @@ public class SearchGuestController implements Initializable {
     @FXML
     private Button btnCancel;
 
-    @FXML
-    private Label lblError;
-
     private GuestService guestService;
     private ReservationService reservationService;
 
@@ -105,14 +103,28 @@ public class SearchGuestController implements Initializable {
             updateButtonStates();
         });
 
+        // Bind table width to parent container width
+        tblGuests.prefWidthProperty().bind(((VBox)tblGuests.getParent()).widthProperty());
+        tblReservations.prefWidthProperty().bind(((VBox)tblReservations.getParent()).widthProperty());
+
+        // Ensure both tables have admin-table class
+        tblGuests.getStyleClass().add("admin-table");
+        tblReservations.getStyleClass().add("admin-table");
+
+        // Ensure each column takes proportional width of the table
+        for (TableColumn<Guest, ?> column : tblGuests.getColumns()) {
+            column.prefWidthProperty().bind(tblGuests.widthProperty().divide(tblGuests.getColumns().size()));
+        }
+
+        for (TableColumn<Reservation, ?> column : tblReservations.getColumns()) {
+            column.prefWidthProperty().bind(tblReservations.widthProperty().divide(tblReservations.getColumns().size()));
+        }
+
         // Initially disable action buttons
         btnViewDetails.setDisable(true);
         btnNewReservation.setDisable(true);
         btnCheckIn.setDisable(true);
         btnCheckOut.setDisable(true);
-
-        // Hide error message initially
-        lblError.setVisible(false);
 
         LoggingManager.logSystemInfo("SearchGuestController initialized");
     }
@@ -136,7 +148,7 @@ public class SearchGuestController implements Initializable {
         TableColumn<Guest, String> nameCol = new TableColumn<>("Name");
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 
-        TableColumn<Guest, String> phoneCol = new TableColumn<>("Phone Number");
+        TableColumn<Guest, String> phoneCol = new TableColumn<>("Phone No.");
         phoneCol.setCellValueFactory(new PropertyValueFactory<>("phoneNumber"));
 
         TableColumn<Guest, String> emailCol = new TableColumn<>("Email");
@@ -199,7 +211,6 @@ public class SearchGuestController implements Initializable {
         // Clear previous results and error message
         guestList.clear();
         reservationList.clear();
-        lblError.setVisible(false);
 
         String searchTerm = txtSearchTerm.getText().trim();
 
@@ -308,36 +319,57 @@ public class SearchGuestController implements Initializable {
             dialog.setTitle("Guest Details");
             dialog.setHeaderText("Details for " + selectedGuest.getName());
 
-            // Add guest information
-            VBox content = new VBox(10);
-            content.getChildren().addAll(
-                    new Label("Guest ID: " + selectedGuest.getGuestID()),
-                    new Label("Name: " + selectedGuest.getName()),
-                    new Label("Phone: " + selectedGuest.getPhoneNumber()),
-                    new Label("Email: " + selectedGuest.getEmail()),
-                    new Label("Address: " + selectedGuest.getAddress())
-            );
+            // Set dialog size
+            DialogPane dialogPane = dialog.getDialogPane();
+            dialogPane.setPrefWidth(400);
+            dialogPane.setPrefHeight(400);
+
+            // Style the header - make it centered with larger font
+            Label headerLabel = (Label)dialogPane.lookup(".header-panel .label");
+            if (headerLabel != null) {
+                headerLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-alignment: center;");
+                headerLabel.setAlignment(javafx.geometry.Pos.CENTER);
+            }
+
+            // Add guest information with larger font
+            VBox content = new VBox(15);
+            content.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+            Label idLabel = new Label("Guest ID: " + selectedGuest.getGuestID());
+            Label nameLabel = new Label("Name: " + selectedGuest.getName());
+            Label phoneLabel = new Label("Phone: " + selectedGuest.getPhoneNumber());
+            Label emailLabel = new Label("Email: " + selectedGuest.getEmail());
+            Label addressLabel = new Label("Address: " + selectedGuest.getAddress());
+
+            // Set larger font for all labels
+            idLabel.setStyle("-fx-font-size: 18px;");
+            nameLabel.setStyle("-fx-font-size: 18px;");
+            phoneLabel.setStyle("-fx-font-size: 18px;");
+            emailLabel.setStyle("-fx-font-size: 18px;");
+            addressLabel.setStyle("-fx-font-size: 18px;");
+
+            content.getChildren().addAll(idLabel, nameLabel, phoneLabel, emailLabel, addressLabel);
 
             // Add feedback if available
             if (selectedGuest.getFeedback() != null && !selectedGuest.getFeedback().isEmpty()) {
-                content.getChildren().add(new Separator());
-                content.getChildren().add(new Label("Feedback:"));
+                Separator separator = new Separator();
+                Label feedbackLabel = new Label("Feedback:");
+                feedbackLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
                 TextArea feedbackArea = new TextArea(selectedGuest.getFeedback());
                 feedbackArea.setEditable(false);
-                feedbackArea.setPrefRowCount(4);
-                content.getChildren().add(feedbackArea);
+                feedbackArea.setPrefRowCount(8);
+                feedbackArea.setPrefHeight(120);
+                feedbackArea.setPrefWidth(350);
+                feedbackArea.setStyle("-fx-font-size: 16px; -fx-control-inner-background: #7b1fa2;");
+
+                content.getChildren().addAll(separator, feedbackLabel, feedbackArea);
             }
 
             dialog.getDialogPane().setContent(content);
-
-            // Add close button
             dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
-
-            // Apply CSS to the dialog
-            DialogPane dialogPane = dialog.getDialogPane();
             dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
 
-            // Show the dialog
             dialog.showAndWait();
 
         } catch (Exception e) {
@@ -491,7 +523,7 @@ public class SearchGuestController implements Initializable {
      * @param message The error message to display
      */
     private void showError(String message) {
-        lblError.setText(message);
-        lblError.setVisible(true);
+        Stage stage = (Stage) btnSearch.getScene().getWindow();
+        ErrorPopupManager.showValidationErrorPopup(stage, "Search", message);
     }
 }

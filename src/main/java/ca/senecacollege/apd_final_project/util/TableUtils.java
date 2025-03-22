@@ -21,14 +21,28 @@ public class TableUtils {
      * @param tableView The table to configure
      */
     public static void configureTableColumnWidth(TableView<?> tableView) {
-        // Use CONSTRAINED_RESIZE_POLICY to make columns fill available space evenly
-        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        // Use UNCONSTRAINED_RESIZE_POLICY for better column width distribution
+        tableView.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
 
-        // Set all columns to have equal percentage widths
-        for (TableColumn<?, ?> column : tableView.getColumns()) {
-            column.prefWidthProperty().bind(
-                    tableView.widthProperty().divide(tableView.getColumns().size()).subtract(2)
-            );
+        // Distribute column widths proportionally
+        double tableWidth = tableView.getWidth();
+        double totalColumnWidth = 0;
+
+        for (TableColumn<?,?> column : tableView.getColumns()) {
+            totalColumnWidth += column.getWidth();
+        }
+
+        if (totalColumnWidth > 0) {
+            for (TableColumn<?,?> column : tableView.getColumns()) {
+                // Set each column to proportional width
+                double percentage = column.getWidth() / totalColumnWidth;
+                column.setPrefWidth(tableWidth * percentage);
+            }
+        }
+
+        // Add admin-table style class if not present
+        if (!tableView.getStyleClass().contains("admin-table")) {
+            tableView.getStyleClass().add("admin-table");
         }
     }
 
@@ -47,6 +61,8 @@ public class TableUtils {
         // Define columns with detailed configuration
         TableColumn<Reservation, String> colReservationId = createColumn("ID",
                 cellData -> String.valueOf(cellData.getValue().getReservationID()));
+        colReservationId.setPrefWidth(80);
+        colReservationId.setMinWidth(50);
 
         TableColumn<Reservation, String> colGuestName = createColumn("Guest",
                 cellData -> {
@@ -57,17 +73,28 @@ public class TableUtils {
                         return "Error";
                     }
                 });
+        colGuestName.setPrefWidth(200);
+        colGuestName.setMinWidth(150);
 
         TableColumn<Reservation, String> colCheckIn = createColumn("Check-in",
                 cellData -> cellData.getValue().getCheckInDate().toString());
+        colCheckIn.setPrefWidth(120);
+        colCheckIn.setMinWidth(100);
 
         TableColumn<Reservation, String> colCheckOut = createColumn("Check-out",
                 cellData -> cellData.getValue().getCheckOutDate().toString());
+        colCheckOut.setPrefWidth(120);
+        colCheckOut.setMinWidth(100);
 
         TableColumn<Reservation, String> colStatus = createStatusColumn();
+        colStatus.setPrefWidth(100);
+        colStatus.setMinWidth(80);
 
         tableView.getColumns().addAll(colReservationId, colGuestName, colCheckIn, colCheckOut, colStatus);
         tableView.setItems(data);
+
+        // Configure column widths to fill the table
+        configureTableColumnWidth(tableView);
     }
 
     // Helper method to create standard columns
@@ -130,17 +157,28 @@ public class TableUtils {
         TableColumn<Guest, String> colGuestId = new TableColumn<>("ID");
         colGuestId.setCellValueFactory(cellData ->
                 new SimpleStringProperty(String.valueOf(cellData.getValue().getGuestID())));
+        colGuestId.setPrefWidth(80);
+        colGuestId.setMinWidth(50);
 
         TableColumn<Guest, String> colGuestName = new TableColumn<>("Name");
         colGuestName.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
+        colGuestName.setPrefWidth(200);
+        colGuestName.setMinWidth(150);
 
         TableColumn<Guest, String> colGuestPhone = new TableColumn<>("Phone");
         colGuestPhone.setCellValueFactory(cellData -> cellData.getValue().phoneNumberProperty());
+        colGuestPhone.setPrefWidth(150);
+        colGuestPhone.setMinWidth(120);
 
         TableColumn<Guest, String> colGuestEmail = new TableColumn<>("Email");
         colGuestEmail.setCellValueFactory(cellData -> cellData.getValue().emailProperty());
+        colGuestEmail.setPrefWidth(200);
+        colGuestEmail.setMinWidth(150);
 
         tableView.getColumns().addAll(colGuestId, colGuestName, colGuestPhone, colGuestEmail);
         tableView.setItems(data);
+
+        // Configure column widths to fill the table
+        configureTableColumnWidth(tableView);
     }
 }
