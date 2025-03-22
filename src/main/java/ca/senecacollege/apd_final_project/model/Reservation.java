@@ -5,6 +5,10 @@ import javafx.beans.property.*;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
+/**
+ * Represents a reservation in the hotel reservation system
+ * This is an improved version that uses the ReservationStatus enum
+ */
 public class Reservation {
     private final IntegerProperty reservationID = new SimpleIntegerProperty(this, "reservationID");
     private final IntegerProperty guestID = new SimpleIntegerProperty(this, "guestID");
@@ -12,21 +16,20 @@ public class Reservation {
     private final ObjectProperty<LocalDate> checkInDate = new SimpleObjectProperty<>(this, "checkInDate");
     private final ObjectProperty<LocalDate> checkOutDate = new SimpleObjectProperty<>(this, "checkOutDate");
     private final IntegerProperty numberOfGuests = new SimpleIntegerProperty(this, "numberOfGuests");
-    private final StringProperty status = new SimpleStringProperty(this, "status");
+    private final ObjectProperty<ReservationStatus> status = new SimpleObjectProperty<>(this, "status");
 
-    // Status constants
-    public static final String STATUS_PENDING = "Pending";
-    public static final String STATUS_CONFIRMED = "Confirmed";
-    public static final String STATUS_CHECKED_IN = "Checked In";
-    public static final String STATUS_CHECKED_OUT = "Checked Out";
-    public static final String STATUS_CANCELLED = "Cancelled";
-
+    /**
+     * Default constructor
+     */
     public Reservation() {
         // Default constructor
     }
 
+    /**
+     * Constructor with all fields
+     */
     public Reservation(int reservationID, int guestID, int roomID, LocalDate checkInDate,
-                       LocalDate checkOutDate, int numberOfGuests, String status) {
+                               LocalDate checkOutDate, int numberOfGuests, ReservationStatus status) {
         this.reservationID.set(reservationID);
         this.guestID.set(guestID);
         this.roomID.set(roomID);
@@ -115,19 +118,59 @@ public class Reservation {
     }
 
     // Status property
-    public StringProperty statusProperty() {
+    public ObjectProperty<ReservationStatus> statusProperty() {
         return status;
     }
 
-    public String getStatus() {
+    public ReservationStatus getStatus() {
         return status.get();
     }
 
-    public void setStatus(String status) {
+    /**
+     * Get status display name for UI binding
+     * @return The status display name
+     */
+    public String getStatusDisplayName() {
+        ReservationStatus currentStatus = getStatus();
+        return currentStatus != null ? currentStatus.getDisplayName() : "";
+    }
+
+    /**
+     * String property for the status display name (for UI binding)
+     * @return The status display name property
+     */
+    public StringProperty statusDisplayNameProperty() {
+        StringProperty prop = new SimpleStringProperty();
+        prop.bind(status.asString());
+        return prop;
+    }
+
+    public void setStatus(ReservationStatus status) {
         this.status.set(status);
     }
 
+    /**
+     * Change the reservation status if the transition is valid
+     * @param newStatus The new status
+     * @throws IllegalStateException If the transition is not valid
+     */
+    public void changeStatus(ReservationStatus newStatus) throws IllegalStateException {
+        ReservationStatus currentStatus = getStatus();
+        if (currentStatus == null) {
+            setStatus(newStatus);
+        } else if (currentStatus.canTransitionTo(newStatus)) {
+            setStatus(newStatus);
+        } else {
+            throw new IllegalStateException(
+                    "Cannot transition from " + currentStatus + " to " + newStatus);
+        }
+    }
+
     // Helper methods
+    /**
+     * Calculate the number of nights for this reservation
+     * @return The number of nights
+     */
     public int calculateNumberOfNights() {
         if (getCheckInDate() != null && getCheckOutDate() != null) {
             return (int) ChronoUnit.DAYS.between(getCheckInDate(), getCheckOutDate());
@@ -135,6 +178,14 @@ public class Reservation {
         return 0;
     }
 
+    /**
+     * Create a new reservation
+     * @param guestID Guest ID
+     * @param roomID Room ID
+     * @param checkInDate Check-in date
+     * @param checkOutDate Check-out date
+     * @param numberOfGuests Number of guests
+     */
     public void createReservation(int guestID, int roomID, LocalDate checkInDate,
                                   LocalDate checkOutDate, int numberOfGuests) {
         setGuestID(guestID);
@@ -142,13 +193,45 @@ public class Reservation {
         setCheckInDate(checkInDate);
         setCheckOutDate(checkOutDate);
         setNumberOfGuests(numberOfGuests);
-        setStatus(STATUS_PENDING);
+        setStatus(ReservationStatus.PENDING);
     }
 
-    public void cancelReservation() {
-        setStatus(STATUS_CANCELLED);
+    /**
+     * Cancel the reservation
+     * @throws IllegalStateException If the reservation cannot be cancelled
+     */
+    public void cancelReservation() throws IllegalStateException {
+        changeStatus(ReservationStatus.CANCELLED);
     }
 
+    /**
+     * Confirm the reservation
+     * @throws IllegalStateException If the reservation cannot be confirmed
+     */
+    public void confirmReservation() throws IllegalStateException {
+        changeStatus(ReservationStatus.CONFIRMED);
+    }
+
+    /**
+     * Check in the guest
+     * @throws IllegalStateException If the guest cannot be checked in
+     */
+    public void checkIn() throws IllegalStateException {
+        changeStatus(ReservationStatus.CHECKED_IN);
+    }
+
+    /**
+     * Check out the guest
+     * @throws IllegalStateException If the guest cannot be checked out
+     */
+    public void checkOut() throws IllegalStateException {
+        changeStatus(ReservationStatus.CHECKED_OUT);
+    }
+
+    /**
+     * Get a detailed representation of the reservation
+     * @return Reservation details
+     */
     public String getReservationDetails() {
         return "Reservation #" + getReservationID() +
                 "\nGuest ID: " + getGuestID() +
@@ -158,10 +241,6 @@ public class Reservation {
                 "\nNumber of nights: " + calculateNumberOfNights() +
                 "\nNumber of guests: " + getNumberOfGuests() +
                 "\nStatus: " + getStatus();
-    }
-
-    public void confirmReservation() {
-        setStatus(STATUS_CONFIRMED);
     }
 
     @Override

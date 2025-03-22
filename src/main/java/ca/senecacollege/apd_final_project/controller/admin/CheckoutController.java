@@ -1,5 +1,6 @@
 package ca.senecacollege.apd_final_project.controller.admin;
 
+import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
 import ca.senecacollege.apd_final_project.exception.ReservationException;
 import ca.senecacollege.apd_final_project.model.*;
@@ -8,11 +9,9 @@ import ca.senecacollege.apd_final_project.service.GuestService;
 import ca.senecacollege.apd_final_project.service.ReservationService;
 import ca.senecacollege.apd_final_project.service.RoomService;
 import ca.senecacollege.apd_final_project.util.Constants;
-import ca.senecacollege.apd_final_project.util.LoggingManager;
 import ca.senecacollege.apd_final_project.util.ValidationUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
@@ -20,64 +19,51 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ResourceBundle;
 
-public class CheckoutController implements Initializable {
+public class CheckoutController extends BaseController {
 
+    // FXML Fields
     @FXML
     private TextField txtReservationId;
-
     @FXML
     private Label lblGuestName;
-
     @FXML
     private Label lblRoomInfo;
-
     @FXML
     private Label lblCheckInDate;
-
     @FXML
     private Label lblCheckOutDate;
-
     @FXML
     private Label lblNights;
-
     @FXML
     private Label lblSubtotal;
-
     @FXML
     private Label lblTax;
-
     @FXML
     private TextField txtDiscount;
-
     @FXML
     private Label lblTotal;
-
     @FXML
     private Button btnSearch;
-
     @FXML
     private Button btnCheckout;
-
     @FXML
     private Button btnCancel;
-
     @FXML
     private CheckBox chkFeedbackReminder;
-
     @FXML
-    private Label lblError;
+    private Label lblError; // This will be automatically picked up by BaseController
 
+    // Services
     private ReservationService reservationService;
     private GuestService guestService;
     private RoomService roomService;
     private BillingService billingService;
 
+    // State Variables
     private Reservation currentReservation;
     private Guest currentGuest;
     private Room currentRoom;
     private Billing currentBill;
-
-    private Admin currentAdmin;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -91,7 +77,7 @@ public class CheckoutController implements Initializable {
         chkFeedbackReminder.setSelected(true);
 
         // Hide error message initially
-        lblError.setVisible(false);
+        hideError();
 
         // Disable checkout button until reservation is found
         btnCheckout.setDisable(true);
@@ -107,21 +93,15 @@ public class CheckoutController implements Initializable {
             }
         });
 
-        LoggingManager.logSystemInfo("CheckoutController initialized");
-    }
-
-    /**
-     * Initialize controller with admin data
-     */
-    public void initData(Admin admin) {
-        this.currentAdmin = admin;
-        LoggingManager.logSystemInfo("CheckoutController initialized with admin: " + admin.getUsername());
+        // Call parent initialize
+        super.initialize(url, resourceBundle);
     }
 
     @FXML
     private void handleSearchButton(ActionEvent event) {
         // Clear previous data
         clearFields();
+        hideError();
 
         String reservationIdText = txtReservationId.getText().trim();
 
@@ -167,13 +147,11 @@ public class CheckoutController implements Initializable {
             // Enable checkout button
             btnCheckout.setDisable(false);
 
-            LoggingManager.logSystemInfo("Found reservation #" + reservationId + " for checkout");
+            logAdminActivity("Found reservation #" + reservationId + " for checkout");
 
         } catch (DatabaseException e) {
-            LoggingManager.logException("Error fetching reservation for checkout", e);
             showError("Database error: " + e.getMessage());
         } catch (Exception e) {
-            LoggingManager.logException("Unexpected error during checkout search", e);
             showError("An unexpected error occurred: " + e.getMessage());
         }
     }
@@ -220,9 +198,7 @@ public class CheckoutController implements Initializable {
             reservationService.checkOut(currentReservation.getReservationID());
 
             // Log the checkout
-            String adminUser = "Admin"; // In a real app, this would be the logged-in admin
-            LoggingManager.logAdminActivity(adminUser, "Checked out reservation #" +
-                    currentReservation.getReservationID());
+            logAdminActivity("Checked out reservation #" + currentReservation.getReservationID());
 
             // Show feedback reminder if the checkbox is selected
             if (chkFeedbackReminder.isSelected()) {
@@ -230,30 +206,20 @@ public class CheckoutController implements Initializable {
             }
 
             // Show success message
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Checkout Successful");
-            alert.setHeaderText("Guest Checked Out Successfully");
-            alert.setContentText("Reservation #" + currentReservation.getReservationID() +
-                    " has been successfully checked out.\nBill #" + billId +
-                    " has been generated.");
-
-            // Apply CSS to the dialog
-            DialogPane dialogPane = alert.getDialogPane();
-            dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
-
-            alert.showAndWait();
+            showAlert(Alert.AlertType.INFORMATION,
+                    "Checkout Successful",
+                    "Reservation #" + currentReservation.getReservationID() +
+                            " has been successfully checked out.\nBill #" + billId +
+                            " has been generated.");
 
             // Clear the form
             clearAll();
 
         } catch (ReservationException e) {
-            LoggingManager.logException("Error checking out reservation", e);
             showError("Checkout error: " + e.getMessage());
         } catch (DatabaseException e) {
-            LoggingManager.logException("Database error during checkout", e);
             showError("Database error: " + e.getMessage());
         } catch (Exception e) {
-            LoggingManager.logException("Unexpected error during checkout", e);
             showError("An unexpected error occurred: " + e.getMessage());
         }
     }
@@ -262,10 +228,7 @@ public class CheckoutController implements Initializable {
     private void handleCancelButton(ActionEvent event) {
         // Clear all fields and close the window
         clearAll();
-
-        // Get the stage and close it
-        Stage stage = (Stage) btnCancel.getScene().getWindow();
-        stage.close();
+        closeWindow();
     }
 
     /**
@@ -331,17 +294,10 @@ public class CheckoutController implements Initializable {
      * Show a reminder to the admin about guest feedback
      */
     private void showFeedbackReminder() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Feedback Reminder");
-        alert.setHeaderText("Remind Guest About Feedback");
-        alert.setContentText("Please remind the guest that they can use the kiosk " +
-                "to provide feedback about their stay.");
-
-        // Apply CSS to the dialog
-        DialogPane dialogPane = alert.getDialogPane();
-        dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
-
-        alert.showAndWait();
+        showAlert(Alert.AlertType.INFORMATION,
+                "Feedback Reminder",
+                "Please remind the guest that they can use the kiosk " +
+                        "to provide feedback about their stay.");
     }
 
     /**
@@ -355,13 +311,14 @@ public class CheckoutController implements Initializable {
         currentRoom = null;
         currentBill = null;
         btnCheckout.setDisable(true);
-        lblError.setVisible(false);
+        hideError();
     }
 
     /**
      * Clear the fields that display reservation information
      */
-    private void clearFields() {
+    @Override
+    protected void clearFields() {
         lblGuestName.setText("");
         lblRoomInfo.setText("");
         lblCheckInDate.setText("");
@@ -374,12 +331,13 @@ public class CheckoutController implements Initializable {
     }
 
     /**
-     * Show an error message in the UI
-     *
-     * @param message The error message to display
+     * Get the stage from a control in the scene
      */
-    private void showError(String message) {
-        lblError.setText(message);
-        lblError.setVisible(true);
+    @Override
+    protected Stage getStage() {
+        if (btnCancel != null && btnCancel.getScene() != null) {
+            return (Stage) btnCancel.getScene().getWindow();
+        }
+        return null;
     }
 }
