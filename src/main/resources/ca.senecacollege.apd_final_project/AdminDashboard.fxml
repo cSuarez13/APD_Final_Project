@@ -56,7 +56,7 @@
 
     <center>
         <StackPane fx:id="contentArea">
-            <fx:include source="/ca.senecacollege.apd_final_project/DashboardContent.fxml"/>
+            <fx:include source="DashboardContent.fxml"/>
         </StackPane>
     </center>
 
