@@ -3,6 +3,7 @@ package ca.senecacollege.apd_final_project.service;
 import ca.senecacollege.apd_final_project.exception.ValidationException;
 import ca.senecacollege.apd_final_project.model.Guest;
 import ca.senecacollege.apd_final_project.model.Reservation;
+import ca.senecacollege.apd_final_project.model.ReservationStatus;
 import ca.senecacollege.apd_final_project.util.ValidationUtils;
 
 import java.time.LocalDate;
@@ -97,7 +98,7 @@ public class ValidationService {
             throw new ValidationException("Reservation not found");
         }
 
-        if (!reservation.getStatus().equals(Reservation.STATUS_CONFIRMED)) {
+        if (!reservation.getStatus().equals(ReservationStatus.CONFIRMED)) {
             throw new ValidationException("Cannot check in: reservation is not confirmed");
         }
 
@@ -118,7 +119,7 @@ public class ValidationService {
             throw new ValidationException("Reservation not found");
         }
 
-        if (!reservation.getStatus().equals(Reservation.STATUS_CHECKED_IN)) {
+        if (!reservation.getStatus().equals(ReservationStatus.CHECKED_IN)) {
             throw new ValidationException("Cannot check out: guest is not checked in");
         }
     }

@@ -398,8 +398,8 @@ public class ReportController implements Initializable {
 
         // Count occupied rooms by type
         for (Reservation reservation : currentReservations) {
-            if (reservation.getStatus().equals(Reservation.STATUS_CHECKED_IN) ||
-                    reservation.getStatus().equals(Reservation.STATUS_CONFIRMED)) {
+            if (reservation.getStatus().equals(ReservationStatus.CHECKED_IN) ||
+                    reservation.getStatus().equals(ReservationStatus.CONFIRMED)) {
 
                 // Get the room for this reservation
                 Room room = roomService.getRoomById(reservation.getRoomID());

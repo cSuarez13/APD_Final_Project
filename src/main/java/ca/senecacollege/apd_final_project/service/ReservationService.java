@@ -4,6 +4,7 @@ import ca.senecacollege.apd_final_project.dao.ReservationDAO;
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
 import ca.senecacollege.apd_final_project.exception.ReservationException;
 import ca.senecacollege.apd_final_project.model.Reservation;
+import ca.senecacollege.apd_final_project.model.ReservationStatus;
 import ca.senecacollege.apd_final_project.model.Room;
 import ca.senecacollege.apd_final_project.model.RoomType;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
@@ -42,7 +43,7 @@ public class ReservationService {
             reservation.setRoomID(room.getRoomID());
 
             // Set initial status
-            reservation.setStatus(Reservation.STATUS_CONFIRMED);
+            reservation.setStatus(ReservationStatus.CONFIRMED);
 
             // Save the reservation
             int reservationId = reservationDAO.save(reservation);
@@ -103,7 +104,7 @@ public class ReservationService {
             Reservation reservation = getReservationById(reservationId);
 
             // Update status
-            reservation.setStatus(Reservation.STATUS_CANCELLED);
+            reservation.setStatus(ReservationStatus.CANCELLED);
             updateReservation(reservation);
 
             // Make the room available again
@@ -143,12 +144,12 @@ public class ReservationService {
             Reservation reservation = getReservationById(reservationId);
 
             // Verify reservation status
-            if (!reservation.getStatus().equals(Reservation.STATUS_CONFIRMED)) {
+            if (!reservation.getStatus().equals(ReservationStatus.CONFIRMED)) {
                 throw new ReservationException("Cannot check in: reservation is not confirmed");
             }
 
             // Update status
-            reservation.setStatus(Reservation.STATUS_CHECKED_IN);
+            reservation.setStatus(ReservationStatus.CHECKED_IN);
             updateReservation(reservation);
 
             LoggingManager.logSystemInfo("Checked in reservation #" + reservationId);
@@ -169,12 +170,12 @@ public class ReservationService {
             Reservation reservation = getReservationById(reservationId);
 
             // Verify reservation status
-            if (!reservation.getStatus().equals(Reservation.STATUS_CHECKED_IN)) {
+            if (!reservation.getStatus().equals(ReservationStatus.CHECKED_IN)) {
                 throw new ReservationException("Cannot check out: guest is not checked in");
             }
 
             // Update status
-            reservation.setStatus(Reservation.STATUS_CHECKED_OUT);
+            reservation.setStatus(ReservationStatus.CHECKED_OUT);
             updateReservation(reservation);
 
             // Make the room available again
@@ -196,8 +197,8 @@ public class ReservationService {
     public List<Reservation> getActiveReservations() throws DatabaseException {
         try {
             return reservationDAO.findByStatus(new String[]{
-                    Reservation.STATUS_CONFIRMED,
-                    Reservation.STATUS_CHECKED_IN
+                    ReservationStatus.CONFIRMED.getDisplayName(),
+                    ReservationStatus.CHECKED_IN.getDisplayName()
             });
         } catch (Exception e) {
             LoggingManager.logException("Error retrieving active reservations", e);
@@ -259,9 +260,9 @@ public class ReservationService {
      * @return List of reservations with the specified status
      * @throws DatabaseException If there's an error retrieving reservations
      */
-    public List<Reservation> getReservationsByStatus(String status) throws DatabaseException {
+    public List<Reservation> getReservationsByStatus(ReservationStatus status) throws DatabaseException {
         try {
-            return reservationDAO.findByStatus(new String[]{status});
+            return reservationDAO.findByStatus(new String[]{status.getDisplayName()});
         } catch (Exception e) {
             LoggingManager.logException("Error retrieving reservations by status: " + status, e);
             throw new DatabaseException("Error retrieving reservations: " + e.getMessage(), e);

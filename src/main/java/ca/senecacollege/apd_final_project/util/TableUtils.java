@@ -109,7 +109,10 @@ public class TableUtils {
     // Helper method to create status column with styling
     private static TableColumn<Reservation, String> createStatusColumn() {
         TableColumn<Reservation, String> colStatus = new TableColumn<>("Status");
-        colStatus.setCellValueFactory(cellData -> cellData.getValue().statusProperty());
+
+        // Use a lambda to convert the ReservationStatus to its display name
+        colStatus.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellData.getValue().getStatusDisplayName()));
 
         colStatus.setCellFactory(column -> new TableCell<>() {
             @Override
@@ -126,16 +129,16 @@ public class TableUtils {
                         "status-checked-out", "status-cancelled");
 
                 switch (item) {
-                    case Reservation.STATUS_CONFIRMED:
+                    case "Confirmed":
                         getStyleClass().add("status-confirmed");
                         break;
-                    case Reservation.STATUS_CHECKED_IN:
+                    case "Checked In":
                         getStyleClass().add("status-checked-in");
                         break;
-                    case Reservation.STATUS_CHECKED_OUT:
+                    case "Checked Out":
                         getStyleClass().add("status-checked-out");
                         break;
-                    case Reservation.STATUS_CANCELLED:
+                    case "Cancelled":
                         getStyleClass().add("status-cancelled");
                         break;
                 }

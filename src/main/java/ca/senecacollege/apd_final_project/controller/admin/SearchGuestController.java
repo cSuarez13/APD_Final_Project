@@ -4,6 +4,7 @@ import ca.senecacollege.apd_final_project.exception.DatabaseException;
 import ca.senecacollege.apd_final_project.model.Admin;
 import ca.senecacollege.apd_final_project.model.Guest;
 import ca.senecacollege.apd_final_project.model.Reservation;
+import ca.senecacollege.apd_final_project.model.ReservationStatus;
 import ca.senecacollege.apd_final_project.service.GuestService;
 import ca.senecacollege.apd_final_project.service.ReservationService;
 import ca.senecacollege.apd_final_project.util.Constants;
@@ -297,11 +298,11 @@ public class SearchGuestController implements Initializable {
 
         // Only enable check-in button if reservation is in confirmed status
         btnCheckIn.setDisable(selectedReservation == null ||
-                !selectedReservation.getStatus().equals(Reservation.STATUS_CONFIRMED));
+                !selectedReservation.getStatus().equals(ReservationStatus.CONFIRMED));
 
         // Only enable check-out button if reservation is in checked-in status
         btnCheckOut.setDisable(selectedReservation == null ||
-                !selectedReservation.getStatus().equals(Reservation.STATUS_CHECKED_IN));
+                !selectedReservation.getStatus().equals(ReservationStatus.CHECKED_IN));
     }
 
     /**

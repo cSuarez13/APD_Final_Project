@@ -1,21 +1,20 @@
 package ca.senecacollege.apd_final_project.controller.kiosk;
 
+import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
+import ca.senecacollege.apd_final_project.exception.ValidationException;
 import ca.senecacollege.apd_final_project.model.Feedback;
 import ca.senecacollege.apd_final_project.model.Guest;
 import ca.senecacollege.apd_final_project.model.Reservation;
-import ca.senecacollege.apd_final_project.service.FeedbackService;
-import ca.senecacollege.apd_final_project.service.GuestService;
-import ca.senecacollege.apd_final_project.service.ReservationService;
+import ca.senecacollege.apd_final_project.model.ReservationStatus;
+import ca.senecacollege.apd_final_project.service.*;
 import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 import ca.senecacollege.apd_final_project.util.ScreenSizeManager;
-import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -29,7 +28,7 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ResourceBundle;
 
-public class FeedbackController implements Initializable {
+public class FeedbackController extends BaseController {
 
     @FXML
     private TextField txtReservationId;
@@ -61,9 +60,13 @@ public class FeedbackController implements Initializable {
     @FXML
     private Button btnCancel;
 
+    @FXML
+    private Label lblError;
+
     private FeedbackService feedbackService;
     private GuestService guestService;
     private ReservationService reservationService;
+    private ValidationService validationService;
 
     private Reservation currentReservation;
     private Guest currentGuest;
@@ -71,16 +74,19 @@ public class FeedbackController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        feedbackService = new FeedbackService();
-        guestService = new GuestService();
-        reservationService = new ReservationService();
+        // Get services from ServiceLocator
+        feedbackService = ServiceLocator.getService(FeedbackService.class);
+        guestService = ServiceLocator.getService(GuestService.class);
+        reservationService = ServiceLocator.getService(ReservationService.class);
+        validationService = ServiceLocator.getService(ValidationService.class);
 
         setupRatingStars();
         btnSubmit.setDisable(true);
         applyStyles();
         adjustStageSize();
 
-        LoggingManager.logSystemInfo("FeedbackController initialized");
+        // Call parent initialize
+        super.initialize(url, resourceBundle);
     }
 
     private void setupRatingStars() {
@@ -118,9 +124,6 @@ public class FeedbackController implements Initializable {
 
         // Update submit button state
         updateSubmitButtonState();
-
-        // Log for debugging
-        System.out.println("Star clicked: " + selectedRating);
     }
 
     private void highlightStarsUpTo(int count) {
@@ -156,9 +159,6 @@ public class FeedbackController implements Initializable {
                     star.getStyleClass().add("rating-star-filled");
                 }
             }
-
-            // Log for debugging
-            System.out.println("Updating star appearance. Selected rating: " + selectedRating);
         });
     }
 
@@ -166,9 +166,6 @@ public class FeedbackController implements Initializable {
         Platform.runLater(() -> {
             boolean canSubmit = currentReservation != null && selectedRating > 0;
             btnSubmit.setDisable(!canSubmit);
-
-            // Log for debugging
-            System.out.println("Submit button state updated. Can submit: " + canSubmit);
         });
     }
 
@@ -187,33 +184,27 @@ public class FeedbackController implements Initializable {
     @FXML
     private void handleVerifyButton(ActionEvent event) {
         // Clear previous data
-        clearReservationInfo();
+        clearFields();
+        hideError();
 
         String reservationIdText = txtReservationId.getText().trim();
-        Stage stage = (Stage) txtReservationId.getScene().getWindow();
-
-        // Validate input
-        if (reservationIdText.isEmpty()) {
-            ErrorPopupManager.showValidationErrorPopup(stage, "Reservation ID", "Please enter a reservation ID");
-            return;
-        }
 
         try {
+            // Validate ID format
+            validationService.validateId(reservationIdText, "Reservation ID");
+
             int reservationId = Integer.parseInt(reservationIdText);
 
             // Fetch reservation
             currentReservation = reservationService.getReservationById(reservationId);
 
             if (currentReservation == null) {
-                ErrorPopupManager.showValidationErrorPopup(stage, "Reservation ID", "Reservation not found");
-                return;
+                throw new ValidationException("Reservation not found");
             }
 
             // Only checked-out reservations can leave feedback
-            if (!currentReservation.getStatus().equals(Reservation.STATUS_CHECKED_OUT)) {
-                ErrorPopupManager.showValidationErrorPopup(stage, "Reservation Status",
-                        "Feedback can only be provided for completed stays");
-                return;
+            if (currentReservation.getStatus() != ReservationStatus.CHECKED_OUT) {
+                throw new ValidationException("Feedback can only be provided for completed stays");
             }
 
             // Fetch guest information
@@ -222,9 +213,7 @@ public class FeedbackController implements Initializable {
             // Check if feedback already exists
             boolean feedbackExists = feedbackService.checkFeedbackExists(reservationId);
             if (feedbackExists) {
-                ErrorPopupManager.showValidationErrorPopup(stage, "Feedback",
-                        "Feedback has already been submitted for this reservation");
-                return;
+                throw new ValidationException("Feedback has already been submitted for this reservation");
             }
 
             // Display reservation information
@@ -233,16 +222,18 @@ public class FeedbackController implements Initializable {
             // Enable submit button if rating is selected
             updateSubmitButtonState();
 
-            LoggingManager.logSystemInfo("Reservation verified for feedback: #" + reservationId);
+            logSystemActivity("Reservation verified for feedback: #" + reservationId);
 
+        } catch (ValidationException e) {
+            showError(e.getMessage());
         } catch (NumberFormatException e) {
-            ErrorPopupManager.showValidationErrorPopup(stage, "Reservation ID", "Please enter a valid reservation ID");
+            showError("Please enter a valid reservation ID");
         } catch (DatabaseException e) {
             LoggingManager.logException("Database error verifying reservation", e);
-            ErrorPopupManager.showSystemErrorPopup(stage, "DB-ERROR", "Database error: " + e.getMessage());
+            showError("Database error: " + e.getMessage());
         } catch (Exception e) {
             LoggingManager.logException("Error verifying reservation", e);
-            ErrorPopupManager.showSystemErrorPopup(stage, "ERROR-001", "An error occurred: " + e.getMessage());
+            showError("An error occurred: " + e.getMessage());
         }
     }
 
@@ -254,8 +245,6 @@ public class FeedbackController implements Initializable {
         if (currentReservation == null || currentGuest == null || selectedRating == 0) {
             return;
         }
-
-        Stage stage = (Stage) btnSubmit.getScene().getWindow();
 
         try {
             // Create feedback object
@@ -277,15 +266,15 @@ public class FeedbackController implements Initializable {
             // Show thank you message
             showThankYouMessage();
 
-            LoggingManager.logSystemInfo("Feedback submitted for reservation #" +
+            logSystemActivity("Feedback submitted for reservation #" +
                     currentReservation.getReservationID() + " with rating " + selectedRating);
 
         } catch (DatabaseException e) {
             LoggingManager.logException("Database error saving feedback", e);
-            ErrorPopupManager.showSystemErrorPopup(stage, "DB-ERROR", "Error saving feedback: " + e.getMessage());
+            showError("Error saving feedback: " + e.getMessage());
         } catch (Exception e) {
             LoggingManager.logException("Error submitting feedback", e);
-            ErrorPopupManager.showSystemErrorPopup(stage, "ERROR-002", "An error occurred: " + e.getMessage());
+            showError("An error occurred: " + e.getMessage());
         }
     }
 
@@ -298,7 +287,7 @@ public class FeedbackController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_MAIN));
             Parent mainRoot = loader.load();
 
-            Stage stage = (Stage) btnCancel.getScene().getWindow();
+            Stage stage = getStage();
 
             Scene mainScene = new Scene(mainRoot);
             mainScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
@@ -314,13 +303,12 @@ public class FeedbackController implements Initializable {
             stage.setX(centerPos[0]);
             stage.setY(centerPos[1]);
 
-            LoggingManager.logSystemInfo("Returned to main screen from feedback");
+            logSystemActivity("Returned to main screen from feedback");
 
         } catch (IOException e) {
             LoggingManager.logException("Error returning to main screen", e);
-            Stage stage = (Stage) btnCancel.getScene().getWindow();
-            ErrorPopupManager.showSystemErrorPopup(stage, "NAV-004",
-                    "Error returning to main screen: " + e.getMessage());
+            DialogService.showError(getStage(), "Navigation Error",
+                    "Error returning to main screen: " + e.getMessage(), e);
         }
     }
 
@@ -343,7 +331,8 @@ public class FeedbackController implements Initializable {
     /**
      * Clear reservation information
      */
-    private void clearReservationInfo() {
+    @Override
+    protected void clearFields() {
         lblGuestName.setText("");
         lblCheckInDate.setText("");
         lblCheckOutDate.setText("");
@@ -415,7 +404,7 @@ public class FeedbackController implements Initializable {
                     // Make sure it's not maximized
                     stage.setMaximized(false);
 
-                    LoggingManager.logSystemInfo("FeedbackScreen size adjusted to " + stageWidth + "x" + stageHeight);
+                    logSystemActivity("FeedbackScreen size adjusted to " + stageWidth + "x" + stageHeight);
                 } catch (Exception e) {
                     LoggingManager.logException("Error adjusting stage size", e);
                 }
@@ -427,39 +416,37 @@ public class FeedbackController implements Initializable {
      * Show thank you message and reset form
      */
     private void showThankYouMessage() {
-        // Show a success dialog
-        Stage stage = (Stage) btnCancel.getScene().getWindow();
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Feedback Submitted");
-        alert.setHeaderText("Thank You!");
-        alert.setContentText("Your feedback has been successfully submitted. We appreciate your input and hope to see you again soon.");
+        Stage stage = getStage();
 
-        // Apply CSS styling
-        DialogPane dialogPane = alert.getDialogPane();
+        DialogPane dialogPane = new DialogPane();
+        dialogPane.setHeaderText("Thank You!");
+
+        // Increase font size and add more padding
+        Label contentLabel = new Label("Your feedback has been successfully submitted. We appreciate your input and hope to see you again soon.");
+        contentLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: white; -fx-padding: 20px;");
+        contentLabel.setWrapText(true);
+
+        dialogPane.setContent(contentLabel);
         dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
 
-        // Style the dialog content
-        dialogPane.lookup(".header-panel").setStyle("-fx-background-color: #2a2a2a;");
-        Label headerText = (Label) dialogPane.lookup(".header-panel .label");
-        if (headerText != null) {
-            headerText.setStyle("-fx-text-fill: #b491c8; -fx-font-weight: bold; -fx-font-size: 18px;");
-        }
+        // Apply custom styling
+        dialogPane.setStyle("-fx-background-color: #2a2a2a; -fx-min-width: 500px; -fx-min-height: 300px;");
 
-        Label contentText = (Label) dialogPane.lookup(".content.label");
-        if (contentText != null) {
-            contentText.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
-        }
+        Label headerText = new Label("Thank You!");
+        headerText.setStyle("-fx-text-fill: #b491c8; -fx-font-weight: bold; -fx-font-size: 24px;");
+        dialogPane.setHeader(headerText);
 
-        // Style the background
-        dialogPane.setStyle("-fx-background-color: #2a2a2a;");
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Feedback Submitted");
+        dialog.setDialogPane(dialogPane);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
 
-        // Style the button
         Button okButton = (Button) dialogPane.lookupButton(ButtonType.OK);
         if (okButton != null) {
-            okButton.setStyle("-fx-background-color: #7b1fa2; -fx-text-fill: white;");
+            okButton.setStyle("-fx-background-color: #7b1fa2; -fx-text-fill: white; -fx-font-size: 16px; -fx-min-width: 100px;");
         }
 
-        alert.showAndWait();
+        dialog.showAndWait();
 
         // Return to main screen after dialog closes
         try {
@@ -483,8 +470,26 @@ public class FeedbackController implements Initializable {
 
         } catch (IOException e) {
             LoggingManager.logException("Error returning to main screen", e);
-            ErrorPopupManager.showSystemErrorPopup(stage, "NAV-004",
-                    "Error returning to main screen: " + e.getMessage());
+            DialogService.showError(stage, "Navigation Error",
+                    "Error returning to main screen: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Get the current stage
+     */
+    @Override
+    protected Stage getStage() {
+        if (btnSubmit != null && btnSubmit.getScene() != null) {
+            return (Stage) btnSubmit.getScene().getWindow();
+        }
+        return null;
+    }
+
+    /**
+     * Log a system activity
+     */
+    private void logSystemActivity(String activity) {
+        LoggingManager.logSystemInfo(activity);
     }
 }

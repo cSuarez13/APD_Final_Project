@@ -3,6 +3,7 @@ package ca.senecacollege.apd_final_project.controller.admin;
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
 import ca.senecacollege.apd_final_project.model.Admin;
 import ca.senecacollege.apd_final_project.model.Reservation;
+import ca.senecacollege.apd_final_project.model.ReservationStatus;
 import ca.senecacollege.apd_final_project.service.ReservationService;
 import ca.senecacollege.apd_final_project.service.GuestService;
 import ca.senecacollege.apd_final_project.util.Constants;
@@ -84,13 +85,13 @@ public class ReservationController implements Initializable {
             } else if ("Active".equals(filter)) {
                 reservations = reservationService.getActiveReservations();
             } else if ("Confirmed".equals(filter)) {
-                reservations = reservationService.getReservationsByStatus(Reservation.STATUS_CONFIRMED);
+                reservations = reservationService.getReservationsByStatus(ReservationStatus.CONFIRMED);
             } else if ("Checked In".equals(filter)) {
-                reservations = reservationService.getReservationsByStatus(Reservation.STATUS_CHECKED_IN);
+                reservations = reservationService.getReservationsByStatus(ReservationStatus.CHECKED_IN);
             } else if ("Checked Out".equals(filter)) {
-                reservations = reservationService.getReservationsByStatus(Reservation.STATUS_CHECKED_OUT);
+                reservations = reservationService.getReservationsByStatus(ReservationStatus.CHECKED_OUT);
             } else if ("Cancelled".equals(filter)) {
-                reservations = reservationService.getReservationsByStatus(Reservation.STATUS_CANCELLED);
+                reservations = reservationService.getReservationsByStatus(ReservationStatus.CANCELLED);
             } else {
                 reservations = reservationService.getActiveReservations(); // Default
             }
@@ -118,9 +119,9 @@ public class ReservationController implements Initializable {
             return;
         }
 
-        if (selectedReservation.getStatus().equals(Reservation.STATUS_CHECKED_IN) ||
-                selectedReservation.getStatus().equals(Reservation.STATUS_CHECKED_OUT) ||
-                selectedReservation.getStatus().equals(Reservation.STATUS_CANCELLED)) {
+        if (selectedReservation.getStatus().equals(ReservationStatus.CHECKED_IN) ||
+                selectedReservation.getStatus().equals(ReservationStatus.CHECKED_OUT) ||
+                selectedReservation.getStatus().equals(ReservationStatus.CANCELLED)) {
             showAlert(Alert.AlertType.WARNING, "Cannot Cancel",
                     "This reservation cannot be cancelled. Current status: " +
                             selectedReservation.getStatus());

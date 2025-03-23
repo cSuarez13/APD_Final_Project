@@ -3,6 +3,7 @@ package ca.senecacollege.apd_final_project.server;
 import ca.senecacollege.apd_final_project.model.Admin;
 import ca.senecacollege.apd_final_project.model.Guest;
 import ca.senecacollege.apd_final_project.model.Reservation;
+import ca.senecacollege.apd_final_project.model.ReservationStatus;
 import ca.senecacollege.apd_final_project.service.AdminService;
 import ca.senecacollege.apd_final_project.service.GuestService;
 import ca.senecacollege.apd_final_project.service.ReservationService;
@@ -367,7 +368,7 @@ public class ClientHandler implements Runnable {
                 return;
             }
 
-            if (!reservation.getStatus().equals(Reservation.STATUS_CONFIRMED)) {
+            if (!reservation.getStatus().equals(ReservationStatus.CONFIRMED.getDisplayName())) {
                 out.println("\nThis reservation cannot be checked in. Current status: " + reservation.getStatus());
                 return;
             }
@@ -420,7 +421,7 @@ public class ClientHandler implements Runnable {
                 return;
             }
 
-            if (!reservation.getStatus().equals(Reservation.STATUS_CHECKED_IN)) {
+            if (!reservation.getStatus().equals(ReservationStatus.CHECKED_IN.getDisplayName())) {
                 out.println("\nThis reservation cannot be checked out. Current status: " + reservation.getStatus());
                 return;
             }
@@ -476,9 +477,9 @@ public class ClientHandler implements Runnable {
                 return;
             }
 
-            if (reservation.getStatus().equals(Reservation.STATUS_CHECKED_IN) ||
-                    reservation.getStatus().equals(Reservation.STATUS_CHECKED_OUT) ||
-                    reservation.getStatus().equals(Reservation.STATUS_CANCELLED)) {
+            if (reservation.getStatus().equals(ReservationStatus.CHECKED_IN.getDisplayName()) ||
+                    reservation.getStatus().equals(ReservationStatus.CHECKED_OUT.getDisplayName()) ||
+                    reservation.getStatus().equals(ReservationStatus.CANCELLED.getDisplayName())) {
                 out.println("\nThis reservation cannot be cancelled. Current status: " + reservation.getStatus());
                 return;
             }

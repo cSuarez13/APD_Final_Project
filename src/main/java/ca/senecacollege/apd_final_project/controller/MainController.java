@@ -1,14 +1,12 @@
 package ca.senecacollege.apd_final_project.controller;
 
+import ca.senecacollege.apd_final_project.service.DialogService;
 import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 import ca.senecacollege.apd_final_project.util.ScreenSizeManager;
-import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -20,7 +18,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class MainController implements Initializable {
+public class MainController extends BaseController {
 
     @FXML
     private BorderPane mainBorderPane;
@@ -36,7 +34,7 @@ public class MainController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        LoggingManager.logSystemInfo("MainController initialized");
+        super.initialize(url, resourceBundle);
     }
 
     @FXML
@@ -56,12 +54,9 @@ public class MainController implements Initializable {
             kioskScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
             kioskScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
 
-            // Configure stage size using ScreenSizeManager
-            Rectangle2D screenBounds = ScreenSizeManager.getPrimaryScreenBounds();
+            // Configure stage size and position
             double stageWidth = ScreenSizeManager.calculateStageWidth(1024);
             double stageHeight = ScreenSizeManager.calculateStageHeight(768);
-
-            // Center the stage
             double[] stagePosition = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
 
             // Set stage properties
@@ -69,7 +64,6 @@ public class MainController implements Initializable {
             kioskStage.setHeight(stageHeight);
             kioskStage.setX(stagePosition[0]);
             kioskStage.setY(stagePosition[1]);
-
             kioskStage.setTitle("Hotel ABC Kiosk");
             kioskStage.setScene(kioskScene);
             kioskStage.show();
@@ -78,10 +72,8 @@ public class MainController implements Initializable {
 
         } catch (IOException e) {
             LoggingManager.logException("Error opening kiosk interface", e);
-
-            // Get the current stage
-            Stage stage = (Stage) btnKiosk.getScene().getWindow();
-            ErrorPopupManager.showSystemErrorPopup(stage, "NAV-001", "Error loading kiosk interface");
+            DialogService.showError(getStage(), "Navigation Error",
+                    "Error loading kiosk interface", e);
         }
     }
 
@@ -102,12 +94,9 @@ public class MainController implements Initializable {
             adminLoginScene.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
             adminLoginScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
 
-            // Configure stage size using ScreenSizeManager
-            Rectangle2D screenBounds = ScreenSizeManager.getPrimaryScreenBounds();
+            // Configure stage size and position
             double stageWidth = ScreenSizeManager.calculateStageWidth(500);
             double stageHeight = ScreenSizeManager.calculateStageHeight(600);
-
-            // Center the stage
             double[] stagePosition = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
 
             // Set stage properties
@@ -115,7 +104,6 @@ public class MainController implements Initializable {
             adminLoginStage.setHeight(stageHeight);
             adminLoginStage.setX(stagePosition[0]);
             adminLoginStage.setY(stagePosition[1]);
-
             adminLoginStage.setTitle("Admin Login");
             adminLoginStage.setScene(adminLoginScene);
             adminLoginStage.show();
@@ -124,10 +112,8 @@ public class MainController implements Initializable {
 
         } catch (IOException e) {
             LoggingManager.logException("Error opening admin login interface", e);
-
-            // Get the current stage
-            Stage stage = (Stage) btnAdmin.getScene().getWindow();
-            ErrorPopupManager.showSystemErrorPopup(stage, "NAV-002", "Error loading admin login interface");
+            DialogService.showError(getStage(), "Navigation Error",
+                    "Error loading admin login interface", e);
         }
     }
 
@@ -139,7 +125,7 @@ public class MainController implements Initializable {
             Parent feedbackRoot = loader.load();
 
             // Get the current stage
-            Stage stage = (Stage) lnkFeedback.getScene().getWindow();
+            Stage stage = getStage();
 
             // Create new scene
             Scene feedbackScene = new Scene(feedbackRoot);
@@ -163,10 +149,16 @@ public class MainController implements Initializable {
 
         } catch (IOException e) {
             LoggingManager.logException("Error loading feedback screen", e);
-
-            // Show error popup
-            Stage stage = (Stage) lnkFeedback.getScene().getWindow();
-            ErrorPopupManager.showSystemErrorPopup(stage, "NAV-004", "Error loading feedback screen");
+            DialogService.showError(getStage(), "Navigation Error",
+                    "Error loading feedback screen", e);
         }
+    }
+
+    @Override
+    protected Stage getStage() {
+        if (btnKiosk != null && btnKiosk.getScene() != null) {
+            return (Stage) btnKiosk.getScene().getWindow();
+        }
+        return null;
     }
 }

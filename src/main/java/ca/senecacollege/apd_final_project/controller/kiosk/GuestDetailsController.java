@@ -1,22 +1,19 @@
 package ca.senecacollege.apd_final_project.controller.kiosk;
 
+import ca.senecacollege.apd_final_project.controller.BaseController;
+import ca.senecacollege.apd_final_project.exception.ValidationException;
 import ca.senecacollege.apd_final_project.model.Guest;
 import ca.senecacollege.apd_final_project.model.Reservation;
+import ca.senecacollege.apd_final_project.model.ReservationStatus;
 import ca.senecacollege.apd_final_project.model.RoomType;
-import ca.senecacollege.apd_final_project.service.GuestService;
-import ca.senecacollege.apd_final_project.service.ReservationService;
+import ca.senecacollege.apd_final_project.service.*;
 import ca.senecacollege.apd_final_project.util.*;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
-import javafx.geometry.Pos;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -24,7 +21,7 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.util.ResourceBundle;
 
-public class GuestDetailsController implements Initializable {
+public class GuestDetailsController extends BaseController {
 
     @FXML
     private TextField txtName;
@@ -59,19 +56,23 @@ public class GuestDetailsController implements Initializable {
     // Services
     private GuestService guestService;
     private ReservationService reservationService;
+    private ValidationService validationService;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        guestService = new GuestService();
-        reservationService = new ReservationService();
+        // Get services from ServiceLocator
+        guestService = ServiceLocator.getService(GuestService.class);
+        reservationService = ServiceLocator.getService(ReservationService.class);
+        validationService = ServiceLocator.getService(ValidationService.class);
 
         // Hide error label initially
-        lblError.setVisible(false);
+        hideError();
 
         // Apply proper text styling to ensure visibility
         applyStyles();
 
-        LoggingManager.logSystemInfo("GuestDetailsController initialized");
+        // Call parent initialize
+        super.initialize(url, resourceBundle);
     }
 
     /**
@@ -99,7 +100,7 @@ public class GuestDetailsController implements Initializable {
                 });
 
                 // Now that we have a scene, we can adjust the stage size safely
-                adjustStageSize(newScene);
+                adjustStageSize();
             }
         });
     }
@@ -107,10 +108,10 @@ public class GuestDetailsController implements Initializable {
     /**
      * Adjust the stage size to ensure it fits properly on screen
      */
-    private void adjustStageSize(Scene scene) {
+    private void adjustStageSize() {
         try {
-            // Get stage from the scene
-            Stage stage = (Stage) scene.getWindow();
+            // Get stage
+            Stage stage = getStage();
             if (stage != null) {
                 // Use ScreenSizeManager to set appropriate dimensions
                 double stageWidth = ScreenSizeManager.calculateStageWidth(900);
@@ -147,7 +148,7 @@ public class GuestDetailsController implements Initializable {
     @FXML
     private void handleNextButton(ActionEvent event) {
         // Validate inputs
-        if (!validateInputs()) {
+        if (!validateFields()) {
             return;
         }
 
@@ -168,7 +169,16 @@ public class GuestDetailsController implements Initializable {
             reservation.setCheckInDate(checkInDate);
             reservation.setCheckOutDate(checkOutDate);
             reservation.setNumberOfGuests(numberOfGuests);
-            reservation.setStatus(Reservation.STATUS_PENDING);
+
+            // Call createReservation method instead of manually setting status
+            // This avoids issues with the setStatus method signature
+            reservation.createReservation(
+                    guestId,
+                    0, // roomID will be assigned in the service
+                    checkInDate,
+                    checkOutDate,
+                    numberOfGuests
+            );
 
             // Save reservation and get reservation ID
             int reservationId = reservationService.createReservation(reservation, roomType);
@@ -182,7 +192,7 @@ public class GuestDetailsController implements Initializable {
             confirmationController.initReservationData(reservationId);
 
             // Get the current stage
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Stage stage = getStage();
 
             // Create new scene
             Scene confirmationScene = new Scene(confirmationRoot);
@@ -206,10 +216,7 @@ public class GuestDetailsController implements Initializable {
 
         } catch (Exception e) {
             LoggingManager.logException("Error processing guest details", e);
-
-            // Use ErrorPopupManager instead of directly showing error on lblError
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            ErrorPopupManager.showSystemErrorPopup(stage, "GUEST-001", "Error processing guest details");
+            DialogService.showError(getStage(), "Processing Error", "Error processing guest details: " + e.getMessage(), e);
         }
     }
 
@@ -224,7 +231,7 @@ public class GuestDetailsController implements Initializable {
             BookingScreenController bookingController = loader.getController();
 
             // Get the current stage
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Stage stage = getStage();
 
             // Create new scene
             Scene bookingScene = new Scene(bookingRoot);
@@ -248,10 +255,7 @@ public class GuestDetailsController implements Initializable {
 
         } catch (IOException e) {
             LoggingManager.logException("Error navigating back to booking screen", e);
-
-            // Use ErrorPopupManager
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            ErrorPopupManager.showSystemErrorPopup(stage, "NAV-002", "Error returning to booking screen");
+            DialogService.showError(getStage(), "Navigation Error", "Error returning to booking screen: " + e.getMessage(), e);
         }
     }
 
@@ -260,51 +264,57 @@ public class GuestDetailsController implements Initializable {
         RulesDialogUtility.showRulesDialog(btnRules);
     }
 
-    private boolean validateInputs() {
-        // Get the current stage for error popups
-        Stage stage = (Stage) btnNext.getScene().getWindow();
+    @Override
+    protected boolean validateFields() {
+        try {
+            // Validate name
+            if (!ValidationUtils.isNotNullOrEmpty(txtName.getText())) {
+                throw new ValidationException("Please enter your name");
+            }
 
-        // Validate name
-        if (!ValidationUtils.isNotNullOrEmpty(txtName.getText())) {
-            ErrorPopupManager.showValidationErrorPopup(stage, "Name", "Please enter your name");
+            // Validate phone
+            if (!ValidationUtils.isNotNullOrEmpty(txtPhone.getText())) {
+                throw new ValidationException("Please enter your phone number");
+            }
+            if (!ValidationUtils.isValidPhoneNumber(txtPhone.getText())) {
+                throw new ValidationException("Please enter a valid phone number");
+            }
+
+            // Validate email
+            if (!ValidationUtils.isNotNullOrEmpty(txtEmail.getText())) {
+                throw new ValidationException("Please enter your email");
+            }
+            if (!ValidationUtils.isValidEmail(txtEmail.getText())) {
+                throw new ValidationException("Please enter a valid email address");
+            }
+
+            // Validate address
+            if (!ValidationUtils.isNotNullOrEmpty(txtAddress.getText())) {
+                throw new ValidationException("Please enter your address");
+            }
+
+            // All validations passed
+            return true;
+
+        } catch (ValidationException e) {
+            DialogService.showWarning(getStage(), "Validation Error", e.getMessage());
             return false;
         }
-
-        // Validate phone
-        if (!ValidationUtils.isNotNullOrEmpty(txtPhone.getText())) {
-            ErrorPopupManager.showValidationErrorPopup(stage, "Phone", "Please enter your phone number");
-            return false;
-        }
-
-        if (!ValidationUtils.isValidPhoneNumber(txtPhone.getText())) {
-            ErrorPopupManager.showValidationErrorPopup(stage, "Phone", "Please enter a valid phone number");
-            return false;
-        }
-
-        // Validate email
-        if (!ValidationUtils.isNotNullOrEmpty(txtEmail.getText())) {
-            ErrorPopupManager.showValidationErrorPopup(stage, "Email", "Please enter your email");
-            return false;
-        }
-
-        if (!ValidationUtils.isValidEmail(txtEmail.getText())) {
-            ErrorPopupManager.showValidationErrorPopup(stage, "Email", "Please enter a valid email address");
-            return false;
-        }
-
-        // Validate address
-        if (!ValidationUtils.isNotNullOrEmpty(txtAddress.getText())) {
-            ErrorPopupManager.showValidationErrorPopup(stage, "Address", "Please enter your address");
-            return false;
-        }
-
-        // All validations passed
-        return true;
     }
 
-    // Helper method that's no longer needed as we use ErrorPopupManager now
-    private void showError(String message) {
-        lblError.setText(message);
-        lblError.setVisible(true);
+    @Override
+    protected Stage getStage() {
+        if (btnNext != null && btnNext.getScene() != null) {
+            return (Stage) btnNext.getScene().getWindow();
+        }
+        return null;
+    }
+
+    @Override
+    protected void clearFields() {
+        txtName.clear();
+        txtPhone.clear();
+        txtEmail.clear();
+        txtAddress.clear();
     }
 }

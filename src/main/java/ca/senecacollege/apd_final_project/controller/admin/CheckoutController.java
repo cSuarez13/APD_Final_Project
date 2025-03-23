@@ -127,12 +127,12 @@ public class CheckoutController extends BaseController {
                 return;
             }
 
-            // Check if the reservation status is "Checked In"
-            if (!currentReservation.getStatus().equals(Reservation.STATUS_CHECKED_IN)) {
-                showError("This reservation cannot be checked out. Current status: " +
-                        currentReservation.getStatus());
-                return;
-            }
+//            // Check if the reservation status is "Checked In"
+//            if (!currentReservation.getStatus().equals(Reservation.STATUS_CHECKED_IN)) {
+//                showError("This reservation cannot be checked out. Current status: " +
+//                        currentReservation.getStatus());
+//                return;
+//            }
 
             // Fetch guest and room information
             currentGuest = guestService.getGuestById(currentReservation.getGuestID());

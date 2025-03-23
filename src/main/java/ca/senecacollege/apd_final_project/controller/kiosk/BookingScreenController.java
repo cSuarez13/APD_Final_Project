@@ -1,22 +1,22 @@
 package ca.senecacollege.apd_final_project.controller.kiosk;
 
+import ca.senecacollege.apd_final_project.controller.BaseController;
+import ca.senecacollege.apd_final_project.exception.ValidationException;
 import ca.senecacollege.apd_final_project.model.RoomType;
 import ca.senecacollege.apd_final_project.service.RoomService;
+import ca.senecacollege.apd_final_project.service.ServiceLocator;
+import ca.senecacollege.apd_final_project.service.ValidationService;
+import ca.senecacollege.apd_final_project.service.DialogService;
 import ca.senecacollege.apd_final_project.util.*;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class BookingScreenController implements Initializable {
+public class BookingScreenController extends BaseController {
 
     @FXML
     private BorderPane mainPane;
@@ -57,11 +57,14 @@ public class BookingScreenController implements Initializable {
     private Button btnRules;
 
     private RoomService roomService;
+    private ValidationService validationService;
     private RoomType suggestedRoomType;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        roomService = new RoomService();
+        // Get services from ServiceLocator
+        roomService = ServiceLocator.getService(RoomService.class);
+        validationService = ServiceLocator.getService(ValidationService.class);
 
         // Apply styles directly to the components
         mainPane.setStyle("-fx-background-color: #121212;");
@@ -153,11 +156,11 @@ public class BookingScreenController implements Initializable {
         // Set combo box's font size
         cmbRoomType.setStyle("-fx-font-size: 14px;");
 
-
         // Make initial room suggestion
         updateRoomSuggestion();
 
-        LoggingManager.logSystemInfo("BookingScreenController initialized");
+        // Call parent initialize
+        super.initialize(url, resourceBundle);
     }
 
     private void updateRoomSuggestion() {
@@ -218,7 +221,7 @@ public class BookingScreenController implements Initializable {
     @FXML
     private void handleNextButton(ActionEvent event) {
         // Validate inputs
-        if (!validateInputs()) {
+        if (!validateFields()) {
             return;
         }
 
@@ -237,7 +240,7 @@ public class BookingScreenController implements Initializable {
             );
 
             // Get the current stage
-            Stage stage = (Stage) btnNext.getScene().getWindow();
+            Stage stage = getStage();
 
             // Create new scene
             Scene guestDetailsScene = new Scene(guestDetailsRoot);
@@ -260,14 +263,11 @@ public class BookingScreenController implements Initializable {
             stage.setX(stagePosition[0]);
             stage.setY(stagePosition[1]);
 
-            LoggingManager.logSystemInfo("Navigated to guest details screen");
+            logSystemActivity("Navigated to guest details screen");
 
         } catch (IOException e) {
             LoggingManager.logException("Error navigating to guest details screen", e);
-
-            // Use ErrorPopupManager instead of custom error popup
-            Stage stage = (Stage) btnNext.getScene().getWindow();
-            ErrorPopupManager.showSystemErrorPopup(stage, "NAV-001", "Error loading guest details screen: " + e.getMessage());
+            DialogService.showError(getStage(), "Navigation Error", "Error loading guest details screen: " + e.getMessage(), e);
         }
     }
 
@@ -279,7 +279,7 @@ public class BookingScreenController implements Initializable {
             Parent welcomeRoot = loader.load();
 
             // Get the current stage
-            Stage stage = (Stage) btnBack.getScene().getWindow();
+            Stage stage = getStage();
 
             // Create new scene
             Scene welcomeScene = new Scene(welcomeRoot);
@@ -302,14 +302,11 @@ public class BookingScreenController implements Initializable {
             stage.setX(stagePosition[0]);
             stage.setY(stagePosition[1]);
 
-            LoggingManager.logSystemInfo("Navigated back to welcome screen");
+            logSystemActivity("Navigated back to welcome screen");
 
         } catch (IOException e) {
             LoggingManager.logException("Error navigating back to welcome screen", e);
-
-            // Use ErrorPopupManager
-            Stage stage = (Stage) btnBack.getScene().getWindow();
-            ErrorPopupManager.showSystemErrorPopup(stage, "NAV-002", "Error returning to welcome screen: " + e.getMessage());
+            DialogService.showError(getStage(), "Navigation Error", "Error returning to welcome screen: " + e.getMessage(), e);
         }
     }
 
@@ -318,73 +315,86 @@ public class BookingScreenController implements Initializable {
         RulesDialogUtility.showRulesDialog(btnRules);
     }
 
+    @Override
+    protected boolean validateFields() {
+        try {
+            // Validate guest count
+            if (spnGuests.getValue() <= 0) {
+                throw new ValidationException("Please enter a valid number of guests.");
+            }
 
-    private boolean validateInputs() {
-        // Get the current stage for error popups
-        Stage stage = (Stage) btnNext.getScene().getWindow();
+            // Validate check-in date
+            if (dpCheckIn.getValue() == null) {
+                throw new ValidationException("Please select a check-in date.");
+            }
 
-        // Validate guest count
-        if (spnGuests.getValue() <= 0) {
-            ErrorPopupManager.showValidationErrorPopup(stage, "Guest Count", "Please enter a valid number of guests.");
+            // Check if check-in date is today or in the future
+            if (!ValidationUtils.isValidFutureDate(dpCheckIn.getValue())) {
+                throw new ValidationException("Check-in date must be today or a future date.");
+            }
+
+            // Validate check-out date
+            if (dpCheckOut.getValue() == null) {
+                throw new ValidationException("Please select a check-out date.");
+            }
+
+            // Check if check-out date is after check-in date
+            if (!ValidationUtils.isValidDateRange(dpCheckIn.getValue(), dpCheckOut.getValue())) {
+                throw new ValidationException("Check-out date must be after check-in date.");
+            }
+
+            // Validate room type selection
+            if (cmbRoomType.getValue() == null) {
+                throw new ValidationException("Please select a room type.");
+            }
+
+            // Check if guest count is valid for the selected room type
+            RoomType selectedRoomType = cmbRoomType.getValue();
+            int guestCount = spnGuests.getValue();
+
+            if (selectedRoomType == RoomType.SINGLE && guestCount > Constants.MAX_GUESTS_SINGLE_ROOM) {
+                throw new ValidationException("Single room can accommodate maximum " +
+                        Constants.MAX_GUESTS_SINGLE_ROOM + " guests.");
+            } else if (selectedRoomType == RoomType.DOUBLE && guestCount > Constants.MAX_GUESTS_DOUBLE_ROOM) {
+                throw new ValidationException("Double room can accommodate maximum " +
+                        Constants.MAX_GUESTS_DOUBLE_ROOM + " guests.");
+            } else if ((selectedRoomType == RoomType.DELUXE || selectedRoomType == RoomType.PENT_HOUSE) &&
+                    guestCount > Constants.MAX_GUESTS_DELUXE_ROOM) {
+                throw new ValidationException(selectedRoomType.getDisplayName() + " can accommodate maximum " +
+                        Constants.MAX_GUESTS_DELUXE_ROOM + " guests.");
+            }
+
+            // Check room availability
+            if (!roomService.checkRoomAvailability(selectedRoomType, dpCheckIn.getValue(), dpCheckOut.getValue())) {
+                throw new ValidationException("Sorry, no " + selectedRoomType.getDisplayName() +
+                        " is available for the selected dates.");
+            }
+
+            // All validations passed
+            return true;
+
+        } catch (ValidationException e) {
+            // Show validation error using DialogService
+            DialogService.showWarning(getStage(), "Validation Error", e.getMessage());
             return false;
         }
+    }
 
-        // Validate check-in date
-        if (dpCheckIn.getValue() == null) {
-            ErrorPopupManager.showValidationErrorPopup(stage, "Check-in Date", "Please select a check-in date.");
-            return false;
+    /**
+     * Get the current stage
+     */
+    @Override
+    protected Stage getStage() {
+        if (btnNext != null && btnNext.getScene() != null) {
+            return (Stage) btnNext.getScene().getWindow();
         }
+        return null;
+    }
 
-        if (!ValidationUtils.isValidFutureDate(dpCheckIn.getValue())) {
-            ErrorPopupManager.showValidationErrorPopup(stage, "Check-in Date", "Check-in date must be today or a future date.");
-            return false;
-        }
-
-        // Validate check-out date
-        if (dpCheckOut.getValue() == null) {
-            ErrorPopupManager.showValidationErrorPopup(stage, "Check-out Date", "Please select a check-out date.");
-            return false;
-        }
-
-        if (!ValidationUtils.isValidDateRange(dpCheckIn.getValue(), dpCheckOut.getValue())) {
-            ErrorPopupManager.showValidationErrorPopup(stage, "Check-out Date", "Check-out date must be after check-in date.");
-            return false;
-        }
-
-        // Validate room type selection
-        if (cmbRoomType.getValue() == null) {
-            ErrorPopupManager.showValidationErrorPopup(stage, "Room Type", "Please select a room type.");
-            return false;
-        }
-
-        // Check if guest count is valid for the selected room type
-        RoomType selectedRoomType = cmbRoomType.getValue();
-        int guestCount = spnGuests.getValue();
-
-        if (selectedRoomType == RoomType.SINGLE && guestCount > Constants.MAX_GUESTS_SINGLE_ROOM) {
-            ErrorPopupManager.showValidationErrorPopup(stage, "Room Capacity",
-                    "Single room can accommodate maximum " + Constants.MAX_GUESTS_SINGLE_ROOM + " guests.");
-            return false;
-        } else if (selectedRoomType == RoomType.DOUBLE && guestCount > Constants.MAX_GUESTS_DOUBLE_ROOM) {
-            ErrorPopupManager.showValidationErrorPopup(stage, "Room Capacity",
-                    "Double room can accommodate maximum " + Constants.MAX_GUESTS_DOUBLE_ROOM + " guests.");
-            return false;
-        } else if ((selectedRoomType == RoomType.DELUXE || selectedRoomType == RoomType.PENT_HOUSE) &&
-                guestCount > Constants.MAX_GUESTS_DELUXE_ROOM) {
-            ErrorPopupManager.showValidationErrorPopup(stage, "Room Capacity",
-                    selectedRoomType.getDisplayName() + " can accommodate maximum " +
-                            Constants.MAX_GUESTS_DELUXE_ROOM + " guests.");
-            return false;
-        }
-
-        // Check room availability
-        if (!roomService.checkRoomAvailability(selectedRoomType, dpCheckIn.getValue(), dpCheckOut.getValue())) {
-            ErrorPopupManager.showValidationErrorPopup(stage, "Room Availability",
-                    "Sorry, no " + selectedRoomType.getDisplayName() + " is available for the selected dates.");
-            return false;
-        }
-
-        // All validations passed
-        return true;
+    /**
+     * Log a system activity
+     */
+    private void logSystemActivity(String activity) {
+        LoggingManager.logSystemInfo(activity);
     }
 }

@@ -2,6 +2,7 @@ package ca.senecacollege.apd_final_project.dao;
 
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
 import ca.senecacollege.apd_final_project.model.Reservation;
+import ca.senecacollege.apd_final_project.model.ReservationStatus;
 import ca.senecacollege.apd_final_project.util.DatabaseConnection;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 
@@ -31,7 +32,8 @@ public class ReservationDAO {
             stmt.setDate(3, java.sql.Date.valueOf(reservation.getCheckInDate()));
             stmt.setDate(4, java.sql.Date.valueOf(reservation.getCheckOutDate()));
             stmt.setInt(5, reservation.getNumberOfGuests());
-            stmt.setString(6, reservation.getStatus());
+            // Use the enum's display name or name as a string
+            stmt.setString(6, reservation.getStatus().getDisplayName());
 
             int affectedRows = stmt.executeUpdate();
 
@@ -360,7 +362,8 @@ public class ReservationDAO {
             stmt.setDate(3, java.sql.Date.valueOf(reservation.getCheckInDate()));
             stmt.setDate(4, java.sql.Date.valueOf(reservation.getCheckOutDate()));
             stmt.setInt(5, reservation.getNumberOfGuests());
-            stmt.setString(6, reservation.getStatus());
+            // Use the enum's display name or name as a string
+            stmt.setString(6, reservation.getStatus().getDisplayName());
             stmt.setInt(7, reservation.getReservationID());
 
             int affectedRows = stmt.executeUpdate();
@@ -444,7 +447,11 @@ public class ReservationDAO {
         reservation.setCheckInDate(rs.getDate("check_in_date").toLocalDate());
         reservation.setCheckOutDate(rs.getDate("check_out_date").toLocalDate());
         reservation.setNumberOfGuests(rs.getInt("number_of_guests"));
-        reservation.setStatus(rs.getString("status"));
+
+        // Convert string to ReservationStatus enum
+        String statusStr = rs.getString("status");
+        reservation.setStatus(ReservationStatus.fromDisplayName(statusStr));
+
         return reservation;
     }
 }

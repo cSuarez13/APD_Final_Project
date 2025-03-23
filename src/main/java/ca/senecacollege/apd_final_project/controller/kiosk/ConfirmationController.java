@@ -1,68 +1,52 @@
 package ca.senecacollege.apd_final_project.controller.kiosk;
 
+import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.model.Guest;
 import ca.senecacollege.apd_final_project.model.Reservation;
 import ca.senecacollege.apd_final_project.model.Room;
-import ca.senecacollege.apd_final_project.service.GuestService;
-import ca.senecacollege.apd_final_project.service.ReservationService;
-import ca.senecacollege.apd_final_project.service.RoomService;
+import ca.senecacollege.apd_final_project.service.*;
 import ca.senecacollege.apd_final_project.util.Constants;
-import ca.senecacollege.apd_final_project.util.LoggingManager;
 import ca.senecacollege.apd_final_project.util.ScreenSizeManager;
-import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ResourceBundle;
 
-public class ConfirmationController implements Initializable {
+public class ConfirmationController extends BaseController {
 
     @FXML
     private Label lblReservationId;
-
     @FXML
     private Label lblGuestName;
-
     @FXML
     private Label lblRoomInfo;
-
     @FXML
     private Label lblCheckIn;
-
     @FXML
     private Label lblCheckOut;
-
     @FXML
     private Label lblNights;
-
     @FXML
     private Label lblGuests;
-
     @FXML
     private Label lblSubtotal;
-
     @FXML
     private Label lblTax;
-
     @FXML
     private Label lblTotal;
-
     @FXML
     private Button btnPrint;
-
     @FXML
     private Button btnDone;
 
@@ -79,9 +63,10 @@ public class ConfirmationController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        reservationService = new ReservationService();
-        guestService = new GuestService();
-        roomService = new RoomService();
+        // Get services from ServiceLocator
+        reservationService = ServiceLocator.getService(ReservationService.class);
+        guestService = ServiceLocator.getService(GuestService.class);
+        roomService = ServiceLocator.getService(RoomService.class);
 
         // Apply styles to ensure text is visible
         applyStyles();
@@ -89,7 +74,8 @@ public class ConfirmationController implements Initializable {
         // Adjust window size
         adjustStageSize();
 
-        LoggingManager.logSystemInfo("ConfirmationController initialized");
+        // Call parent initialize
+        super.initialize(url, resourceBundle);
     }
 
     /**
@@ -131,18 +117,10 @@ public class ConfirmationController implements Initializable {
             if (newScene != null) {
                 Stage stage = (Stage) newScene.getWindow();
 
-                // Get screen dimensions
-                Rectangle2D screenBounds = ScreenSizeManager.getPrimaryScreenBounds();
-
                 // Calculate dimensions - use at most 90% of screen height to ensure full content is visible
                 // and maintain aspect ratio
-                double maxHeight = screenBounds.getHeight() * 0.9;
-                double maxWidth = screenBounds.getWidth() * 0.9;
-
-                // Choose smaller dimension to ensure fitting on screen
-                double aspectRatio = 1024.0 / 650.0; // Adjusted aspect ratio for even more height
-                double stageHeight = Math.min(maxHeight, 750); // Increased height
-                double stageWidth = Math.min(maxWidth, stageHeight * aspectRatio);
+                double stageWidth = ScreenSizeManager.calculateStageWidth(1024);
+                double stageHeight = ScreenSizeManager.calculateStageHeight(750); // Increased height
 
                 // Ensure minimum size for content
                 stageWidth = Math.max(stageWidth, 800);
@@ -160,7 +138,7 @@ public class ConfirmationController implements Initializable {
                 // Make sure it's not maximized
                 stage.setMaximized(false);
 
-                LoggingManager.logSystemInfo("ConfirmationScreen size adjusted to " + stageWidth + "x" + stageHeight);
+                logSystemActivity("ConfirmationScreen size adjusted to " + stageWidth + "x" + stageHeight);
             }
         });
     }
@@ -181,17 +159,12 @@ public class ConfirmationController implements Initializable {
             // Update UI with reservation details
             updateConfirmationDetails();
 
-            LoggingManager.logSystemInfo("Confirmation screen loaded with reservation ID: " + reservationId);
+            logSystemActivity("Confirmation screen loaded with reservation ID: " + reservationId);
 
         } catch (Exception e) {
-            LoggingManager.logException("Error loading reservation details", e);
-
-            // Use ErrorPopupManager instead of direct error handling
-            Stage stage = (Stage) lblReservationId.getScene().getWindow();
-            if (stage != null) {
-                ErrorPopupManager.showSystemErrorPopup(stage, "CONF-001",
-                        "Error loading reservation details: " + e.getMessage());
-            }
+            logSystemActivity("Error loading reservation details: " + e.getMessage());
+            DialogService.showError(getStage(), "Confirmation Error",
+                    "Error loading reservation details: " + e.getMessage(), e);
         }
     }
 
@@ -222,58 +195,16 @@ public class ConfirmationController implements Initializable {
 
     @FXML
     private void handlePrintButton(ActionEvent event) {
-        // Get the current stage for error popup
-        Stage stage = (Stage) btnPrint.getScene().getWindow();
-
         try {
-            // In a real system, this would send the confirmation to a printer
-            LoggingManager.logSystemInfo("Print confirmation requested for reservation ID: " + reservationId);
+            logSystemActivity("Print confirmation requested for reservation ID: " + reservationId);
 
-            // Apply CSS to the dialog
-            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                    javafx.scene.control.Alert.AlertType.INFORMATION);
-            alert.setTitle("Print Confirmation");
-            alert.setHeaderText("Printing Confirmation");
-            alert.setContentText("Your booking confirmation has been sent to the printer.\n" +
-                    "Please collect it from the front desk.");
+            DialogService.showInformation(getStage(), "Print Confirmation",
+                    "Your booking confirmation has been sent to the printer.\n" +
+                            "Please collect it from the front desk.");
 
-            // Apply CSS to the dialog
-            javafx.scene.control.DialogPane dialogPane = alert.getDialogPane();
-            dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
-            dialogPane.getStyleClass().add("root");
-
-            // Explicitly style the header area and text to match dark theme
-            Label headerLabel = (Label) dialogPane.lookup(".header-panel .label");
-            if (headerLabel != null) {
-                headerLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
-            }
-
-            // Set the dialog background to dark
-            dialogPane.setStyle("-fx-background-color: #2a2a2a;");
-
-            // Make sure the header panel background is also dark
-            javafx.scene.layout.Region headerPanel = (javafx.scene.layout.Region) dialogPane.lookup(".header-panel");
-            if (headerPanel != null) {
-                headerPanel.setStyle("-fx-background-color: #2a2a2a;");
-            }
-
-            // Set content text to white
-            Label contentLabel = (Label) dialogPane.lookup(".content.label");
-            if (contentLabel != null) {
-                contentLabel.setStyle("-fx-text-fill: white;");
-            }
-
-            // Customize the buttons
-            Button okButton = (Button) dialogPane.lookupButton(javafx.scene.control.ButtonType.OK);
-            if (okButton != null) {
-                okButton.setStyle("-fx-background-color: #7b1fa2; -fx-text-fill: white;");
-            }
-
-            alert.showAndWait();
         } catch (Exception e) {
-            LoggingManager.logException("Error printing confirmation", e);
-            ErrorPopupManager.showSystemErrorPopup(stage, "PRINT-001",
-                    "Unable to print confirmation: " + e.getMessage());
+            DialogService.showError(getStage(), "Print Error",
+                    "Unable to print confirmation: " + e.getMessage(), e);
         }
     }
 
@@ -285,7 +216,7 @@ public class ConfirmationController implements Initializable {
             Parent welcomeRoot = loader.load();
 
             // Get the current stage
-            Stage stage = (Stage) btnDone.getScene().getWindow();
+            Stage stage = getStage();
 
             // Create new scene
             Scene welcomeScene = new Scene(welcomeRoot);
@@ -308,15 +239,29 @@ public class ConfirmationController implements Initializable {
             // Set the new scene
             stage.setScene(welcomeScene);
 
-            LoggingManager.logSystemInfo("Returned to welcome screen after completing reservation");
+            logSystemActivity("Returned to welcome screen after completing reservation");
 
         } catch (IOException e) {
-            LoggingManager.logException("Error returning to welcome screen", e);
-
-            // Use ErrorPopupManager
-            Stage stage = (Stage) btnDone.getScene().getWindow();
-            ErrorPopupManager.showSystemErrorPopup(stage, "NAV-003",
-                    "Error returning to welcome screen: " + e.getMessage());
+            DialogService.showError(getStage(), "Navigation Error",
+                    "Error returning to welcome screen: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Get the current stage
+     */
+    @Override
+    protected Stage getStage() {
+        if (btnDone != null && btnDone.getScene() != null) {
+            return (Stage) btnDone.getScene().getWindow();
+        }
+        return null;
+    }
+
+    /**
+     * Log a system activity
+     */
+    private void logSystemActivity(String activity) {
+        logAdminActivity(activity);
     }
 }
