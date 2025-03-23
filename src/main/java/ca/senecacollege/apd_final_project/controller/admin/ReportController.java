@@ -1,13 +1,10 @@
 package ca.senecacollege.apd_final_project.controller.admin;
 
+import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
 import ca.senecacollege.apd_final_project.model.*;
-import ca.senecacollege.apd_final_project.service.BillingService;
-import ca.senecacollege.apd_final_project.service.FeedbackService;
-import ca.senecacollege.apd_final_project.service.GuestService;
-import ca.senecacollege.apd_final_project.service.ReservationService;
-import ca.senecacollege.apd_final_project.service.RoomService;
-import ca.senecacollege.apd_final_project.util.Constants;
+import ca.senecacollege.apd_final_project.service.*;
+import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 import ca.senecacollege.apd_final_project.util.ValidationUtils;
 
@@ -18,22 +15,12 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.DialogPane;
-import javafx.scene.control.Label;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -51,9 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
-import javafx.scene.control.TableCell;
 
-public class ReportController implements Initializable {
+public class ReportController extends BaseController {
 
     @FXML
     private ComboBox<String> cmbReportType;
@@ -74,18 +60,6 @@ public class ReportController implements Initializable {
     private Button btnClose;
 
     @FXML
-    private TabPane tabPaneReports;
-
-    @FXML
-    private Tab tabOccupancy;
-
-    @FXML
-    private Tab tabRevenue;
-
-    @FXML
-    private Tab tabFeedback;
-
-    @FXML
     private BorderPane occupancyPane;
 
     @FXML
@@ -93,9 +67,6 @@ public class ReportController implements Initializable {
 
     @FXML
     private BorderPane feedbackPane;
-
-    @FXML
-    private Label lblError;
 
     @FXML
     private Label lblReportSummary;
@@ -110,12 +81,14 @@ public class ReportController implements Initializable {
     @FXML
     private TableView<FeedbackSummaryData> tblFeedback;
 
-    // Service classes
-    private ReservationService reservationService;
-    private GuestService guestService;
-    private RoomService roomService;
-    private BillingService billingService;
-    private FeedbackService feedbackService;
+    @FXML
+    private VBox occupancySection;
+
+    @FXML
+    private VBox revenueSection;
+
+    @FXML
+    private VBox feedbackSection;
 
     // Current report data
     private List<Reservation> currentReservations;
@@ -124,8 +97,6 @@ public class ReportController implements Initializable {
     private String currentReportType;
     private LocalDate currentStartDate;
     private LocalDate currentEndDate;
-
-    private Admin currentAdmin;
 
     // Data classes for tables
     public static class RoomOccupancyData {
@@ -221,12 +192,7 @@ public class ReportController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        // Initialize service classes
-        reservationService = new ReservationService();
-        guestService = new GuestService();
-        roomService = new RoomService();
-        billingService = new BillingService();
-        feedbackService = new FeedbackService();
+        super.initialize(url, resourceBundle);
 
         // Initialize report type combo box
         cmbReportType.setItems(FXCollections.observableArrayList(
@@ -237,29 +203,30 @@ public class ReportController implements Initializable {
         dpEndDate.setValue(LocalDate.now());
         dpStartDate.setValue(LocalDate.now().minusDays(30));
 
-        // Add listener to report type combo box to switch tabs
-        cmbReportType.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue.equals("Occupancy Report")) {
-                tabPaneReports.getSelectionModel().select(tabOccupancy);
-            } else if (newValue.equals("Revenue Report")) {
-                tabPaneReports.getSelectionModel().select(tabRevenue);
-            } else if (newValue.equals("Guest Feedback Report")) {
-                tabPaneReports.getSelectionModel().select(tabFeedback);
-            }
-        });
-
+        // No need for TabPane listener since we removed the tabs
         // Initialize tables
         setupOccupancyTable();
         setupRevenueTable();
         setupFeedbackTable();
 
+        // Initially hide all tables
+        if (tblOccupancy != null) tblOccupancy.setVisible(false);
+        if (tblRevenue != null) tblRevenue.setVisible(false);
+        if (tblFeedback != null) tblFeedback.setVisible(false);
+
         // Initially hide the export button until a report is generated
         btnExportReport.setDisable(true);
 
         // Hide error message initially
-        lblError.setVisible(false);
+        hideError();
 
         LoggingManager.logSystemInfo("ReportController initialized");
+    }
+
+    @Override
+    public void initData(Admin admin) {
+        super.initData(admin);
+        LoggingManager.logSystemInfo("ReportController initialized with admin: " + admin.getUsername());
     }
 
     @FXML
@@ -278,30 +245,37 @@ public class ReportController implements Initializable {
         }
 
         try {
-            // Fetch data based on report type
-            if (currentReportType.equals("Occupancy Report")) {
-                generateOccupancyReport();
-            } else if (currentReportType.equals("Revenue Report")) {
-                generateRevenueReport();
-            } else if (currentReportType.equals("Guest Feedback Report")) {
-                generateFeedbackReport();
+            // Reset all tables to invisible
+            tblOccupancy.setVisible(false);
+            tblRevenue.setVisible(false);
+            tblFeedback.setVisible(false);
+
+            // Fetch and generate report based on type
+            switch (currentReportType) {
+                case "Occupancy Report":
+                    generateOccupancyReport();
+                    break;
+                case "Revenue Report":
+                    generateRevenueReport();
+                    break;
+                case "Guest Feedback Report":
+                    generateFeedbackReport();
+                    break;
             }
 
-            // Enable export button
+            // Enable export button only if data was generated
             btnExportReport.setDisable(false);
 
             // Log the report generation
-            String adminUser = "Admin"; // In a real app, this would be the logged-in admin
-            LoggingManager.logAdminActivity(adminUser,
-                    "Generated " + currentReportType + " from " +
-                            currentStartDate + " to " + currentEndDate);
+            logAdminActivity("Generated " + currentReportType + " from " +
+                    currentStartDate + " to " + currentEndDate);
 
         } catch (DatabaseException e) {
             LoggingManager.logException("Database error generating report", e);
-            showError("Database error: " + e.getMessage());
+            ErrorPopupManager.showErrorPopup(getStage(), "Database error: " + e.getMessage());
         } catch (Exception e) {
             LoggingManager.logException("Error generating report", e);
-            showError("An error occurred: " + e.getMessage());
+            ErrorPopupManager.showErrorPopup(getStage(), "An error occurred: " + e.getMessage());
         }
     }
 
@@ -325,7 +299,7 @@ public class ReportController implements Initializable {
             fileChooser.setInitialFileName(fileName);
 
             // Show save dialog
-            File file = fileChooser.showSaveDialog(btnExportReport.getScene().getWindow());
+            File file = fileChooser.showSaveDialog(getStage());
 
             if (file != null) {
                 // Export the report based on type
@@ -338,21 +312,14 @@ public class ReportController implements Initializable {
                 }
 
                 // Show success message
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Export Successful");
-                alert.setHeaderText("Report Exported");
-                alert.setContentText("The report has been successfully exported to:\n" + file.getAbsolutePath());
-
-                // Apply CSS to the dialog
-                DialogPane dialogPane = alert.getDialogPane();
-                dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
-
-                alert.showAndWait();
+                DialogService.showInformation(
+                        getStage(),
+                        "Export Successful",
+                        "The report has been successfully exported to:\n" + file.getAbsolutePath()
+                );
 
                 // Log the export
-                String adminUser = "Admin"; // In a real app, this would be the logged-in admin
-                LoggingManager.logAdminActivity(adminUser,
-                        "Exported " + currentReportType + " to " + file.getAbsolutePath());
+                logAdminActivity("Exported " + currentReportType + " to " + file.getAbsolutePath());
             }
         } catch (IOException e) {
             LoggingManager.logException("Error exporting report", e);
@@ -366,14 +333,17 @@ public class ReportController implements Initializable {
     @FXML
     private void handleCloseButton(ActionEvent event) {
         // Close the window
-        Stage stage = (Stage) btnClose.getScene().getWindow();
-        stage.close();
+        closeWindow();
     }
 
     /**
      * Generate the occupancy report
      */
     private void generateOccupancyReport() throws DatabaseException {
+        // Get services using ServiceLocator
+        ReservationService reservationService = ServiceLocator.getService(ReservationService.class);
+        RoomService roomService = ServiceLocator.getService(RoomService.class);
+
         // Fetch reservations for the specified date range
         currentReservations = reservationService.getReservationsByDateRange(currentStartDate, currentEndDate);
 
@@ -398,19 +368,21 @@ public class ReportController implements Initializable {
 
         // Count occupied rooms by type
         for (Reservation reservation : currentReservations) {
-            if (reservation.getStatus().equals(ReservationStatus.CHECKED_IN) ||
-                    reservation.getStatus().equals(ReservationStatus.CONFIRMED)) {
-
-                // Get the room for this reservation
-                Room room = roomService.getRoomById(reservation.getRoomID());
-                RoomType type = room.getRoomType();
-
-                // Increment the count for this room type
-                occupiedRoomsByType.put(type, occupiedRoomsByType.get(type) + 1);
+            ReservationStatus status = reservation.getStatus();
+            if (status != null && (status == ReservationStatus.CHECKED_IN || status == ReservationStatus.CONFIRMED)) {
+                try {
+                    Room room = roomService.getRoomById(reservation.getRoomID());
+                    if (room != null) {
+                        RoomType type = room.getRoomType();
+                        occupiedRoomsByType.put(type, occupiedRoomsByType.get(type) + 1);
+                    }
+                } catch (Exception e) {
+                    LoggingManager.logException("Error processing reservation #" + reservation.getReservationID(), e);
+                }
             }
         }
 
-        // Create and populate the table
+        // Create and populate the table data
         ObservableList<RoomOccupancyData> occupancyData = FXCollections.observableArrayList();
 
         for (RoomType type : RoomType.values()) {
@@ -424,30 +396,45 @@ public class ReportController implements Initializable {
             ));
         }
 
-        // Add a row for the overall occupancy
+        // Add overall occupancy row
         int totalRooms = allRooms.size();
         int totalOccupied = occupiedRoomsByType.values().stream().mapToInt(Integer::intValue).sum();
         occupancyData.add(new RoomOccupancyData("All Rooms", totalRooms, totalOccupied));
 
-        // Set the table data
-        tblOccupancy.setItems(occupancyData);
+        // Truncate to 5 rows if more exist
+        if (occupancyData.size() > 5) {
+            occupancyData = FXCollections.observableArrayList(occupancyData.subList(0, 5));
+        }
 
-        // Create a pie chart for visualization
-        PieChart occupancyChart = createOccupancyPieChart(occupancyData);
-        VBox chartContainer = new VBox(occupancyChart);
-        occupancyPane.setCenter(chartContainer);
+        // Set table data and make visible
+        tblOccupancy.setItems(occupancyData);
+        tblOccupancy.setVisible(true);
+
+        // Create chart if rooms are occupied
+        if (totalOccupied > 0 && occupancyPane != null) {
+            PieChart occupancyChart = createOccupancyPieChart(occupancyData);
+            occupancyPane.setCenter(occupancyChart);
+            occupancyPane.setVisible(true);
+        } else if (occupancyPane != null) {
+            occupancyPane.setVisible(false);
+        }
 
         // Update summary label
         double overallOccupancy = totalRooms > 0 ? ((double) totalOccupied / totalRooms) * 100 : 0;
         lblReportSummary.setText(String.format(
                 "Occupancy Report: %s to %s\nOverall Occupancy Rate: %.2f%% (%d out of %d rooms occupied)",
                 currentStartDate, currentEndDate, overallOccupancy, totalOccupied, totalRooms));
+
+        LoggingManager.logSystemInfo("Generated occupancy report with " + occupancyData.size() + " rows");
     }
 
     /**
      * Generate the revenue report
      */
     private void generateRevenueReport() throws DatabaseException {
+        // Get service using ServiceLocator
+        BillingService billingService = ServiceLocator.getService(BillingService.class);
+
         // Fetch billings for the specified date range
         currentBillings = billingService.getBillingsByDateRange(currentStartDate, currentEndDate);
 
@@ -493,13 +480,27 @@ public class ReportController implements Initializable {
         // Add a row for the totals
         revenueData.add(new RevenueSummaryData("TOTAL", totalRoomRevenue, totalTaxes, totalDiscounts));
 
+        // Truncate to 5 rows if more exist (excluding the total row)
+        if (revenueData.size() > 6) {
+            revenueData = FXCollections.observableArrayList(
+                    revenueData.subList(0, 5).stream()
+                            .collect(Collectors.toList())
+            );
+            revenueData.add(revenueData.size(), new RevenueSummaryData("TOTAL", totalRoomRevenue, totalTaxes, totalDiscounts));
+        }
+
         // Set the table data
         tblRevenue.setItems(revenueData);
+        tblRevenue.setVisible(true);
 
-        // Create a bar chart for visualization
-        BarChart<String, Number> revenueChart = createRevenueBarChart(revenueData);
-        VBox chartContainer = new VBox(revenueChart);
-        revenuePane.setCenter(chartContainer);
+        // Show the chart if the pane exists
+        if (revenuePane != null) {
+            revenuePane.setVisible(true);
+
+            // Create a bar chart for visualization
+            BarChart<String, Number> revenueChart = createRevenueBarChart(revenueData);
+            revenuePane.setCenter(revenueChart);
+        }
 
         // Update summary label
         double totalRevenue = totalRoomRevenue + totalTaxes - totalDiscounts;
@@ -512,6 +513,9 @@ public class ReportController implements Initializable {
      * Generate the feedback report
      */
     private void generateFeedbackReport() throws DatabaseException {
+        // Get services using ServiceLocator
+        FeedbackService feedbackService = ServiceLocator.getService(FeedbackService.class);
+
         // Fetch feedback for the specified date range
         currentFeedbacks = feedbackService.getFeedbackByDateRange(currentStartDate, currentEndDate);
 
@@ -545,13 +549,23 @@ public class ReportController implements Initializable {
                 overallAverage
         ));
 
+        // Truncate to 6 rows if more exist
+        if (feedbackData.size() > 6) {
+            feedbackData = FXCollections.observableArrayList(feedbackData.subList(0, 6));
+        }
+
         // Set the table data
         tblFeedback.setItems(feedbackData);
+        tblFeedback.setVisible(true);
 
-        // Create a pie chart for visualization
-        PieChart feedbackChart = createFeedbackPieChart(feedbackData);
-        VBox chartContainer = new VBox(feedbackChart);
-        feedbackPane.setCenter(chartContainer);
+        // Show the chart if the pane exists
+        if (feedbackPane != null) {
+            feedbackPane.setVisible(true);
+
+            // Create a pie chart for visualization
+            PieChart feedbackChart = createFeedbackPieChart(feedbackData);
+            feedbackPane.setCenter(feedbackChart);
+        }
 
         // Update summary label
         lblReportSummary.setText(String.format(
@@ -602,6 +616,8 @@ public class ReportController implements Initializable {
      * Export the feedback report to a CSV file
      */
     private void exportFeedbackReport(File file) throws IOException {
+        GuestService guestService = ServiceLocator.getService(GuestService.class);
+
         try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
             // Write header
             writer.println("Category,Count,Average Rating");
@@ -642,6 +658,8 @@ public class ReportController implements Initializable {
     private PieChart createOccupancyPieChart(ObservableList<RoomOccupancyData> data) {
         PieChart chart = new PieChart();
         chart.setTitle("Room Occupancy by Type");
+        chart.setPrefHeight(300);
+        chart.setMaxHeight(300);
 
         // Remove the "All Rooms" entry for the chart
         for (int i = 0; i < data.size() - 1; i++) {
@@ -670,6 +688,9 @@ public class ReportController implements Initializable {
         chart.setTitle("Revenue by Date");
         xAxis.setLabel("Date");
         yAxis.setLabel("Amount ($)");
+
+        chart.setPrefHeight(300);
+        chart.setMaxHeight(300);
 
         // Create series for room revenue, taxes, and discounts
         XYChart.Series<String, Number> roomRevenueSeries = new XYChart.Series<>();
@@ -705,6 +726,8 @@ public class ReportController implements Initializable {
     private PieChart createFeedbackPieChart(ObservableList<FeedbackSummaryData> data) {
         PieChart chart = new PieChart();
         chart.setTitle("Feedback Distribution by Rating");
+        chart.setPrefHeight(300);
+        chart.setMaxHeight(300);
 
         // Remove the "Overall" entry for the chart
         for (int i = 0; i < data.size() - 1; i++) {
@@ -721,22 +744,26 @@ public class ReportController implements Initializable {
         return chart;
     }
 
-    /**
-     * Setup the occupancy table columns
-     */
     private void setupOccupancyTable() {
+        // Clear existing columns
+        tblOccupancy.getColumns().clear();
+
         // Create columns
         TableColumn<RoomOccupancyData, String> roomTypeCol = new TableColumn<>("Room Type");
         roomTypeCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getRoomType()));
+        roomTypeCol.setPrefWidth(200);
 
         TableColumn<RoomOccupancyData, Number> totalRoomsCol = new TableColumn<>("Total Rooms");
         totalRoomsCol.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().getTotalRooms()));
+        totalRoomsCol.setPrefWidth(150);
 
         TableColumn<RoomOccupancyData, Number> occupiedRoomsCol = new TableColumn<>("Occupied Rooms");
         occupiedRoomsCol.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().getOccupiedRooms()));
+        occupiedRoomsCol.setPrefWidth(150);
 
         TableColumn<RoomOccupancyData, Number> occupancyRateCol = new TableColumn<>("Occupancy Rate (%)");
         occupancyRateCol.setCellValueFactory(data -> new SimpleDoubleProperty(data.getValue().getOccupancyRate()));
+        occupancyRateCol.setPrefWidth(200);
         occupancyRateCol.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(Number item, boolean empty) {
@@ -751,18 +778,25 @@ public class ReportController implements Initializable {
 
         // Add columns to table
         tblOccupancy.getColumns().addAll(roomTypeCol, totalRoomsCol, occupiedRoomsCol, occupancyRateCol);
+
+        // Configure table layout
+        tblOccupancy.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tblOccupancy.setFixedCellSize(35.0);
+        tblOccupancy.setPrefHeight(5 * 35.0 + 30); // 5 rows + header
     }
 
-    /**
-     * Setup the revenue table columns
-     */
     private void setupRevenueTable() {
+        // Clear existing columns
+        tblRevenue.getColumns().clear();
+
         // Create columns
         TableColumn<RevenueSummaryData, String> dateCol = new TableColumn<>("Date");
         dateCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getDate()));
+        dateCol.setPrefWidth(150);
 
         TableColumn<RevenueSummaryData, Number> roomRevenueCol = new TableColumn<>("Room Revenue");
         roomRevenueCol.setCellValueFactory(data -> new SimpleDoubleProperty(data.getValue().getRoomRevenue()));
+        roomRevenueCol.setPrefWidth(150);
         roomRevenueCol.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(Number item, boolean empty) {
@@ -777,6 +811,7 @@ public class ReportController implements Initializable {
 
         TableColumn<RevenueSummaryData, Number> taxesCol = new TableColumn<>("Taxes Collected");
         taxesCol.setCellValueFactory(data -> new SimpleDoubleProperty(data.getValue().getTaxesCollected()));
+        taxesCol.setPrefWidth(150);
         taxesCol.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(Number item, boolean empty) {
@@ -791,6 +826,7 @@ public class ReportController implements Initializable {
 
         TableColumn<RevenueSummaryData, Number> discountsCol = new TableColumn<>("Discounts Given");
         discountsCol.setCellValueFactory(data -> new SimpleDoubleProperty(data.getValue().getDiscountsGiven()));
+        discountsCol.setPrefWidth(150);
         discountsCol.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(Number item, boolean empty) {
@@ -805,6 +841,7 @@ public class ReportController implements Initializable {
 
         TableColumn<RevenueSummaryData, Number> totalCol = new TableColumn<>("Total Revenue");
         totalCol.setCellValueFactory(data -> new SimpleDoubleProperty(data.getValue().getTotalRevenue()));
+        totalCol.setPrefWidth(200);
         totalCol.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(Number item, boolean empty) {
@@ -819,18 +856,29 @@ public class ReportController implements Initializable {
 
         // Add columns to table
         tblRevenue.getColumns().addAll(dateCol, roomRevenueCol, taxesCol, discountsCol, totalCol);
+
+        // Configure table layout
+        tblRevenue.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tblRevenue.setFixedCellSize(35.0);
+        tblRevenue.setPrefHeight(5 * 35.0 + 30); // 5 rows + header
     }
 
     private void setupFeedbackTable() {
-        // Create columns
+        // Clear existing columns
+        tblFeedback.getColumns().clear();
+
+        // Create columns with specific widths to fill the table
         TableColumn<FeedbackSummaryData, String> categoryCol = new TableColumn<>("Category");
         categoryCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getCategory()));
+        categoryCol.setPrefWidth(300);
 
         TableColumn<FeedbackSummaryData, Number> countCol = new TableColumn<>("Count");
         countCol.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().getCount()));
+        countCol.setPrefWidth(200);
 
         TableColumn<FeedbackSummaryData, Number> ratingCol = new TableColumn<>("Average Rating");
         ratingCol.setCellValueFactory(data -> new SimpleDoubleProperty(data.getValue().getAverageRating()));
+        ratingCol.setPrefWidth(300);
         ratingCol.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(Number item, boolean empty) {
@@ -845,32 +893,63 @@ public class ReportController implements Initializable {
 
         // Add columns to table
         tblFeedback.getColumns().addAll(categoryCol, countCol, ratingCol);
+
+        // Configure table layout
+        tblFeedback.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tblFeedback.setFixedCellSize(35.0);
+        tblFeedback.setPrefHeight(6 * 35.0 + 30); // 6 rows + header
     }
 
     /**
      * Clear previous report data
      */
     private void clearReportData() {
-        // Clear table data
-        if (tblOccupancy != null) tblOccupancy.getItems().clear();
-        if (tblRevenue != null) tblRevenue.getItems().clear();
-        if (tblFeedback != null) tblFeedback.getItems().clear();
+        try {
+            // Clear table data
+            if (tblOccupancy != null) {
+                tblOccupancy.getItems().clear();
+                tblOccupancy.setVisible(false);
+            }
 
-        // Clear chart areas
-        occupancyPane.setCenter(null);
-        revenuePane.setCenter(null);
-        feedbackPane.setCenter(null);
+            if (tblRevenue != null) {
+                tblRevenue.getItems().clear();
+                tblRevenue.setVisible(false);
+            }
 
-        // Clear summary
-        lblReportSummary.setText("");
+            if (tblFeedback != null) {
+                tblFeedback.getItems().clear();
+                tblFeedback.setVisible(false);
+            }
 
-        // Clear collections
-        currentReservations = null;
-        currentBillings = null;
-        currentFeedbacks = null;
+            // Clear chart areas if they exist
+            if (occupancyPane != null) {
+                occupancyPane.setCenter(null);
+                occupancyPane.setVisible(false);
+            }
 
-        // Hide error
-        lblError.setVisible(false);
+            if (revenuePane != null) {
+                revenuePane.setCenter(null);
+                revenuePane.setVisible(false);
+            }
+
+            if (feedbackPane != null) {
+                feedbackPane.setCenter(null);
+                feedbackPane.setVisible(false);
+            }
+
+            // Clear summary
+            lblReportSummary.setText("");
+
+            // Clear collections
+            currentReservations = null;
+            currentBillings = null;
+            currentFeedbacks = null;
+
+            // Hide error
+            hideError();
+        } catch (Exception e) {
+            LoggingManager.logException("Error clearing report data", e);
+        }
     }
 
     /**
@@ -879,39 +958,43 @@ public class ReportController implements Initializable {
      * @return true if the date range is valid, false otherwise
      */
     private boolean validateDateRange() {
-        if (currentStartDate == null) {
-            showError("Please select a start date");
+        try {
+            // Use ValidationUtils to validate date range
+            if (currentStartDate == null) {
+                showError("Please select a start date");
+                return false;
+            }
+
+            if (currentEndDate == null) {
+                showError("Please select an end date");
+                return false;
+            }
+
+            // Use ValidationUtils to validate date range
+            ValidationUtils.validateDateRange(currentStartDate, currentEndDate, "Start Date", "End Date");
+            return true;
+        } catch (Exception e) {
+            showError(e.getMessage());
             return false;
         }
-
-        if (currentEndDate == null) {
-            showError("Please select an end date");
-            return false;
-        }
-
-        if (currentEndDate.isBefore(currentStartDate)) {
-            showError("End date must be after start date");
-            return false;
-        }
-
-        return true;
     }
 
     /**
-     * Show an error message
+     * Show an error message using ErrorPopupManager
      *
      * @param message The error message to display
      */
-    private void showError(String message) {
-        lblError.setText(message);
-        lblError.setVisible(true);
+    @Override
+    protected void showError(String message) {
+        // Use ErrorPopupManager for displaying errors
+        Stage stage = getStage();
+        if (stage != null) {
+            ErrorPopupManager.showErrorPopup(stage, message);
+        } else {
+            // Fallback to base class error handling if no stage is available
+            lblError.setText(message);
+            lblError.setVisible(true);
+        }
     }
 
-    /**
-     * Initialize controller with admin data
-     */
-    public void initData(Admin admin) {
-        this.currentAdmin = admin;
-        LoggingManager.logSystemInfo("ReportController initialized with admin: " + admin.getUsername());
-    }
 }
