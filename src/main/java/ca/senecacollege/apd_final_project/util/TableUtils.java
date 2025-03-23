@@ -9,12 +9,15 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
+import java.time.format.DateTimeFormatter;
 import java.util.function.Function;
 
 /**
  * Utility class for common TableView operations in the application
  */
 public class TableUtils {
+    // Shared date formatter for consistent date display
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /**
      * Configure table columns to resize properly
@@ -58,11 +61,12 @@ public class TableUtils {
         // Clear existing columns
         tableView.getColumns().clear();
 
-        // Define columns with detailed configuration
+        // Make columns fill the entire table width
+        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        // Define columns
         TableColumn<Reservation, String> colReservationId = createColumn("ID",
                 cellData -> String.valueOf(cellData.getValue().getReservationID()));
-        colReservationId.setPrefWidth(80);
-        colReservationId.setMinWidth(50);
 
         TableColumn<Reservation, String> colGuestName = createColumn("Guest",
                 cellData -> {
@@ -73,31 +77,52 @@ public class TableUtils {
                         return "Error";
                     }
                 });
-        colGuestName.setPrefWidth(200);
-        colGuestName.setMinWidth(150);
 
         TableColumn<Reservation, String> colCheckIn = createColumn("Check-in",
-                cellData -> cellData.getValue().getCheckInDate().toString());
-        colCheckIn.setPrefWidth(120);
-        colCheckIn.setMinWidth(100);
+                cellData -> cellData.getValue().getCheckInDate().format(DATE_FORMATTER));
 
         TableColumn<Reservation, String> colCheckOut = createColumn("Check-out",
-                cellData -> cellData.getValue().getCheckOutDate().toString());
-        colCheckOut.setPrefWidth(120);
-        colCheckOut.setMinWidth(100);
+                cellData -> cellData.getValue().getCheckOutDate().format(DATE_FORMATTER));
 
         TableColumn<Reservation, String> colStatus = createStatusColumn();
-        colStatus.setPrefWidth(100);
-        colStatus.setMinWidth(80);
 
         tableView.getColumns().addAll(colReservationId, colGuestName, colCheckIn, colCheckOut, colStatus);
         tableView.setItems(data);
-
-        // Configure column widths to fill the table
-        configureTableColumnWidth(tableView);
     }
 
-    // Helper method to create standard columns
+    /**
+     * Setup a guest search results table with standard columns
+     * @param tableView The table view to setup
+     * @param data The data to populate the table with
+     */
+    public static void setupGuestTable(TableView<Guest> tableView, ObservableList<Guest> data) {
+        // Clear existing columns
+        tableView.getColumns().clear();
+
+        // Make columns fill the entire table width
+        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        TableColumn<Guest, String> colGuestId = new TableColumn<>("ID");
+        colGuestId.setCellValueFactory(cellData ->
+                new SimpleStringProperty(String.valueOf(cellData.getValue().getGuestID())));
+
+        TableColumn<Guest, String> colGuestName = new TableColumn<>("Name");
+        colGuestName.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
+
+        TableColumn<Guest, String> colGuestPhone = new TableColumn<>("Phone");
+        colGuestPhone.setCellValueFactory(cellData -> cellData.getValue().phoneNumberProperty());
+
+        TableColumn<Guest, String> colGuestEmail = new TableColumn<>("Email");
+        colGuestEmail.setCellValueFactory(cellData -> cellData.getValue().emailProperty());
+
+        tableView.getColumns().addAll(colGuestId, colGuestName, colGuestPhone, colGuestEmail);
+        tableView.setItems(data);
+    }
+
+
+    /**
+     * Create a standard column with string value
+     */
     private static TableColumn<Reservation, String> createColumn(String title,
                                                                  Function<TableColumn.CellDataFeatures<Reservation, String>, String> cellValueExtractor) {
         TableColumn<Reservation, String> column = new TableColumn<>(title);
@@ -106,7 +131,9 @@ public class TableUtils {
         return column;
     }
 
-    // Helper method to create status column with styling
+    /**
+     * Create a status column with custom styling
+     */
     private static TableColumn<Reservation, String> createStatusColumn() {
         TableColumn<Reservation, String> colStatus = new TableColumn<>("Status");
 
@@ -146,42 +173,5 @@ public class TableUtils {
         });
 
         return colStatus;
-    }
-
-    /**
-     * Setup a guest search results table with standard columns
-     * @param tableView The table view to setup
-     * @param data The data to populate the table with
-     */
-    public static void setupGuestTable(TableView<Guest> tableView, ObservableList<Guest> data) {
-        // Clear existing columns
-        tableView.getColumns().clear();
-
-        TableColumn<Guest, String> colGuestId = new TableColumn<>("ID");
-        colGuestId.setCellValueFactory(cellData ->
-                new SimpleStringProperty(String.valueOf(cellData.getValue().getGuestID())));
-        colGuestId.setPrefWidth(80);
-        colGuestId.setMinWidth(50);
-
-        TableColumn<Guest, String> colGuestName = new TableColumn<>("Name");
-        colGuestName.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
-        colGuestName.setPrefWidth(200);
-        colGuestName.setMinWidth(150);
-
-        TableColumn<Guest, String> colGuestPhone = new TableColumn<>("Phone");
-        colGuestPhone.setCellValueFactory(cellData -> cellData.getValue().phoneNumberProperty());
-        colGuestPhone.setPrefWidth(150);
-        colGuestPhone.setMinWidth(120);
-
-        TableColumn<Guest, String> colGuestEmail = new TableColumn<>("Email");
-        colGuestEmail.setCellValueFactory(cellData -> cellData.getValue().emailProperty());
-        colGuestEmail.setPrefWidth(200);
-        colGuestEmail.setMinWidth(150);
-
-        tableView.getColumns().addAll(colGuestId, colGuestName, colGuestPhone, colGuestEmail);
-        tableView.setItems(data);
-
-        // Configure column widths to fill the table
-        configureTableColumnWidth(tableView);
     }
 }

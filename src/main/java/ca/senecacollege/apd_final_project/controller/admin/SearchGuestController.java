@@ -1,5 +1,6 @@
 package ca.senecacollege.apd_final_project.controller.admin;
 
+import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
 import ca.senecacollege.apd_final_project.model.Admin;
 import ca.senecacollege.apd_final_project.model.Guest;
@@ -10,30 +11,25 @@ import ca.senecacollege.apd_final_project.service.ReservationService;
 import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
-import javafx.beans.property.SimpleStringProperty;
+import ca.senecacollege.apd_final_project.util.TableUtils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
-import javafx.scene.layout.VBox;
-import javafx.scene.control.Separator;
-import javafx.scene.control.TextArea;
 
-public class SearchGuestController implements Initializable {
+public class SearchGuestController extends BaseController {
 
     @FXML
     private ComboBox<String> cmbSearchBy;
@@ -71,12 +67,10 @@ public class SearchGuestController implements Initializable {
     private ObservableList<Guest> guestList = FXCollections.observableArrayList();
     private ObservableList<Reservation> reservationList = FXCollections.observableArrayList();
 
-    private DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-    private Admin currentAdmin;
-
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        super.initialize(url, resourceBundle);
+
         // Initialize services
         guestService = new GuestService();
         reservationService = new ReservationService();
@@ -85,11 +79,11 @@ public class SearchGuestController implements Initializable {
         cmbSearchBy.setItems(FXCollections.observableArrayList("Name", "Phone", "Email"));
         cmbSearchBy.getSelectionModel().selectFirst();
 
-        // Setup guest table columns
-        setupGuestTable();
+        // Setup guest table
+        TableUtils.setupGuestTable(tblGuests, guestList);
 
-        // Setup reservation table columns
-        setupReservationTable();
+        // Setup reservation table
+        TableUtils.setupReservationsTable(tblReservations, reservationList, guestService);
 
         // Add listener to guest table selection to load related reservations
         tblGuests.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
@@ -104,23 +98,6 @@ public class SearchGuestController implements Initializable {
             updateButtonStates();
         });
 
-        // Bind table width to parent container width
-        tblGuests.prefWidthProperty().bind(((VBox)tblGuests.getParent()).widthProperty());
-        tblReservations.prefWidthProperty().bind(((VBox)tblReservations.getParent()).widthProperty());
-
-        // Ensure both tables have admin-table class
-        tblGuests.getStyleClass().add("admin-table");
-        tblReservations.getStyleClass().add("admin-table");
-
-        // Ensure each column takes proportional width of the table
-        for (TableColumn<Guest, ?> column : tblGuests.getColumns()) {
-            column.prefWidthProperty().bind(tblGuests.widthProperty().divide(tblGuests.getColumns().size()));
-        }
-
-        for (TableColumn<Reservation, ?> column : tblReservations.getColumns()) {
-            column.prefWidthProperty().bind(tblReservations.widthProperty().divide(tblReservations.getColumns().size()));
-        }
-
         // Initially disable action buttons
         btnViewDetails.setDisable(true);
         btnNewReservation.setDisable(true);
@@ -130,86 +107,15 @@ public class SearchGuestController implements Initializable {
         LoggingManager.logSystemInfo("SearchGuestController initialized");
     }
 
-    /**
-     * Initialize controller with admin data
-     */
+    @Override
     public void initData(Admin admin) {
-        this.currentAdmin = admin;
+        super.initData(admin);
         LoggingManager.logSystemInfo("SearchGuestController initialized with admin: " + admin.getUsername());
     }
 
-    /**
-     * Setup the guest table columns
-     */
-    private void setupGuestTable() {
-        // Create columns
-        TableColumn<Guest, Integer> idCol = new TableColumn<>("ID");
-        idCol.setCellValueFactory(new PropertyValueFactory<>("guestID"));
-
-        TableColumn<Guest, String> nameCol = new TableColumn<>("Name");
-        nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
-
-        TableColumn<Guest, String> phoneCol = new TableColumn<>("Phone No.");
-        phoneCol.setCellValueFactory(new PropertyValueFactory<>("phoneNumber"));
-
-        TableColumn<Guest, String> emailCol = new TableColumn<>("Email");
-        emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
-
-        // Configure column widths
-        idCol.setPrefWidth(50);
-        nameCol.setPrefWidth(200);
-        phoneCol.setPrefWidth(150);
-        emailCol.setPrefWidth(200);
-
-        // Add columns to table
-        tblGuests.getColumns().addAll(idCol, nameCol, phoneCol, emailCol);
-
-        // Set items list
-        tblGuests.setItems(guestList);
-    }
-
-    /**
-     * Setup the reservation table columns
-     */
-    private void setupReservationTable() {
-        // Create columns
-        TableColumn<Reservation, Integer> idCol = new TableColumn<>("ID");
-        idCol.setCellValueFactory(new PropertyValueFactory<>("reservationID"));
-
-        TableColumn<Reservation, String> checkInCol = new TableColumn<>("Check-in");
-        checkInCol.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().getCheckInDate().format(dateFormatter)));
-
-        TableColumn<Reservation, String> checkOutCol = new TableColumn<>("Check-out");
-        checkOutCol.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().getCheckOutDate().format(dateFormatter)));
-
-        TableColumn<Reservation, Integer> guestsCol = new TableColumn<>("Guests");
-        guestsCol.setCellValueFactory(new PropertyValueFactory<>("numberOfGuests"));
-
-        TableColumn<Reservation, String> statusCol = new TableColumn<>("Status");
-        statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
-
-        // Configure column widths
-        idCol.setPrefWidth(50);
-        checkInCol.setPrefWidth(100);
-        checkOutCol.setPrefWidth(100);
-        guestsCol.setPrefWidth(70);
-        statusCol.setPrefWidth(100);
-
-        // Add columns to table
-        tblReservations.getColumns().addAll(idCol, checkInCol, checkOutCol, guestsCol, statusCol);
-
-        // Set items list
-        tblReservations.setItems(reservationList);
-    }
-
-    /**
-     * Handle search button action
-     */
     @FXML
     private void handleSearchAction(ActionEvent event) {
-        // Clear previous results and error message
+        // Clear previous results
         guestList.clear();
         reservationList.clear();
 
@@ -225,12 +131,16 @@ public class SearchGuestController implements Initializable {
             String searchBy = cmbSearchBy.getValue();
 
             // Search based on selected criteria
-            if (searchBy.equals("Name")) {
-                results = guestService.searchGuestsByName(searchTerm);
-            } else if (searchBy.equals("Phone")) {
-                results = guestService.searchGuestsByPhone(searchTerm);
-            } else if (searchBy.equals("Email")) {
-                results = guestService.searchGuestsByEmail(searchTerm);
+            switch (searchBy) {
+                case "Name":
+                    results = guestService.searchGuestsByName(searchTerm);
+                    break;
+                case "Phone":
+                    results = guestService.searchGuestsByPhone(searchTerm);
+                    break;
+                case "Email":
+                    results = guestService.searchGuestsByEmail(searchTerm);
+                    break;
             }
 
             // Update the guest list
@@ -254,11 +164,6 @@ public class SearchGuestController implements Initializable {
         }
     }
 
-    /**
-     * Load reservations for the selected guest
-     *
-     * @param guest The selected guest
-     */
     private void loadReservationsForGuest(Guest guest) {
         if (guest == null) return;
 
@@ -283,89 +188,72 @@ public class SearchGuestController implements Initializable {
         }
     }
 
-    /**
-     * Update the states of the action buttons based on selections
-     */
     private void updateButtonStates() {
         Guest selectedGuest = tblGuests.getSelectionModel().getSelectedItem();
         Reservation selectedReservation = tblReservations.getSelectionModel().getSelectedItem();
 
-        // Enable/disable view details button for guest
+        // Enable/disable buttons based on selections
         btnViewDetails.setDisable(selectedGuest == null);
-
-        // Enable/disable new reservation button for guest
         btnNewReservation.setDisable(selectedGuest == null);
-
-        // Only enable check-in button if reservation is in confirmed status
         btnCheckIn.setDisable(selectedReservation == null ||
                 !selectedReservation.getStatus().equals(ReservationStatus.CONFIRMED));
-
-        // Only enable check-out button if reservation is in checked-in status
         btnCheckOut.setDisable(selectedReservation == null ||
                 !selectedReservation.getStatus().equals(ReservationStatus.CHECKED_IN));
     }
 
-    /**
-     * Handle view guest details button action
-     */
     @FXML
-    private void handleViewDetailsAction(ActionEvent event) {
+    private void handleNewReservationAction(ActionEvent event) {
         Guest selectedGuest = tblGuests.getSelectionModel().getSelectedItem();
 
         if (selectedGuest == null) return;
 
         try {
-            // Create a dialog to show guest details
+            // Open reservation screen
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_BOOKING));
+            Parent root = loader.load();
+
+            // Create and configure the stage
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle("New Reservation for " + selectedGuest.getName());
+            stage.setScene(new Scene(root));
+
+            // Apply CSS
+            root.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
+
+            // Set a larger stage size
+            stage.setWidth(800);
+            stage.setHeight(600);
+
+            // Show the dialog
+            stage.showAndWait();
+
+            // Log the action
+            logAdminActivity("Opened new reservation for guest: " + selectedGuest.getName());
+
+        } catch (IOException e) {
+            LoggingManager.logException("Error opening new reservation screen", e);
+            showError("Error creating new reservation: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleViewDetailsAction(ActionEvent event) {
+        Guest selectedGuest = tblGuests.getSelectionModel().getSelectedItem();
+        if (selectedGuest == null) return;
+
+        try {
+            // Create guest details dialog
             Dialog<ButtonType> dialog = new Dialog<>();
             dialog.setTitle("Guest Details");
             dialog.setHeaderText("Details for " + selectedGuest.getName());
 
-            // Set dialog size
             DialogPane dialogPane = dialog.getDialogPane();
             dialogPane.setPrefWidth(400);
             dialogPane.setPrefHeight(400);
 
-            // Style the header - make it centered with larger font
-            Label headerLabel = (Label)dialogPane.lookup(".header-panel .label");
-            if (headerLabel != null) {
-                headerLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-alignment: center;");
-                headerLabel.setAlignment(javafx.geometry.Pos.CENTER);
-            }
-
-            // Add guest information with larger font
-            VBox content = new VBox(15);
-            content.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-
-            Label idLabel = new Label("Guest ID: " + selectedGuest.getGuestID());
-            Label nameLabel = new Label("Name: " + selectedGuest.getName());
-            Label phoneLabel = new Label("Phone: " + selectedGuest.getPhoneNumber());
-            Label emailLabel = new Label("Email: " + selectedGuest.getEmail());
-            Label addressLabel = new Label("Address: " + selectedGuest.getAddress());
-
-            // Set larger font for all labels
-            idLabel.setStyle("-fx-font-size: 18px;");
-            nameLabel.setStyle("-fx-font-size: 18px;");
-            phoneLabel.setStyle("-fx-font-size: 18px;");
-            emailLabel.setStyle("-fx-font-size: 18px;");
-            addressLabel.setStyle("-fx-font-size: 18px;");
-
-            content.getChildren().addAll(idLabel, nameLabel, phoneLabel, emailLabel, addressLabel);
-
-            // Add feedback if available
-            if (selectedGuest.getFeedback() != null && !selectedGuest.getFeedback().isEmpty()) {
-                Separator separator = new Separator();
-                Label feedbackLabel = new Label("Feedback:");
-                feedbackLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
-
-                TextArea feedbackArea = new TextArea(selectedGuest.getFeedback());
-                feedbackArea.setEditable(false);
-                feedbackArea.setPrefRowCount(8);
-                feedbackArea.setPrefHeight(120);
-                feedbackArea.setPrefWidth(350);
-                feedbackArea.setStyle("-fx-font-size: 16px; -fx-control-inner-background: #7b1fa2;");
-
-                content.getChildren().addAll(separator, feedbackLabel, feedbackArea);
-            }
+            // Construct guest details content
+            VBox content = createGuestDetailsContent(selectedGuest);
 
             dialog.getDialogPane().setContent(content);
             dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
@@ -379,39 +267,53 @@ public class SearchGuestController implements Initializable {
         }
     }
 
-    /**
-     * Handle new reservation button action
-     */
-    @FXML
-    private void handleNewReservationAction(ActionEvent event) {
-        Guest selectedGuest = tblGuests.getSelectionModel().getSelectedItem();
+    private VBox createGuestDetailsContent(Guest guest) {
+        VBox content = new VBox(15);
+        content.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
-        if (selectedGuest == null) return;
+        String labelStyle = "-fx-font-size: 18px;";
+        String[] details = {
+                "Guest ID: " + guest.getGuestID(),
+                "Name: " + guest.getName(),
+                "Phone: " + guest.getPhoneNumber(),
+                "Email: " + guest.getEmail(),
+                "Address: " + guest.getAddress()
+        };
 
-        try {
-            // This would normally open a new reservation screen
-            // For the demo, just show a message
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("New Reservation");
-            alert.setHeaderText("Create New Reservation");
-            alert.setContentText("This would open a new reservation form for " + selectedGuest.getName() +
-                    ". Implementation of the new reservation form is outside the scope of this controller.");
-
-            // Apply CSS to the dialog
-            DialogPane dialogPane = alert.getDialogPane();
-            dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
-
-            alert.showAndWait();
-
-        } catch (Exception e) {
-            LoggingManager.logException("Error creating new reservation", e);
-            showError("Error creating new reservation: " + e.getMessage());
+        for (String detail : details) {
+            Label label = new Label(detail);
+            label.setStyle(labelStyle);
+            content.getChildren().add(label);
         }
+
+        // Add feedback if available
+        if (guest.getFeedback() != null && !guest.getFeedback().isEmpty()) {
+            content.getChildren().addAll(
+                    new Separator(),
+                    createFeedbackSection(guest.getFeedback())
+            );
+        }
+
+        return content;
     }
 
-    /**
-     * Handle check-in button action
-     */
+    private VBox createFeedbackSection(String feedbackText) {
+        VBox feedbackBox = new VBox(10);
+
+        Label feedbackLabel = new Label("Feedback:");
+        feedbackLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        TextArea feedbackArea = new TextArea(feedbackText);
+        feedbackArea.setEditable(false);
+        feedbackArea.setPrefRowCount(8);
+        feedbackArea.setPrefHeight(120);
+        feedbackArea.setPrefWidth(350);
+        feedbackArea.setStyle("-fx-font-size: 16px; -fx-control-inner-background: #7b1fa2;");
+
+        feedbackBox.getChildren().addAll(feedbackLabel, feedbackArea);
+        return feedbackBox;
+    }
+
     @FXML
     private void handleCheckInAction(ActionEvent event) {
         Guest selectedGuest = tblGuests.getSelectionModel().getSelectedItem();
@@ -452,9 +354,6 @@ public class SearchGuestController implements Initializable {
         }
     }
 
-    /**
-     * Handle check-out button action
-     */
     @FXML
     private void handleCheckOutAction(ActionEvent event) {
         Guest selectedGuest = tblGuests.getSelectionModel().getSelectedItem();
@@ -467,12 +366,7 @@ public class SearchGuestController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_CHECKOUT));
             Parent root = loader.load();
 
-            // Get the controller
-            CheckoutController controller = loader.getController();
-
-            // Here we'd normally initialize the controller with the reservation ID
-            // We simulate the initialization by setting the reservation ID in the text field
-            // This is not ideal but it's a simple way to demo the interaction
+            // Manually set reservation ID
             TextField txtReservationId = (TextField) root.lookup("#txtReservationId");
             if (txtReservationId != null) {
                 txtReservationId.setText(String.valueOf(selectedReservation.getReservationID()));
@@ -508,23 +402,16 @@ public class SearchGuestController implements Initializable {
         }
     }
 
-    /**
-     * Handle cancel button action
-     */
     @FXML
     private void handleCancelAction(ActionEvent event) {
         // Close the window
-        Stage stage = (Stage) btnCancel.getScene().getWindow();
-        stage.close();
+        closeWindow();
     }
 
-    /**
-     * Show an error message
-     *
-     * @param message The error message to display
-     */
-    private void showError(String message) {
-        Stage stage = (Stage) btnSearch.getScene().getWindow();
-        ErrorPopupManager.showValidationErrorPopup(stage, "Search", message);
+    @Override
+    protected Stage getStage() {
+        return tblGuests != null && tblGuests.getScene() != null
+                ? (Stage) tblGuests.getScene().getWindow()
+                : null;
     }
 }

@@ -1,5 +1,8 @@
 package ca.senecacollege.apd_final_project.controller.admin;
 
+import ca.senecacollege.apd_final_project.controller.BaseController;
+import ca.senecacollege.apd_final_project.exception.DatabaseException;
+import ca.senecacollege.apd_final_project.model.Admin;
 import ca.senecacollege.apd_final_project.model.Reservation;
 import ca.senecacollege.apd_final_project.service.GuestService;
 import ca.senecacollege.apd_final_project.service.ReservationService;
@@ -8,15 +11,15 @@ import ca.senecacollege.apd_final_project.util.TableUtils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
+import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class DashboardContentController implements Initializable {
+public class DashboardContentController extends BaseController {
 
     @FXML
     private Label lblTodayCheckIns;
@@ -41,6 +44,8 @@ public class DashboardContentController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        super.initialize(url, resourceBundle);
+
         // Initialize services
         guestService = new GuestService();
         reservationService = new ReservationService();
@@ -54,17 +59,22 @@ public class DashboardContentController implements Initializable {
         LoggingManager.logSystemInfo("DashboardContentController initialized");
     }
 
+    @Override
+    public void initData(Admin admin) {
+        super.initData(admin);
+        // Additional initialization if needed
+    }
+
     /**
      * Setup the dashboard tables
      */
     private void setupDashboardTables() {
         // Setup tables for dashboard
+        tblTodayCheckIns.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tblTodayCheckOuts.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
         TableUtils.setupReservationsTable(tblTodayCheckIns, todayCheckIns, guestService);
         TableUtils.setupReservationsTable(tblTodayCheckOuts, todayCheckOuts, guestService);
-
-        // Configure table column widths
-        TableUtils.configureTableColumnWidth(tblTodayCheckIns);
-        TableUtils.configureTableColumnWidth(tblTodayCheckOuts);
     }
 
     /**
@@ -88,8 +98,16 @@ public class DashboardContentController implements Initializable {
             List<Reservation> active = reservationService.getActiveReservations();
             lblActiveReservations.setText(String.valueOf(active.size()));
 
-        } catch (Exception e) {
+        } catch (DatabaseException e) {
             LoggingManager.logException("Error refreshing dashboard", e);
+            showError("Error loading dashboard data: " + e.getMessage());
         }
+    }
+
+    @Override
+    protected Stage getStage() {
+        return tblTodayCheckIns != null && tblTodayCheckIns.getScene() != null
+                ? (Stage) tblTodayCheckIns.getScene().getWindow()
+                : null;
     }
 }

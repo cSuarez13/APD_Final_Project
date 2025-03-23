@@ -1,27 +1,28 @@
 package ca.senecacollege.apd_final_project.controller.admin;
 
+import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.model.Admin;
 import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
+import ca.senecacollege.apd_final_project.util.ScreenSizeManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class AdminDashboardController implements Initializable {
+public class AdminDashboardController extends BaseController {
 
     @FXML
     private BorderPane mainPane;
@@ -46,16 +47,15 @@ public class AdminDashboardController implements Initializable {
     @FXML
     private Button btnReports;
 
-    // Admin data
-    private Admin currentAdmin;
-
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        super.initialize(url, resourceBundle);
         LoggingManager.logSystemInfo("AdminDashboardController initialized");
     }
 
+    @Override
     public void initData(Admin admin) {
-        this.currentAdmin = admin;
+        super.initData(admin);
         lblAdminName.setText(admin.getName());
         LoggingManager.logSystemInfo("AdminDashboardController initialized with admin: " + admin.getUsername());
     }
@@ -80,30 +80,15 @@ public class AdminDashboardController implements Initializable {
             if (clickedButton.equals(btnDashboard)) {
                 view = FXMLLoader.load(getClass().getResource(Constants.FXML_DASHBOARD_CONTENT));
             } else if (clickedButton.equals(btnSearchGuests)) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_SEARCH_GUEST));
-                view = loader.load();
-                SearchGuestController controller = loader.getController();
-                controller.initData(currentAdmin);
+                view = loadControllerView(Constants.FXML_SEARCH_GUEST, SearchGuestController.class);
             } else if (clickedButton.equals(btnReservations)) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_RESERVATIONS));
-                view = loader.load();
-                ReservationController controller = loader.getController();
-                controller.initData(currentAdmin);
+                view = loadControllerView(Constants.FXML_RESERVATIONS, ReservationController.class);
             } else if (clickedButton.equals(btnCheckIn)) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_CHECKIN));
-                view = loader.load();
-                CheckInController controller = loader.getController();
-                controller.initData(currentAdmin);
+                view = loadControllerView(Constants.FXML_CHECKIN, CheckInController.class);
             } else if (clickedButton.equals(btnCheckOut)) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_CHECKOUT));
-                view = loader.load();
-                CheckoutController controller = loader.getController();
-                controller.initData(currentAdmin);
+                view = loadControllerView(Constants.FXML_CHECKOUT, CheckoutController.class);
             } else if (clickedButton.equals(btnReports)) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_REPORT));
-                view = loader.load();
-                ReportController controller = loader.getController();
-                controller.initData(currentAdmin);
+                view = loadControllerView(Constants.FXML_REPORT, ReportController.class);
             }
 
             // Add view to content area
@@ -118,9 +103,33 @@ public class AdminDashboardController implements Initializable {
         }
     }
 
+    /**
+     * Load a view with its controller and initialize data
+     */
+    private Parent loadControllerView(String fxmlPath, Class<?> controllerClass) throws IOException {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+        Parent view = loader.load();
+        Object controller = loader.getController();
+
+        // Use reflection to call initData method if it exists
+        try {
+            if (controller instanceof BaseController) {
+                ((BaseController) controller).initData(currentAdmin);
+            } else {
+                // Try to find and invoke initData method manually
+                Method initDataMethod = controllerClass.getMethod("initData", Admin.class);
+                initDataMethod.invoke(controller, currentAdmin);
+            }
+        } catch (Exception e) {
+            LoggingManager.logException("Error initializing controller data", e);
+        }
+
+        return view;
+    }
+
     @FXML
     private void handleLogout(ActionEvent event) {
-        LoggingManager.logAdminActivity(currentAdmin.getUsername(), "Logged out");
+        logAdminActivity("Logged out");
 
         try {
             // Load the login screen
@@ -128,16 +137,24 @@ public class AdminDashboardController implements Initializable {
             Parent loginRoot = loader.load();
 
             // Get the current stage
-            Stage stage = (Stage) mainPane.getScene().getWindow();
+            Stage stage = getStage();
 
             // Create new scene
             Scene loginScene = new Scene(loginRoot);
             loginScene.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
 
+            // Calculate and set stage size
+            double stageWidth = ScreenSizeManager.calculateStageWidth(500);
+            double stageHeight = ScreenSizeManager.calculateStageHeight(400);
+            double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
+
             // Set the new scene
             stage.setScene(loginScene);
+            stage.setWidth(stageWidth);
+            stage.setHeight(stageHeight);
+            stage.setX(centerPos[0]);
+            stage.setY(centerPos[1]);
             stage.setMaximized(false);
-            stage.centerOnScreen();
 
         } catch (IOException e) {
             LoggingManager.logException("Error navigating to login screen", e);
@@ -150,27 +167,20 @@ public class AdminDashboardController implements Initializable {
      * Reset all navigation button styles
      */
     private void resetNavButtonStyles() {
-        btnDashboard.getStyleClass().remove("nav-button-active");
-        btnSearchGuests.getStyleClass().remove("nav-button-active");
-        btnReservations.getStyleClass().remove("nav-button-active");
-        btnCheckIn.getStyleClass().remove("nav-button-active");
-        btnCheckOut.getStyleClass().remove("nav-button-active");
-        btnReports.getStyleClass().remove("nav-button-active");
+        Button[] navButtons = {
+                btnDashboard, btnSearchGuests, btnReservations,
+                btnCheckIn, btnCheckOut, btnReports
+        };
+
+        for (Button btn : navButtons) {
+            btn.getStyleClass().remove("nav-button-active");
+        }
     }
 
-    /**
-     * Helper method to show an alert dialog
-     */
-    private void showAlert(Alert.AlertType type, String title, String message) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-
-        // Apply CSS
-        DialogPane dialogPane = alert.getDialogPane();
-        dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
-
-        alert.showAndWait();
+    @Override
+    protected Stage getStage() {
+        return mainPane != null && mainPane.getScene() != null
+                ? (Stage) mainPane.getScene().getWindow()
+                : null;
     }
 }
