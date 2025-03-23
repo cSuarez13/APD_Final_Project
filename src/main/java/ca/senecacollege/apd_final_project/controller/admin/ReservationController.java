@@ -1,31 +1,33 @@
 package ca.senecacollege.apd_final_project.controller.admin;
 
+import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
 import ca.senecacollege.apd_final_project.model.Admin;
 import ca.senecacollege.apd_final_project.model.Reservation;
 import ca.senecacollege.apd_final_project.model.ReservationStatus;
-import ca.senecacollege.apd_final_project.service.ReservationService;
+import ca.senecacollege.apd_final_project.service.DialogService;
 import ca.senecacollege.apd_final_project.service.GuestService;
-import ca.senecacollege.apd_final_project.util.Constants;
+import ca.senecacollege.apd_final_project.service.ReservationService;
+import ca.senecacollege.apd_final_project.service.ServiceLocator;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 import ca.senecacollege.apd_final_project.util.TableUtils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.DialogPane;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Stage;
 
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class ReservationController implements Initializable {
+public class ReservationController extends BaseController {
 
     @FXML
     private ComboBox<String> cmbReservationFilter;
@@ -36,40 +38,120 @@ public class ReservationController implements Initializable {
     @FXML
     private TableView<Reservation> tblAllReservations;
 
-    private Admin currentAdmin;
     private ReservationService reservationService;
     private GuestService guestService;
     private ObservableList<Reservation> allReservations = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        // Initialize services
-        reservationService = new ReservationService();
-        guestService = new GuestService();
+        super.initialize(url, resourceBundle);
+
+        LoggingManager.logSystemInfo("ReservationController initializing...");
+
+        // Get services using ServiceLocator
+        reservationService = ServiceLocator.getService(ReservationService.class);
+        guestService = ServiceLocator.getService(GuestService.class);
 
         // Initialize reservation filter combo box
         cmbReservationFilter.setItems(FXCollections.observableArrayList(
                 "All", "Active", "Confirmed", "Checked In", "Checked Out", "Cancelled"));
         cmbReservationFilter.getSelectionModel().selectFirst();
 
-        // Set up table
-        TableUtils.setupReservationsTable(tblAllReservations, allReservations, guestService);
-        TableUtils.configureTableColumnWidth(tblAllReservations);
+        LoggingManager.logSystemInfo("Setting up reservations table columns manually");
+
+        // Set up columns manually
+        setupTableColumns();
+
+        // Bind data to table
+        tblAllReservations.setItems(allReservations);
 
         // Add listener for filter changes
         cmbReservationFilter.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> refreshReservations());
 
-        LoggingManager.logSystemInfo("ReservationController initialized");
+        // Initially disable cancel button until a reservation is selected
+        btnCancelReservation.setDisable(true);
+
+        // Add listener to table selection for enabling/disabling cancel button
+        tblAllReservations.getSelectionModel().selectedItemProperty().addListener(
+                (obs, oldSelection, newSelection) -> updateCancelButtonState());
+
+        LoggingManager.logSystemInfo("ReservationController initialization complete");
     }
 
     /**
-     * Initialize controller with admin data
+     * Setup table columns manually instead of using TableUtils
      */
+    private void setupTableColumns() {
+        // Clear any existing columns
+        tblAllReservations.getColumns().clear();
+
+        // Set the column resize policy to fill the entire width
+        tblAllReservations.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        // ID Column
+        TableColumn<Reservation, Integer> idColumn = new TableColumn<>("ID");
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("reservationID"));
+        idColumn.setMinWidth(80);
+
+        // Guest ID Column
+        TableColumn<Reservation, Integer> guestIdColumn = new TableColumn<>("Guest ID");
+        guestIdColumn.setCellValueFactory(new PropertyValueFactory<>("guestID"));
+        guestIdColumn.setMinWidth(100);
+
+        // Room ID Column
+        TableColumn<Reservation, Integer> roomIdColumn = new TableColumn<>("Room");
+        roomIdColumn.setCellValueFactory(new PropertyValueFactory<>("roomID"));
+        roomIdColumn.setMinWidth(100);
+
+        // Check-in Date Column
+        TableColumn<Reservation, LocalDate> checkInColumn = new TableColumn<>("Check-in");
+        checkInColumn.setCellValueFactory(new PropertyValueFactory<>("checkInDate"));
+        checkInColumn.setMinWidth(150);
+
+        // Check-out Date Column
+        TableColumn<Reservation, LocalDate> checkOutColumn = new TableColumn<>("Check-out");
+        checkOutColumn.setCellValueFactory(new PropertyValueFactory<>("checkOutDate"));
+        checkOutColumn.setMinWidth(150);
+
+        // Status Column
+        TableColumn<Reservation, String> statusColumn = new TableColumn<>("Status");
+        statusColumn.setCellValueFactory(cellData ->
+                cellData.getValue().statusDisplayNameProperty());
+        statusColumn.setMinWidth(120);
+
+        // Add columns to the table
+        tblAllReservations.getColumns().addAll(
+                idColumn, guestIdColumn, roomIdColumn, checkInColumn, checkOutColumn, statusColumn);
+
+        // Style to make headers more visible
+        tblAllReservations.getStyleClass().add("admin-table");
+    }
+
+    /**
+     * Update the cancel button state based on the selected reservation
+     */
+    private void updateCancelButtonState() {
+        Reservation selectedReservation = tblAllReservations.getSelectionModel().getSelectedItem();
+
+        if (selectedReservation == null) {
+            btnCancelReservation.setDisable(true);
+            return;
+        }
+
+        // Only enable cancel for reservations in PENDING or CONFIRMED status
+        boolean canCancel = selectedReservation.getStatus() == ReservationStatus.PENDING ||
+                selectedReservation.getStatus() == ReservationStatus.CONFIRMED;
+
+        btnCancelReservation.setDisable(!canCancel);
+    }
+
+    @Override
     public void initData(Admin admin) {
-        this.currentAdmin = admin;
+        super.initData(admin);
+        LoggingManager.logSystemInfo("ReservationController initData called, refreshing reservations...");
         refreshReservations();
-        LoggingManager.logSystemInfo("ReservationController initialized with admin: " + admin.getUsername());
+        logAdminActivity("Viewed reservations list");
     }
 
     /**
@@ -78,6 +160,8 @@ public class ReservationController implements Initializable {
     private void refreshReservations() {
         try {
             String filter = cmbReservationFilter.getValue();
+            LoggingManager.logSystemInfo("Refreshing reservations with filter: " + filter);
+
             List<Reservation> reservations;
 
             if ("All".equals(filter)) {
@@ -96,13 +180,39 @@ public class ReservationController implements Initializable {
                 reservations = reservationService.getActiveReservations(); // Default
             }
 
+            LoggingManager.logSystemInfo("Retrieved " + (reservations != null ? reservations.size() : 0) + " reservations");
+
+            // For testing - add a dummy reservation if the list is empty
+            if (reservations == null || reservations.isEmpty()) {
+                LoggingManager.logSystemInfo("No reservations found, adding dummy data for testing");
+                Reservation dummyReservation = new Reservation();
+                dummyReservation.setReservationID(999);
+                dummyReservation.setGuestID(1);
+                dummyReservation.setRoomID(101);
+                dummyReservation.setCheckInDate(LocalDate.now());
+                dummyReservation.setCheckOutDate(LocalDate.now().plusDays(2));
+                dummyReservation.setNumberOfGuests(2);
+                dummyReservation.setStatus(ReservationStatus.CONFIRMED);
+
+                // Create a new list with the dummy reservation
+                reservations = FXCollections.observableArrayList(dummyReservation);
+            }
+
+            // Clear and add to the observable list
             allReservations.clear();
             allReservations.addAll(reservations);
 
+            LoggingManager.logSystemInfo("Added " + allReservations.size() + " reservations to the table");
+
+            // Update button states after refresh
+            updateCancelButtonState();
+
+        } catch (DatabaseException e) {
+            LoggingManager.logException("Database error refreshing reservations", e);
+            showError("Error refreshing reservations: " + e.getMessage());
         } catch (Exception e) {
-            LoggingManager.logException("Error refreshing reservations", e);
-            showAlert(Alert.AlertType.ERROR, "Reservations Error",
-                    "Error refreshing reservations: " + e.getMessage());
+            LoggingManager.logException("Unexpected error refreshing reservations", e);
+            showError("Unexpected error: " + e.getMessage());
         }
     }
 
@@ -114,59 +224,55 @@ public class ReservationController implements Initializable {
         Reservation selectedReservation = tblAllReservations.getSelectionModel().getSelectedItem();
 
         if (selectedReservation == null) {
-            showAlert(Alert.AlertType.WARNING, "No Selection",
-                    "Please select a reservation to cancel.");
+            showError("Please select a reservation to cancel.");
             return;
         }
 
-        if (selectedReservation.getStatus().equals(ReservationStatus.CHECKED_IN) ||
-                selectedReservation.getStatus().equals(ReservationStatus.CHECKED_OUT) ||
-                selectedReservation.getStatus().equals(ReservationStatus.CANCELLED)) {
-            showAlert(Alert.AlertType.WARNING, "Cannot Cancel",
-                    "This reservation cannot be cancelled. Current status: " +
-                            selectedReservation.getStatus());
+        // Double check the status to ensure it can be cancelled
+        if (selectedReservation.getStatus() != ReservationStatus.PENDING &&
+                selectedReservation.getStatus() != ReservationStatus.CONFIRMED) {
+            showError("This reservation cannot be cancelled. Current status: " +
+                    selectedReservation.getStatusDisplayName());
             return;
         }
 
-        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmDialog.setTitle("Confirm Cancellation");
-        confirmDialog.setHeaderText("Cancel Reservation #" + selectedReservation.getReservationID());
-        confirmDialog.setContentText("Are you sure you want to cancel this reservation?");
+        boolean confirmed = DialogService.showConfirmation(
+                getStage(),
+                "Confirm Cancellation",
+                "Are you sure you want to cancel reservation #" +
+                        selectedReservation.getReservationID() + "?"
+        );
 
-        confirmDialog.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                try {
-                    reservationService.cancelReservation(selectedReservation.getReservationID());
-                    LoggingManager.logAdminActivity(currentAdmin.getUsername(),
-                            "Cancelled reservation #" + selectedReservation.getReservationID());
+        if (confirmed) {
+            try {
+                reservationService.cancelReservation(selectedReservation.getReservationID());
 
-                    showAlert(Alert.AlertType.INFORMATION, "Success",
-                            "Reservation cancelled successfully.");
+                // Log the action
+                logAdminActivity("Cancelled reservation #" + selectedReservation.getReservationID());
 
-                    refreshReservations();
+                // Show success message
+                DialogService.showInformation(
+                        getStage(),
+                        "Success",
+                        "Reservation #" + selectedReservation.getReservationID() +
+                                " has been cancelled successfully."
+                );
 
-                } catch (Exception e) {
-                    LoggingManager.logException("Error cancelling reservation", e);
-                    showAlert(Alert.AlertType.ERROR, "Cancellation Error",
-                            "Error cancelling reservation: " + e.getMessage());
-                }
+                // Refresh the table
+                refreshReservations();
+
+            } catch (Exception e) {
+                LoggingManager.logException("Error cancelling reservation", e);
+                showError("Error cancelling reservation: " + e.getMessage());
             }
-        });
+        }
     }
 
-    /**
-     * Helper method to show an alert dialog
-     */
-    private void showAlert(Alert.AlertType type, String title, String message) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-
-        // Apply CSS
-        DialogPane dialogPane = alert.getDialogPane();
-        dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
-
-        alert.showAndWait();
+    @Override
+    protected Stage getStage() {
+        if (btnCancelReservation != null && btnCancelReservation.getScene() != null) {
+            return (Stage) btnCancelReservation.getScene().getWindow();
+        }
+        return null;
     }
 }

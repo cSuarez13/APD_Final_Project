@@ -78,7 +78,7 @@ public class AdminDashboardController extends BaseController {
             Parent view = null;
 
             if (clickedButton.equals(btnDashboard)) {
-                view = FXMLLoader.load(getClass().getResource(Constants.FXML_DASHBOARD_CONTENT));
+                view = loadFXML(Constants.FXML_DASHBOARD_CONTENT);
             } else if (clickedButton.equals(btnSearchGuests)) {
                 view = loadControllerView(Constants.FXML_SEARCH_GUEST, SearchGuestController.class);
             } else if (clickedButton.equals(btnReservations)) {
@@ -104,10 +104,26 @@ public class AdminDashboardController extends BaseController {
     }
 
     /**
+     * Load a FXML file
+     */
+    private Parent loadFXML(String fxmlPath) throws IOException {
+        URL resourceUrl = getClass().getResource(fxmlPath);
+        if (resourceUrl == null) {
+            throw new IOException("Resource not found: " + fxmlPath);
+        }
+        return FXMLLoader.load(resourceUrl);
+    }
+
+    /**
      * Load a view with its controller and initialize data
      */
     private Parent loadControllerView(String fxmlPath, Class<?> controllerClass) throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+        URL resourceUrl = getClass().getResource(fxmlPath);
+        if (resourceUrl == null) {
+            throw new IOException("Resource not found: " + fxmlPath);
+        }
+
+        FXMLLoader loader = new FXMLLoader(resourceUrl);
         Parent view = loader.load();
         Object controller = loader.getController();
 
