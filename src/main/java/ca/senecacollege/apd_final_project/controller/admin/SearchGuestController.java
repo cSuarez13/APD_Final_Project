@@ -328,7 +328,9 @@ public class SearchGuestController extends BaseController {
 
             // Get the controller
             CheckInController controller = loader.getController();
-            controller.initData(selectedReservation.getReservationID());
+            controller.initData(currentAdmin);
+            controller.txtReservationId.setText(String.valueOf(selectedReservation.getReservationID()));
+            controller.searchReservation();
 
             // Create and configure the stage
             Stage stage = new Stage();
