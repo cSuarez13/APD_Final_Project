@@ -517,3 +517,37 @@
 #tblGuests .table-row-cell:selected .text, #tblReservations .table-row-cell:selected .text {
     -fx-fill: white;
 }
+
+/* Chart styling for transparent legends */
+.chart {
+    -fx-background-color: transparent;
+}
+
+.chart-legend {
+    -fx-background-color: transparent;
+}
+
+.chart-legend-item {
+    -fx-text-fill: white;
+}
+
+.chart-legend-item-symbol {
+    -fx-background-radius: 0;
+}
+
+/* Additional chart text styling */
+.chart-pie-label {
+    -fx-fill: white;
+}
+
+.chart-title {
+    -fx-text-fill: white;
+}
+
+.axis {
+    -fx-tick-label-fill: white;
+}
+
+.axis-label {
+    -fx-text-fill: white;
+}

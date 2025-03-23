@@ -409,6 +409,8 @@ public class ReportController extends BaseController {
         // Set table data and make visible
         tblOccupancy.setItems(occupancyData);
         tblOccupancy.setVisible(true);
+        tblRevenue.setVisible(false);
+        tblFeedback.setVisible(false);
 
         // Create chart if rooms are occupied
         if (totalOccupied > 0 && occupancyPane != null) {
@@ -491,7 +493,9 @@ public class ReportController extends BaseController {
 
         // Set the table data
         tblRevenue.setItems(revenueData);
+        tblOccupancy.setVisible(false);
         tblRevenue.setVisible(true);
+        tblFeedback.setVisible(false);
 
         // Show the chart if the pane exists
         if (revenuePane != null) {
@@ -556,6 +560,8 @@ public class ReportController extends BaseController {
 
         // Set the table data
         tblFeedback.setItems(feedbackData);
+        tblOccupancy.setVisible(false);
+        tblRevenue.setVisible(false);
         tblFeedback.setVisible(true);
 
         // Show the chart if the pane exists
@@ -692,6 +698,7 @@ public class ReportController extends BaseController {
         chart.setPrefHeight(300);
         chart.setMaxHeight(300);
 
+
         // Create series for room revenue, taxes, and discounts
         XYChart.Series<String, Number> roomRevenueSeries = new XYChart.Series<>();
         roomRevenueSeries.setName("Room Revenue");
@@ -781,8 +788,10 @@ public class ReportController extends BaseController {
 
         // Configure table layout
         tblOccupancy.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        tblOccupancy.setFixedCellSize(35.0);
-        tblOccupancy.setPrefHeight(5 * 35.0 + 30); // 5 rows + header
+
+        // Remove fixed cell size - let it adapt to available space
+        // tblOccupancy.setFixedCellSize(35.0);
+        // tblOccupancy.setPrefHeight(5 * 35.0 + 30); // 5 rows + header
     }
 
     private void setupRevenueTable() {
@@ -905,7 +914,7 @@ public class ReportController extends BaseController {
      */
     private void clearReportData() {
         try {
-            // Clear table data
+            // Hide all tables first
             if (tblOccupancy != null) {
                 tblOccupancy.getItems().clear();
                 tblOccupancy.setVisible(false);
@@ -921,7 +930,7 @@ public class ReportController extends BaseController {
                 tblFeedback.setVisible(false);
             }
 
-            // Clear chart areas if they exist
+            // Hide all chart panes
             if (occupancyPane != null) {
                 occupancyPane.setCenter(null);
                 occupancyPane.setVisible(false);
@@ -951,6 +960,7 @@ public class ReportController extends BaseController {
             LoggingManager.logException("Error clearing report data", e);
         }
     }
+
 
     /**
      * Validate date range for the report
