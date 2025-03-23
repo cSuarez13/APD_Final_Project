@@ -368,17 +368,12 @@ public class SearchGuestController extends BaseController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_CHECKOUT));
             Parent root = loader.load();
 
-            // Manually set reservation ID
-            TextField txtReservationId = (TextField) root.lookup("#txtReservationId");
-            if (txtReservationId != null) {
-                txtReservationId.setText(String.valueOf(selectedReservation.getReservationID()));
+            // Get the controller
+            CheckoutController controller = loader.getController();
+            controller.initData(currentAdmin);
 
-                // Trigger the search button
-                Button btnSearch = (Button) root.lookup("#btnSearch");
-                if (btnSearch != null) {
-                    btnSearch.fire();
-                }
-            }
+            // Set reservation ID and trigger search
+            controller.setReservationId(selectedReservation.getReservationID());
 
             // Create and configure the stage
             Stage stage = new Stage();

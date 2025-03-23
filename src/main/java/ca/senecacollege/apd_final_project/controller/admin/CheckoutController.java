@@ -4,11 +4,9 @@ import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
 import ca.senecacollege.apd_final_project.exception.ReservationException;
 import ca.senecacollege.apd_final_project.model.*;
-import ca.senecacollege.apd_final_project.service.BillingService;
-import ca.senecacollege.apd_final_project.service.GuestService;
-import ca.senecacollege.apd_final_project.service.ReservationService;
-import ca.senecacollege.apd_final_project.service.RoomService;
+import ca.senecacollege.apd_final_project.service.*;
 import ca.senecacollege.apd_final_project.util.Constants;
+import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
 import ca.senecacollege.apd_final_project.util.ValidationUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -51,13 +49,14 @@ public class CheckoutController extends BaseController {
     @FXML
     private CheckBox chkFeedbackReminder;
     @FXML
-    private Label lblError; // This will be automatically picked up by BaseController
+    private Label lblError;
 
     // Services
     private ReservationService reservationService;
     private GuestService guestService;
     private RoomService roomService;
     private BillingService billingService;
+    private ValidationService validationService;
 
     // State Variables
     private Reservation currentReservation;
@@ -67,11 +66,12 @@ public class CheckoutController extends BaseController {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        // Initialize services
-        reservationService = new ReservationService();
-        guestService = new GuestService();
-        roomService = new RoomService();
-        billingService = new BillingService();
+        // Initialize services using ServiceLocator
+        reservationService = ServiceLocator.getService(ReservationService.class);
+        guestService = ServiceLocator.getService(GuestService.class);
+        roomService = ServiceLocator.getService(RoomService.class);
+        billingService = ServiceLocator.getService(BillingService.class);
+        validationService = ServiceLocator.getService(ValidationService.class);
 
         // Set feedback reminder checkbox to checked by default
         chkFeedbackReminder.setSelected(true);
@@ -105,20 +105,12 @@ public class CheckoutController extends BaseController {
 
         String reservationIdText = txtReservationId.getText().trim();
 
-        // Validate input
-        if (reservationIdText.isEmpty()) {
-            showError("Please enter a reservation ID");
-            return;
-        }
-
-        if (!ValidationUtils.isPositiveInteger(reservationIdText)) {
-            showError("Please enter a valid reservation ID");
-            return;
-        }
-
-        int reservationId = Integer.parseInt(reservationIdText);
-
         try {
+            // Validate reservation ID
+            validationService.validateId(reservationIdText, "Reservation ID");
+
+            int reservationId = Integer.parseInt(reservationIdText);
+
             // Fetch reservation information
             currentReservation = reservationService.getReservationById(reservationId);
 
@@ -127,12 +119,12 @@ public class CheckoutController extends BaseController {
                 return;
             }
 
-//            // Check if the reservation status is "Checked In"
-//            if (!currentReservation.getStatus().equals(Reservation.STATUS_CHECKED_IN)) {
-//                showError("This reservation cannot be checked out. Current status: " +
-//                        currentReservation.getStatus());
-//                return;
-//            }
+            // Check if the reservation status allows checkout
+            if (!currentReservation.getStatus().equals(ReservationStatus.CHECKED_IN)) {
+                showError("This reservation cannot be checked out. Current status: " +
+                        currentReservation.getStatus().getDisplayName());
+                return;
+            }
 
             // Fetch guest and room information
             currentGuest = guestService.getGuestById(currentReservation.getGuestID());
@@ -149,10 +141,8 @@ public class CheckoutController extends BaseController {
 
             logAdminActivity("Found reservation #" + reservationId + " for checkout");
 
-        } catch (DatabaseException e) {
-            showError("Database error: " + e.getMessage());
         } catch (Exception e) {
-            showError("An unexpected error occurred: " + e.getMessage());
+            showError(e.getMessage());
         }
     }
 
@@ -163,6 +153,9 @@ public class CheckoutController extends BaseController {
         }
 
         try {
+            // Validate checkout
+            validationService.validateCheckOut(currentReservation);
+
             // Create billing record
             currentBill = new Billing();
             currentBill.setReservationID(currentReservation.getReservationID());
@@ -174,17 +167,9 @@ public class CheckoutController extends BaseController {
             // Apply discount if provided
             double discount = 0.0;
             if (!txtDiscount.getText().isEmpty()) {
-                try {
-                    discount = Double.parseDouble(txtDiscount.getText());
-                    if (discount > subtotal) {
-                        showError("Discount cannot be greater than the subtotal");
-                        return;
-                    }
-                    currentBill.setDiscount(discount);
-                } catch (NumberFormatException e) {
-                    showError("Invalid discount amount");
-                    return;
-                }
+                discount = Double.parseDouble(txtDiscount.getText());
+                validationService.validateBilling(subtotal, discount);
+                currentBill.setDiscount(discount);
             }
 
             // Set billing datetime and paid status
@@ -215,12 +200,8 @@ public class CheckoutController extends BaseController {
             // Clear the form
             clearAll();
 
-        } catch (ReservationException e) {
-            showError("Checkout error: " + e.getMessage());
-        } catch (DatabaseException e) {
-            showError("Database error: " + e.getMessage());
         } catch (Exception e) {
-            showError("An unexpected error occurred: " + e.getMessage());
+            showError(e.getMessage());
         }
     }
 
@@ -339,5 +320,22 @@ public class CheckoutController extends BaseController {
             return (Stage) btnCancel.getScene().getWindow();
         }
         return null;
+    }
+
+    @Override
+    protected void showError(String message) {
+        // Use ErrorPopupManager for displaying errors
+        if (getStage() != null) {
+            ErrorPopupManager.showErrorPopup(getStage(), message);
+        } else {
+            // Fallback to base class error handling if no stage is available
+            super.showError(message);
+        }
+    }
+
+    public void setReservationId(int reservationId) {
+        txtReservationId.setText(String.valueOf(reservationId));
+        // Trigger the search action programmatically
+        handleSearchButton(new ActionEvent());
     }
 }

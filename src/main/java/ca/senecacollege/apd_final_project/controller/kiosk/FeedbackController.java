@@ -430,10 +430,10 @@ public class FeedbackController extends BaseController {
         dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
 
         // Apply custom styling
-        dialogPane.setStyle("-fx-background-color: #2a2a2a; -fx-min-width: 500px; -fx-min-height: 300px;");
+        dialogPane.setStyle("-fx-background-color: #2a2a2a; -fx-min-width: 400px; -fx-min-height: 200px;");
 
         Label headerText = new Label("Thank You!");
-        headerText.setStyle("-fx-text-fill: #b491c8; -fx-font-weight: bold; -fx-font-size: 24px;");
+        headerText.setStyle("-fx-text-fill: #b491c8; -fx-font-weight: bold; -fx-font-size: 24px; -fx-alignment: center;");
         dialogPane.setHeader(headerText);
 
         Dialog<ButtonType> dialog = new Dialog<>();
