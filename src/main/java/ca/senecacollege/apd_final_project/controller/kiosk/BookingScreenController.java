@@ -28,6 +28,7 @@ import java.util.ResourceBundle;
 
 public class BookingScreenController extends BaseController {
 
+    public Button btnBack;
     @FXML
     private BorderPane mainPane;
 

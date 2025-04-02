@@ -18,128 +18,123 @@
             xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ca.senecacollege.apd_final_project.controller.admin.CheckInController">
     <center>
-        <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
+        <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="NEVER">
             <VBox alignment="CENTER" spacing="20.0" styleClass="card" maxWidth="Infinity">
-                <children>
-                    <Label styleClass="label-header" text="Guest Check-In">
+                <padding>
+                    <Insets bottom="30.0" left="40.0" right="40.0" top="30.0"/>
+                </padding>
+                <BorderPane.margin>
+                    <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+                </BorderPane.margin>
+                <Label styleClass="label-header" text="Guest Check-In">
+                    <font>
+                        <Font name="System Bold" size="24.0"/>
+                    </font>
+                </Label>
+
+                <HBox alignment="CENTER" spacing="10.0">
+                    <VBox.margin>
+                        <Insets bottom="10.0" top="10.0"/>
+                    </VBox.margin>
+                    <Label text="Reservation ID:">
                         <font>
-                            <Font name="System Bold" size="24.0" />
+                            <Font size="14.0"/>
+                        </font>
+                    </Label>
+                    <TextField fx:id="txtReservationId" prefWidth="150.0" promptText="Enter ID"/>
+                    <Button fx:id="btnSearch" defaultButton="true" mnemonicParsing="false"
+                            onAction="#handleSearchButton"
+                            prefHeight="30.0" prefWidth="100.0" styleClass="button" text="Search"/>
+                </HBox>
+
+                <Separator prefWidth="200.0"/>
+
+                <GridPane hgap="20.0" vgap="10.0">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="200.0" minWidth="150.0" prefWidth="180.0"/>
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="400.0"/>
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                        <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                        <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                        <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                        <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                    </rowConstraints>
+                    <Label text="Guest Name:" GridPane.rowIndex="0">
+                        <font>
+                            <Font size="14.0"/>
+                        </font>
+                    </Label>
+                    <Label text="Room Information:" GridPane.rowIndex="1">
+                        <font>
+                            <Font size="14.0"/>
+                        </font>
+                    </Label>
+                    <Label text="Check-in Date:" GridPane.rowIndex="2">
+                        <font>
+                            <Font size="14.0"/>
+                        </font>
+                    </Label>
+                    <Label text="Check-out Date:" GridPane.rowIndex="3">
+                        <font>
+                            <Font size="14.0"/>
+                        </font>
+                    </Label>
+                    <Label text="Number of Guests:" GridPane.rowIndex="4">
+                        <font>
+                            <Font size="14.0"/>
                         </font>
                     </Label>
 
-                    <HBox alignment="CENTER" spacing="10.0">
-                        <children>
-                            <Label text="Reservation ID:">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Label>
-                            <TextField fx:id="txtReservationId" prefWidth="150.0" promptText="Enter ID" />
-                            <Button fx:id="btnSearch" defaultButton="true" mnemonicParsing="false" onAction="#handleSearchButton"
-                                    prefHeight="30.0" prefWidth="100.0" styleClass="button" text="Search" />
-                        </children>
-                        <VBox.margin>
-                            <Insets bottom="10.0" top="10.0" />
-                        </VBox.margin>
-                    </HBox>
+                    <Label fx:id="lblGuestName" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <font>
+                            <Font size="14.0"/>
+                        </font>
+                    </Label>
+                    <Label fx:id="lblRoomInfo" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <font>
+                            <Font size="14.0"/>
+                        </font>
+                    </Label>
+                    <Label fx:id="lblCheckInDate" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                        <font>
+                            <Font size="14.0"/>
+                        </font>
+                    </Label>
+                    <Label fx:id="lblCheckOutDate" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                        <font>
+                            <Font size="14.0"/>
+                        </font>
+                    </Label>
+                    <Label fx:id="lblGuests" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                        <font>
+                            <Font size="14.0"/>
+                        </font>
+                    </Label>
+                </GridPane>
 
-                    <Separator prefWidth="200.0" />
+                <Separator prefWidth="200.0"/>
 
-                    <GridPane hgap="20.0" vgap="10.0">
-                        <columnConstraints>
-                            <ColumnConstraints hgrow="SOMETIMES" maxWidth="200.0" minWidth="150.0" prefWidth="180.0" />
-                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="400.0" />
-                        </columnConstraints>
-                        <rowConstraints>
-                            <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                            <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                            <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                            <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                            <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        </rowConstraints>
-                        <children>
-                            <Label text="Guest Name:" GridPane.rowIndex="0">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Label>
-                            <Label text="Room Information:" GridPane.rowIndex="1">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Label>
-                            <Label text="Check-in Date:" GridPane.rowIndex="2">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Label>
-                            <Label text="Check-out Date:" GridPane.rowIndex="3">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Label>
-                            <Label text="Number of Guests:" GridPane.rowIndex="4">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Label>
-
-                            <Label fx:id="lblGuestName" text="" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Label>
-                            <Label fx:id="lblRoomInfo" text="" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Label>
-                            <Label fx:id="lblCheckInDate" text="" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Label>
-                            <Label fx:id="lblCheckOutDate" text="" GridPane.columnIndex="1" GridPane.rowIndex="3">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Label>
-                            <Label fx:id="lblGuests" text="" GridPane.columnIndex="1" GridPane.rowIndex="4">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Label>
-                        </children>
-                    </GridPane>
-
-                    <Separator prefWidth="200.0" />
-
-                    <HBox alignment="CENTER" spacing="30.0">
-                        <children>
-                            <Button fx:id="btnCancel" cancelButton="true" mnemonicParsing="false" onAction="#handleCancelButton"
-                                    prefHeight="50.0" prefWidth="150.0" styleClass="button-secondary" text="Cancel">
-                                <font>
-                                    <Font size="16.0" />
-                                </font>
-                            </Button>
-                            <Button fx:id="btnConfirm" defaultButton="true" mnemonicParsing="false" onAction="#handleConfirmButton"
-                                    prefHeight="50.0" prefWidth="200.0" styleClass="button" text="Confirm Check-In">
-                                <font>
-                                    <Font size="16.0" />
-                                </font>
-                            </Button>
-                        </children>
-                        <VBox.margin>
-                            <Insets top="20.0" />
-                        </VBox.margin>
-                    </HBox>
-                </children>
-                <padding>
-                    <Insets bottom="30.0" left="40.0" right="40.0" top="30.0" />
-                </padding>
-                <BorderPane.margin>
-                    <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-                </BorderPane.margin>
+                <HBox alignment="CENTER" spacing="30.0">
+                    <VBox.margin>
+                        <Insets top="20.0"/>
+                    </VBox.margin>
+                    <Button fx:id="btnCancel" cancelButton="true" mnemonicParsing="false"
+                            onAction="#handleCancelButton"
+                            prefHeight="50.0" prefWidth="150.0" styleClass="button-secondary" text="Cancel">
+                        <font>
+                            <Font size="16.0"/>
+                        </font>
+                    </Button>
+                    <Button fx:id="btnConfirm" defaultButton="true" mnemonicParsing="false"
+                            onAction="#handleConfirmButton"
+                            prefHeight="50.0" prefWidth="200.0" styleClass="button" text="Confirm Check-In">
+                        <font>
+                            <Font size="16.0"/>
+                        </font>
+                    </Button>
+                </HBox>
             </VBox>
         </ScrollPane>
     </center>

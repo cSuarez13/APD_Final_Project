@@ -1,119 +1,111 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.TextArea?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.RowConstraints?>
-<?import javafx.scene.text.Font?>
-
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 <BorderPane prefHeight="768.0" prefWidth="1024.0" styleClass="root"
             xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ca.senecacollege.apd_final_project.controller.kiosk.GuestDetailsController">
     <center>
         <VBox alignment="CENTER" spacing="20.0" styleClass="content-container" BorderPane.alignment="CENTER">
-            <children>
-                <Label styleClass="label-header" text="Guest Information">
-                    <font>
-                        <Font name="System Bold" size="36.0" />
-                    </font>
-                </Label>
-                <Label styleClass="label-secondary" text="Please provide your personal details">
-                    <font>
-                        <Font size="18.0" />
-                    </font>
-                </Label>
-                <Label fx:id="lblError" styleClass="label-error" text="Error message goes here" textFill="#cf6679" visible="false">
-                    <font>
-                        <Font size="14.0" />
-                    </font>
-                </Label>
-                <GridPane hgap="20.0" vgap="25.0">
-                    <columnConstraints>
-                        <ColumnConstraints minWidth="150.0" prefWidth="200.0" />
-                        <ColumnConstraints minWidth="10.0" prefWidth="400.0" />
-                    </columnConstraints>
-                    <rowConstraints>
-                        <RowConstraints minHeight="10.0" prefHeight="60.0" />
-                        <RowConstraints minHeight="10.0" prefHeight="60.0" />
-                        <RowConstraints minHeight="10.0" prefHeight="60.0" />
-                        <RowConstraints minHeight="10.0" prefHeight="60.0" />
-                    </rowConstraints>
-                    <children>
-                        <Label text="Full Name:" style="-fx-text-fill: white;">
-                            <font>
-                                <Font size="16.0" />
-                            </font>
-                        </Label>
-                        <Label text="Phone Number:" GridPane.rowIndex="1" style="-fx-text-fill: white;">
-                            <font>
-                                <Font size="16.0" />
-                            </font>
-                        </Label>
-                        <Label text="Email Address:" GridPane.rowIndex="2" style="-fx-text-fill: white;">
-                            <font>
-                                <Font size="16.0" />
-                            </font>
-                        </Label>
-                        <Label text="Address:" GridPane.rowIndex="3" style="-fx-text-fill: white;">
-                            <font>
-                                <Font size="16.0" />
-                            </font>
-                        </Label>
-                        <TextField fx:id="txtName" promptText="Enter your full name" GridPane.columnIndex="1" styleClass="kiosk-input" />
-                        <TextField fx:id="txtPhone" promptText="Enter your phone number" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="kiosk-input" />
-                        <TextField fx:id="txtEmail" promptText="Enter your email address" GridPane.columnIndex="1" GridPane.rowIndex="2" styleClass="kiosk-input" />
-                        <TextField fx:id="txtAddress" promptText="Enter your address" GridPane.columnIndex="1" GridPane.rowIndex="3" styleClass="kiosk-input" />
-                    </children>
-                    <VBox.margin>
-                        <Insets left="50.0" right="50.0" top="10.0" />
-                    </VBox.margin>
-                </GridPane>
-                <HBox alignment="CENTER" spacing="30.0">
-                    <children>
-                        <Button fx:id="btnBack" cancelButton="true" mnemonicParsing="false" onAction="#handleBackButton" prefHeight="60.0" prefWidth="180.0" styleClass="button-secondary" text="Back">
-                            <font>
-                                <Font size="18.0" />
-                            </font>
-                        </Button>
-                        <Button fx:id="btnRules" mnemonicParsing="false" onAction="#handleRulesButton" prefHeight="60.0" prefWidth="220.0" styleClass="button-secondary" text="Rules &amp; Regulations">
-                            <font>
-                                <Font size="18.0" />
-                            </font>
-                        </Button>
-                        <Button fx:id="btnNext" defaultButton="true" mnemonicParsing="false" onAction="#handleNextButton" prefHeight="60.0" prefWidth="180.0" styleClass="button" text="Next">
-                            <font>
-                                <Font size="18.0" />
-                            </font>
-                        </Button>
-                    </children>
-                    <VBox.margin>
-                        <Insets top="40.0" />
-                    </VBox.margin>
-                </HBox>
-            </children>
             <padding>
-                <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+                <Insets bottom="40.0" left="40.0" right="40.0" top="40.0"/>
             </padding>
             <BorderPane.margin>
-                <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+                <Insets bottom="40.0" left="40.0" right="40.0" top="40.0"/>
             </BorderPane.margin>
+            <Label styleClass="label-header" text="Guest Information">
+                <font>
+                    <Font name="System Bold" size="36.0"/>
+                </font>
+            </Label>
+            <Label styleClass="label-secondary" text="Please provide your personal details">
+                <font>
+                    <Font size="18.0"/>
+                </font>
+            </Label>
+            <Label fx:id="lblError" styleClass="label-error" text="Error message goes here" textFill="#cf6679"
+                   visible="false">
+                <font>
+                    <Font size="14.0"/>
+                </font>
+            </Label>
+            <GridPane hgap="20.0" vgap="25.0">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="150.0" prefWidth="200.0"/>
+                    <ColumnConstraints minWidth="10.0" prefWidth="400.0"/>
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints minHeight="10.0" prefHeight="60.0"/>
+                    <RowConstraints minHeight="10.0" prefHeight="60.0"/>
+                    <RowConstraints minHeight="10.0" prefHeight="60.0"/>
+                    <RowConstraints minHeight="10.0" prefHeight="60.0"/>
+                </rowConstraints>
+                <VBox.margin>
+                    <Insets left="50.0" right="50.0" top="10.0"/>
+                </VBox.margin>
+                <Label text="Full Name:" style="-fx-text-fill: white;">
+                    <font>
+                        <Font size="16.0"/>
+                    </font>
+                </Label>
+                <Label text="Phone Number:" GridPane.rowIndex="1" style="-fx-text-fill: white;">
+                    <font>
+                        <Font size="16.0"/>
+                    </font>
+                </Label>
+                <Label text="Email Address:" GridPane.rowIndex="2" style="-fx-text-fill: white;">
+                    <font>
+                        <Font size="16.0"/>
+                    </font>
+                </Label>
+                <Label text="Address:" GridPane.rowIndex="3" style="-fx-text-fill: white;">
+                    <font>
+                        <Font size="16.0"/>
+                    </font>
+                </Label>
+                <TextField fx:id="txtName" promptText="Enter your full name" GridPane.columnIndex="1"
+                           styleClass="kiosk-input"/>
+                <TextField fx:id="txtPhone" promptText="Enter your phone number" GridPane.columnIndex="1"
+                           GridPane.rowIndex="1" styleClass="kiosk-input"/>
+                <TextField fx:id="txtEmail" promptText="Enter your email address" GridPane.columnIndex="1"
+                           GridPane.rowIndex="2" styleClass="kiosk-input"/>
+                <TextField fx:id="txtAddress" promptText="Enter your address" GridPane.columnIndex="1"
+                           GridPane.rowIndex="3" styleClass="kiosk-input"/>
+            </GridPane>
+            <HBox alignment="CENTER" spacing="30.0">
+                <VBox.margin>
+                    <Insets top="40.0"/>
+                </VBox.margin>
+                <Button fx:id="btnBack" cancelButton="true" mnemonicParsing="false" onAction="#handleBackButton"
+                        prefHeight="60.0" prefWidth="180.0" styleClass="button-secondary" text="Back">
+                    <font>
+                        <Font size="18.0"/>
+                    </font>
+                </Button>
+                <Button fx:id="btnRules" mnemonicParsing="false" onAction="#handleRulesButton" prefHeight="60.0"
+                        prefWidth="220.0" styleClass="button-secondary" text="Rules &amp; Regulations">
+                    <font>
+                        <Font size="18.0"/>
+                    </font>
+                </Button>
+                <Button fx:id="btnNext" defaultButton="true" mnemonicParsing="false" onAction="#handleNextButton"
+                        prefHeight="60.0" prefWidth="180.0" styleClass="button" text="Next">
+                    <font>
+                        <Font size="18.0"/>
+                    </font>
+                </Button>
+            </HBox>
         </VBox>
     </center>
     <bottom>
         <HBox alignment="CENTER" styleClass="bg-dark">
-            <children>
-                <Label styleClass="label-secondary" text="All personal information is kept confidential and used only for booking purposes." />
-            </children>
             <padding>
-                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
             </padding>
+            <Label styleClass="label-secondary"
+                   text="All personal information is kept confidential and used only for booking purposes."/>
         </HBox>
     </bottom>
 </BorderPane>

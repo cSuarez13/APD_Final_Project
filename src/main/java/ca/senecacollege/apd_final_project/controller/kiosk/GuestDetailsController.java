@@ -22,6 +22,7 @@ import java.util.ResourceBundle;
 
 public class GuestDetailsController extends BaseController {
 
+    public Button btnBack;
     @FXML
     private TextField txtName;
 

@@ -15,6 +15,7 @@ import java.util.ResourceBundle;
 
 public class CheckoutController extends BaseController {
 
+    public Button btnSearch;
     // FXML Fields
     @FXML
     private TextField txtReservationId;

@@ -30,6 +30,8 @@ import java.util.ResourceBundle;
 
 public class FeedbackController extends BaseController {
 
+    public Button btnVerify;
+    public Button btnCancel;
     @FXML
     private TextField txtReservationId;
 

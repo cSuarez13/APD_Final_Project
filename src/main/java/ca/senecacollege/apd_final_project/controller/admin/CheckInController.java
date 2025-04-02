@@ -19,6 +19,7 @@ public class CheckInController extends BaseController {
 
     @FXML
     public TextField txtReservationId;
+    public Button btnSearch;
 
     @FXML
     private Label lblGuestName;

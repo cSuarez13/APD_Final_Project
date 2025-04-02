@@ -30,6 +30,8 @@ import java.util.ResourceBundle;
 
 public class SearchGuestController extends BaseController {
 
+    public Button btnSearch;
+    public Button btnCancel;
     @FXML
     private ComboBox<String> cmbSearchBy;
 

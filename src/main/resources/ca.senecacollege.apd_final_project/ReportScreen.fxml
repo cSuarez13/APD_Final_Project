@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
-<?import javafx.scene.text.Text?>
-<?import javafx.scene.text.TextFlow?>
-
+<?import javafx.scene.text.*?>
 <BorderPane prefHeight="600.0" prefWidth="900.0" styleClass="root"
             xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ca.senecacollege.apd_final_project.controller.admin.ReportController">
@@ -15,59 +12,56 @@
             <padding>
                 <Insets bottom="10.0" left="20.0" right="20.0" top="10.0"/>
             </padding>
-            <children>
-                <Label styleClass="label-header" text="Generate Reports">
-                    <font>
-                        <Font name="System Bold" size="24.0"/>
-                    </font>
-                </Label>
+            <Label styleClass="label-header" text="Generate Reports">
+                <font>
+                    <Font name="System Bold" size="24.0"/>
+                </font>
+            </Label>
 
-                <HBox alignment="CENTER_LEFT" spacing="15.0">
-                    <children>
-                        <Label text="Report Type:" styleClass="label-secondary">
-                            <font>
-                                <Font size="14.0"/>
-                            </font>
-                        </Label>
-                        <ComboBox fx:id="cmbReportType" prefWidth="200.0"/>
-
-                        <Label text="Start Date:" styleClass="label-secondary">
-                            <HBox.margin>
-                                <Insets left="20.0"/>
-                            </HBox.margin>
-                            <font>
-                                <Font size="14.0"/>
-                            </font>
-                        </Label>
-                        <DatePicker fx:id="dpStartDate"/>
-
-                        <Label text="End Date:" styleClass="label-secondary">
-                            <HBox.margin>
-                                <Insets left="20.0"/>
-                            </HBox.margin>
-                            <font>
-                                <Font size="14.0"/>
-                            </font>
-                        </Label>
-                        <DatePicker fx:id="dpEndDate"/>
-
-                        <Button fx:id="btnGenerateReport" defaultButton="true" mnemonicParsing="false" onAction="#handleGenerateReport"
-                                styleClass="button" text="Generate&#10;Report" textAlignment="CENTER">
-                            <HBox.margin>
-                                <Insets left="20.0"/>
-                            </HBox.margin>
-                        </Button>
-                    </children>
-                </HBox>
-
-                <Separator/>
-
-                <Label fx:id="lblReportSummary" styleClass="label-secondary" text="">
+            <HBox alignment="CENTER_LEFT" spacing="15.0">
+                <Label text="Report Type:" styleClass="label-secondary">
                     <font>
                         <Font size="14.0"/>
                     </font>
                 </Label>
-            </children>
+                <ComboBox fx:id="cmbReportType" prefWidth="200.0"/>
+
+                <Label text="Start Date:" styleClass="label-secondary">
+                    <HBox.margin>
+                        <Insets left="20.0"/>
+                    </HBox.margin>
+                    <font>
+                        <Font size="14.0"/>
+                    </font>
+                </Label>
+                <DatePicker fx:id="dpStartDate"/>
+
+                <Label text="End Date:" styleClass="label-secondary">
+                    <HBox.margin>
+                        <Insets left="20.0"/>
+                    </HBox.margin>
+                    <font>
+                        <Font size="14.0"/>
+                    </font>
+                </Label>
+                <DatePicker fx:id="dpEndDate"/>
+
+                <Button fx:id="btnGenerateReport" defaultButton="true" mnemonicParsing="false"
+                        onAction="#handleGenerateReport"
+                        styleClass="button" text="Generate&#10;Report" textAlignment="CENTER">
+                    <HBox.margin>
+                        <Insets left="20.0"/>
+                    </HBox.margin>
+                </Button>
+            </HBox>
+
+            <Separator/>
+
+            <Label fx:id="lblReportSummary" styleClass="label-secondary" text="">
+                <font>
+                    <Font size="14.0"/>
+                </font>
+            </Label>
         </VBox>
     </top>
 

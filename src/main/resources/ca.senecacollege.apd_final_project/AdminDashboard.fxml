@@ -18,39 +18,35 @@
             <padding>
                 <Insets bottom="10.0" left="20.0" right="20.0" top="10.0"/>
             </padding>
-            <children>
-                <Label styleClass="label-header" text="Hotel ABC Administration">
-                    <font>
-                        <Font name="System Bold" size="24.0"/>
-                    </font>
-                </Label>
-                <Region HBox.hgrow="ALWAYS"/>
-                <Label fx:id="lblAdminName" styleClass="label-secondary" text="Admin Name">
-                    <font>
-                        <Font size="14.0"/>
-                    </font>
-                </Label>
-                <Button mnemonicParsing="false" onAction="#handleLogout" styleClass="button" text="Logout"/>
-            </children>
+            <Label styleClass="label-header" text="Hotel ABC Administration">
+                <font>
+                    <Font name="System Bold" size="24.0"/>
+                </font>
+            </Label>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="lblAdminName" styleClass="label-secondary" text="Admin Name">
+                <font>
+                    <Font size="14.0"/>
+                </font>
+            </Label>
+            <Button mnemonicParsing="false" onAction="#handleLogout" styleClass="button" text="Logout"/>
         </HBox>
     </top>
 
     <left>
         <VBox styleClass="side-nav" prefWidth="200.0">
-            <children>
-                <Button fx:id="btnDashboard" text="Dashboard" styleClass="nav-button,nav-button-active"
-                        onAction="#handleNavigation" maxWidth="Infinity" prefHeight="60.0"/>
-                <Button fx:id="btnSearchGuests" text="Search Guests" styleClass="nav-button"
-                        onAction="#handleNavigation" maxWidth="Infinity" prefHeight="60.0"/>
-                <Button fx:id="btnReservations" text="Reservations" styleClass="nav-button"
-                        onAction="#handleNavigation" maxWidth="Infinity" prefHeight="60.0"/>
-                <Button fx:id="btnCheckIn" text="Check-in" styleClass="nav-button"
-                        onAction="#handleNavigation" maxWidth="Infinity" prefHeight="60.0"/>
-                <Button fx:id="btnCheckOut" text="Check-out" styleClass="nav-button"
-                        onAction="#handleNavigation" maxWidth="Infinity" prefHeight="60.0"/>
-                <Button fx:id="btnReports" text="Reports" styleClass="nav-button"
-                        onAction="#handleNavigation" maxWidth="Infinity" prefHeight="60.0"/>
-            </children>
+            <Button fx:id="btnDashboard" text="Dashboard" styleClass="nav-button,nav-button-active"
+                    onAction="#handleNavigation" maxWidth="Infinity" prefHeight="60.0"/>
+            <Button fx:id="btnSearchGuests" text="Search Guests" styleClass="nav-button"
+                    onAction="#handleNavigation" maxWidth="Infinity" prefHeight="60.0"/>
+            <Button fx:id="btnReservations" text="Reservations" styleClass="nav-button"
+                    onAction="#handleNavigation" maxWidth="Infinity" prefHeight="60.0"/>
+            <Button fx:id="btnCheckIn" text="Check-in" styleClass="nav-button"
+                    onAction="#handleNavigation" maxWidth="Infinity" prefHeight="60.0"/>
+            <Button fx:id="btnCheckOut" text="Check-out" styleClass="nav-button"
+                    onAction="#handleNavigation" maxWidth="Infinity" prefHeight="60.0"/>
+            <Button fx:id="btnReports" text="Reports" styleClass="nav-button"
+                    onAction="#handleNavigation" maxWidth="Infinity" prefHeight="60.0"/>
         </VBox>
     </left>
 

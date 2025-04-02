@@ -24,6 +24,7 @@ import java.util.ResourceBundle;
 
 public class ConfirmationController extends BaseController {
 
+    public Button btnPrint;
     @FXML
     private Label lblReservationId;
     @FXML
