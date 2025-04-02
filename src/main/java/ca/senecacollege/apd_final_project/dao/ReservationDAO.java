@@ -118,37 +118,6 @@ public class ReservationDAO {
     }
 
     /**
-     * Find reservations by room ID
-     *
-     * @param roomId The room ID
-     * @return List of reservations for the room
-     * @throws DatabaseException If there's an error retrieving the reservations
-     */
-    public List<Reservation> findByRoomId(int roomId) throws DatabaseException {
-        String sql = "SELECT * FROM reservations WHERE room_id = ? ORDER BY check_in_date";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, roomId);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                List<Reservation> reservations = new ArrayList<>();
-
-                while (rs.next()) {
-                    reservations.add(mapResultSetToReservation(rs));
-                }
-
-                return reservations;
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while finding reservations by room ID", e);
-            throw new DatabaseException("Error finding reservations: " + e.getMessage(), e);
-        }
-    }
-
-    /**
      * Find reservations by status
      *
      * @param statuses Array of statuses to search for
@@ -295,56 +264,6 @@ public class ReservationDAO {
     }
 
     /**
-     * Check if a room is available for the specified date range
-     *
-     * @param roomId The room ID
-     * @param startDate Start date of the range
-     * @param endDate End date of the range
-     * @param excludeReservationId Reservation ID to exclude from the check (for updates)
-     * @return true if the room is available, false otherwise
-     * @throws DatabaseException If there's an error checking availability
-     */
-    public boolean isRoomAvailable(int roomId, LocalDate startDate, LocalDate endDate, int excludeReservationId) throws DatabaseException {
-        String sql = "SELECT COUNT(*) FROM reservations WHERE " +
-                "room_id = ? AND status IN ('CONFIRMED', 'CHECKED_IN') AND " +
-                "((check_in_date BETWEEN ? AND ?) OR " +
-                "(check_out_date BETWEEN ? AND ?) OR " +
-                "(check_in_date <= ? AND check_out_date >= ?))";
-
-        if (excludeReservationId > 0) {
-            sql += " AND reservation_id != ?";
-        }
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, roomId);
-            stmt.setDate(2, java.sql.Date.valueOf(startDate));
-            stmt.setDate(3, java.sql.Date.valueOf(endDate));
-            stmt.setDate(4, java.sql.Date.valueOf(startDate));
-            stmt.setDate(5, java.sql.Date.valueOf(endDate));
-            stmt.setDate(6, java.sql.Date.valueOf(startDate));
-            stmt.setDate(7, java.sql.Date.valueOf(endDate));
-
-            if (excludeReservationId > 0) {
-                stmt.setInt(8, excludeReservationId);
-            }
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) == 0;
-                } else {
-                    return true;
-                }
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while checking room availability", e);
-            throw new DatabaseException("Error checking room availability: " + e.getMessage(), e);
-        }
-    }
-
-    /**
      * Update a reservation
      *
      * @param reservation The reservation to update
@@ -375,60 +294,6 @@ public class ReservationDAO {
         } catch (SQLException e) {
             LoggingManager.logException("Database error while updating reservation", e);
             throw new DatabaseException("Error updating reservation: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Update the status of a reservation
-     *
-     * @param reservationId The reservation ID
-     * @param status The new status
-     * @throws DatabaseException If there's an error updating the status
-     */
-    public void updateStatus(int reservationId, String status) throws DatabaseException {
-        String sql = "UPDATE reservations SET status = ? WHERE reservation_id = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, status);
-            stmt.setInt(2, reservationId);
-
-            int affectedRows = stmt.executeUpdate();
-
-            if (affectedRows == 0) {
-                throw new DatabaseException("Updating reservation status failed, no rows affected.");
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while updating reservation status", e);
-            throw new DatabaseException("Error updating reservation status: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Delete a reservation
-     *
-     * @param reservationId The reservation ID to delete
-     * @throws DatabaseException If there's an error deleting the reservation
-     */
-    public void delete(int reservationId) throws DatabaseException {
-        String sql = "DELETE FROM reservations WHERE reservation_id = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, reservationId);
-
-            int affectedRows = stmt.executeUpdate();
-
-            if (affectedRows == 0) {
-                throw new DatabaseException("Deleting reservation failed, no rows affected.");
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while deleting reservation", e);
-            throw new DatabaseException("Error deleting reservation: " + e.getMessage(), e);
         }
     }
 

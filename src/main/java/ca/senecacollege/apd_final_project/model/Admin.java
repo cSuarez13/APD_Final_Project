@@ -24,22 +24,12 @@ public class Admin {
         this.role.set(role);
     }
 
-    // AdminID property
-    public IntegerProperty adminIDProperty() {
-        return adminID;
-    }
-
     public int getAdminID() {
         return adminID.get();
     }
 
     public void setAdminID(int adminID) {
         this.adminID.set(adminID);
-    }
-
-    // Username property
-    public StringProperty usernameProperty() {
-        return username;
     }
 
     public String getUsername() {
@@ -50,11 +40,6 @@ public class Admin {
         this.username.set(username);
     }
 
-    // Password property
-    public StringProperty passwordProperty() {
-        return password;
-    }
-
     public String getPassword() {
         return password.get();
     }
@@ -63,22 +48,12 @@ public class Admin {
         this.password.set(password);
     }
 
-    // Name property
-    public StringProperty nameProperty() {
-        return name;
-    }
-
     public String getName() {
         return name.get();
     }
 
     public void setName(String name) {
         this.name.set(name);
-    }
-
-    // Role property
-    public StringProperty roleProperty() {
-        return role;
     }
 
     public String getRole() {

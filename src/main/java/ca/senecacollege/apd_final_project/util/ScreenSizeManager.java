@@ -4,13 +4,6 @@ import javafx.stage.Screen;
 import javafx.geometry.Rectangle2D;
 
 public class ScreenSizeManager {
-    // Screen Breakpoints
-    public static final int BREAKPOINT_XS = 480;
-    public static final int BREAKPOINT_SM = 640;
-    public static final int BREAKPOINT_MD = 768;
-    public static final int BREAKPOINT_LG = 1024;
-    public static final int BREAKPOINT_XL = 1280;
-    public static final int BREAKPOINT_2XL = 1536;
 
     /**
      * Get the primary screen's visual bounds
@@ -53,29 +46,4 @@ public class ScreenSizeManager {
         return new double[]{x, y};
     }
 
-    /**
-     * Get current screen's breakpoint
-     * @param width Screen width
-     * @return Breakpoint as a string
-     */
-    public static String getCurrentBreakpoint(double width) {
-        if (width < BREAKPOINT_XS) return "xs";
-        if (width < BREAKPOINT_SM) return "sm";
-        if (width < BREAKPOINT_MD) return "md";
-        if (width < BREAKPOINT_LG) return "lg";
-        if (width < BREAKPOINT_XL) return "xl";
-        return "2xl";
-    }
-
-    /**
-     * Adjust font size based on screen width
-     * @param width Screen width
-     * @return Font size as a string
-     */
-    public static String adjustFontSize(double width) {
-        if (width < BREAKPOINT_SM) return "14px";
-        if (width < BREAKPOINT_MD) return "15px";
-        if (width < BREAKPOINT_LG) return "16px";
-        return "17px";
-    }
 }

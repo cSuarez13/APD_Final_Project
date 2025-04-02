@@ -21,22 +21,12 @@ public class Room {
         this.available.set(available);
     }
 
-    // RoomID property
-    public IntegerProperty roomIDProperty() {
-        return roomID;
-    }
-
     public int getRoomID() {
         return roomID.get();
     }
 
     public void setRoomID(int roomID) {
         this.roomID.set(roomID);
-    }
-
-    // RoomType property
-    public ObjectProperty<RoomType> roomTypeProperty() {
-        return roomType;
     }
 
     public RoomType getRoomType() {
@@ -47,22 +37,8 @@ public class Room {
         this.roomType.set(roomType);
     }
 
-    // NumberOfBeds property
-    public IntegerProperty numberOfBedsProperty() {
-        return numberOfBeds;
-    }
-
-    public int getNumberOfBeds() {
-        return numberOfBeds.get();
-    }
-
     public void setNumberOfBeds(int numberOfBeds) {
         this.numberOfBeds.set(numberOfBeds);
-    }
-
-    // Price property
-    public DoubleProperty priceProperty() {
-        return price;
     }
 
     public double getPrice() {
@@ -73,35 +49,12 @@ public class Room {
         this.price.set(price);
     }
 
-    // Available property
-    public BooleanProperty availableProperty() {
-        return available;
-    }
-
     public boolean isAvailable() {
         return available.get();
     }
 
     public void setAvailable(boolean available) {
         this.available.set(available);
-    }
-
-    public String getRoomDetails() {
-        return "Room #" + getRoomID() +
-                "\nType: " + getRoomType().getDisplayName() +
-                "\nBeds: " + getNumberOfBeds() +
-                "\nPrice: $" + String.format("%.2f", getPrice()) +
-                "\nStatus: " + (isAvailable() ? "Available" : "Occupied");
-    }
-
-    public void setRoomDetails(RoomType roomType, int numberOfBeds, double price) {
-        setRoomType(roomType);
-        setNumberOfBeds(numberOfBeds);
-        setPrice(price);
-    }
-
-    public boolean checkRoomAvailability() {
-        return isAvailable();
     }
 
     @Override

@@ -79,7 +79,7 @@ public class DatabaseConnection {
     private static boolean checkIfSchemaExists(Connection conn) throws SQLException {
         try (var stmt = conn.createStatement()) {
             // Check if rooms table exists
-            try (var rs = stmt.executeQuery("SELECT 1 FROM rooms LIMIT 1")) {
+            try (var ignored = stmt.executeQuery("SELECT 1 FROM rooms LIMIT 1")) {
                 return true; // Table exists
             } catch (SQLException e) {
                 return false; // Table doesn't exist
@@ -105,15 +105,4 @@ public class DatabaseConnection {
         }
     }
 
-    public static void closeConnection() {
-        if (connection != null) {
-            try {
-                connection.close();
-                connection = null;
-                LOGGER.log(Level.INFO, "Database connection closed successfully");
-            } catch (SQLException e) {
-                LOGGER.log(Level.WARNING, "Failed to close database connection", e);
-            }
-        }
-    }
 }

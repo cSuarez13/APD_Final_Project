@@ -25,22 +25,12 @@ public class Feedback {
         this.submissionDateTime.set(submissionDateTime);
     }
 
-    // FeedbackID property
-    public IntegerProperty feedbackIDProperty() {
-        return feedbackID;
-    }
-
     public int getFeedbackID() {
         return feedbackID.get();
     }
 
     public void setFeedbackID(int feedbackID) {
         this.feedbackID.set(feedbackID);
-    }
-
-    // GuestID property
-    public IntegerProperty guestIDProperty() {
-        return guestID;
     }
 
     public int getGuestID() {
@@ -51,11 +41,6 @@ public class Feedback {
         this.guestID.set(guestID);
     }
 
-    // ReservationID property
-    public IntegerProperty reservationIDProperty() {
-        return reservationID;
-    }
-
     public int getReservationID() {
         return reservationID.get();
     }
@@ -64,22 +49,12 @@ public class Feedback {
         this.reservationID.set(reservationID);
     }
 
-    // Comments property
-    public StringProperty commentsProperty() {
-        return comments;
-    }
-
     public String getComments() {
         return comments.get();
     }
 
     public void setComments(String comments) {
         this.comments.set(comments);
-    }
-
-    // Rating property
-    public IntegerProperty ratingProperty() {
-        return rating;
     }
 
     public int getRating() {
@@ -94,35 +69,12 @@ public class Feedback {
         }
     }
 
-    // SubmissionDateTime property
-    public ObjectProperty<LocalDateTime> submissionDateTimeProperty() {
-        return submissionDateTime;
-    }
-
     public LocalDateTime getSubmissionDateTime() {
         return submissionDateTime.get();
     }
 
     public void setSubmissionDateTime(LocalDateTime submissionDateTime) {
         this.submissionDateTime.set(submissionDateTime);
-    }
-
-    // Methods
-    public void submitFeedback(int guestID, int reservationID, String comments, int rating) {
-        setGuestID(guestID);
-        setReservationID(reservationID);
-        setComments(comments);
-        setRating(rating);
-        setSubmissionDateTime(LocalDateTime.now());
-    }
-
-    public String getFeedbackDetails() {
-        return "Feedback #" + getFeedbackID() +
-                "\nGuest ID: " + getGuestID() +
-                "\nReservation ID: " + getReservationID() +
-                "\nRating: " + getRating() + "/5" +
-                "\nComments: " + getComments() +
-                "\nSubmitted: " + getSubmissionDateTime();
     }
 
     @Override

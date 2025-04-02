@@ -10,7 +10,7 @@ import java.util.List;
 
 public class GuestService {
 
-    private GuestDAO guestDAO;
+    private final GuestDAO guestDAO;
 
     public GuestService() {
         this.guestDAO = new GuestDAO();
@@ -48,23 +48,6 @@ public class GuestService {
         } catch (Exception e) {
             LoggingManager.logException("Error retrieving guest with ID: " + guestId, e);
             throw new DatabaseException("Error retrieving guest: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Update a guest
-     *
-     * @param guest The guest to update
-     * @throws DatabaseException If there's an error updating the guest
-     */
-    public void updateGuest(Guest guest) throws DatabaseException {
-        try {
-            validateGuest(guest);
-            guestDAO.update(guest);
-            LoggingManager.logSystemInfo("Updated guest: " + guest.getName() + " with ID: " + guest.getGuestID());
-        } catch (Exception e) {
-            LoggingManager.logException("Error updating guest: " + guest.getName(), e);
-            throw new DatabaseException("Error updating guest: " + e.getMessage(), e);
         }
     }
 
@@ -117,21 +100,6 @@ public class GuestService {
     }
 
     /**
-     * Get all guests
-     *
-     * @return List of all guests
-     * @throws DatabaseException If there's an error retrieving guests
-     */
-    public List<Guest> getAllGuests() throws DatabaseException {
-        try {
-            return guestDAO.findAll();
-        } catch (Exception e) {
-            LoggingManager.logException("Error retrieving all guests", e);
-            throw new DatabaseException("Error retrieving all guests: " + e.getMessage(), e);
-        }
-    }
-
-    /**
      * Validate guest data
      *
      * @param guest The guest to validate
@@ -139,65 +107,34 @@ public class GuestService {
      */
     private void validateGuest(Guest guest) throws IllegalArgumentException {
         // Name validation
-        if (!ValidationUtils.isNotNullOrEmpty(guest.getName())) {
+        if (ValidationUtils.isNotNullOrEmpty(guest.getName())) {
             throw new IllegalArgumentException("Guest name cannot be empty");
         }
 
         // Phone validation
-        if (!ValidationUtils.isNotNullOrEmpty(guest.getPhoneNumber())) {
+        if (ValidationUtils.isNotNullOrEmpty(guest.getPhoneNumber())) {
             throw new IllegalArgumentException("Guest phone number cannot be empty");
         }
 
-        if (!ValidationUtils.isValidPhoneNumber(guest.getPhoneNumber())) {
+        if (ValidationUtils.isValidPhoneNumber(guest.getPhoneNumber())) {
             throw new IllegalArgumentException("Invalid phone number format");
         }
 
         // Email validation
-        if (!ValidationUtils.isNotNullOrEmpty(guest.getEmail())) {
+        if (ValidationUtils.isNotNullOrEmpty(guest.getEmail())) {
             throw new IllegalArgumentException("Guest email cannot be empty");
         }
 
-        if (!ValidationUtils.isValidEmail(guest.getEmail())) {
+        if (ValidationUtils.isValidEmail(guest.getEmail())) {
             throw new IllegalArgumentException("Invalid email format");
         }
 
         // Address validation
-        if (!ValidationUtils.isNotNullOrEmpty(guest.getAddress())) {
+        if (ValidationUtils.isNotNullOrEmpty(guest.getAddress())) {
             throw new IllegalArgumentException("Guest address cannot be empty");
         }
     }
 
-    /**
-     * Check if a guest with the given email already exists
-     *
-     * @param email The email to check
-     * @return true if the email exists, false otherwise
-     */
-    public boolean isEmailExists(String email) {
-        try {
-            List<Guest> guests = searchGuestsByEmail(email);
-            return !guests.isEmpty();
-        } catch (Exception e) {
-            LoggingManager.logException("Error checking if email exists: " + email, e);
-            return false;
-        }
-    }
-
-    /**
-     * Check if a guest with the given phone number already exists
-     *
-     * @param phoneNumber The phone number to check
-     * @return true if the phone number exists, false otherwise
-     */
-    public boolean isPhoneExists(String phoneNumber) {
-        try {
-            List<Guest> guests = searchGuestsByPhone(phoneNumber);
-            return !guests.isEmpty();
-        } catch (Exception e) {
-            LoggingManager.logException("Error checking if phone exists: " + phoneNumber, e);
-            return false;
-        }
-    }
     /**
      * Update a guest's feedback
      *

@@ -3,7 +3,6 @@ package ca.senecacollege.apd_final_project.server;
 import ca.senecacollege.apd_final_project.model.Admin;
 import ca.senecacollege.apd_final_project.model.Guest;
 import ca.senecacollege.apd_final_project.model.Reservation;
-import ca.senecacollege.apd_final_project.model.ReservationStatus;
 import ca.senecacollege.apd_final_project.service.AdminService;
 import ca.senecacollege.apd_final_project.service.GuestService;
 import ca.senecacollege.apd_final_project.service.ReservationService;
@@ -18,16 +17,16 @@ import java.util.List;
  * Each admin client gets their own handler that runs in a separate thread
  */
 public class ClientHandler implements Runnable {
-    private Socket clientSocket;
+    private final Socket clientSocket;
     private BufferedReader in;
     private PrintWriter out;
     private boolean running = false;
     private Admin loggedInAdmin = null;
 
     // Services
-    private AdminService adminService;
-    private GuestService guestService;
-    private ReservationService reservationService;
+    private final AdminService adminService;
+    private final GuestService guestService;
+    private final ReservationService reservationService;
 
     /**
      * Constructor
@@ -197,7 +196,7 @@ public class ClientHandler implements Runnable {
         String searchTerm = in.readLine();
 
         try {
-            List<Guest> guests = null;
+            List<Guest> guests;
 
             switch (choice) {
                 case "1":
@@ -301,7 +300,7 @@ public class ClientHandler implements Runnable {
         }
 
         try {
-            List<Reservation> reservations = null;
+            List<Reservation> reservations;
 
             switch (choice) {
                 case "1":
@@ -351,7 +350,7 @@ public class ClientHandler implements Runnable {
     /**
      * Handle check-in process
      */
-    private void handleCheckIn() throws IOException {
+    private void handleCheckIn() {
         out.println("\nCHECK-IN GUEST");
         out.println("-------------");
 
@@ -368,30 +367,8 @@ public class ClientHandler implements Runnable {
                 return;
             }
 
-            if (!reservation.getStatus().equals(ReservationStatus.CONFIRMED.getDisplayName())) {
-                out.println("\nThis reservation cannot be checked in. Current status: " + reservation.getStatus());
-                return;
-            }
-
-            Guest guest = guestService.getGuestById(reservation.getGuestID());
-
-            out.println("\nReservation Details:");
-            out.println("Guest: " + guest.getName());
-            out.println("Check-in: " + reservation.getCheckInDate());
-            out.println("Check-out: " + reservation.getCheckOutDate());
-
-            out.print("\nConfirm check-in (y/n): ");
-            out.flush();
-
-            String confirm = in.readLine();
-
-            if ("y".equalsIgnoreCase(confirm)) {
-                reservationService.checkIn(reservationId);
-                out.println("\nCheck-in completed successfully!");
-                LoggingManager.logAdminActivity(loggedInAdmin.getUsername(), "Checked in reservation #" + reservationId);
-            } else {
-                out.println("\nCheck-in cancelled.");
-            }
+            reservation.getStatus();
+            out.println("\nThis reservation cannot be checked in. Current status: " + reservation.getStatus());
 
         } catch (NumberFormatException e) {
             out.println("\nInvalid reservation ID. Please enter a valid number.");
@@ -404,7 +381,7 @@ public class ClientHandler implements Runnable {
     /**
      * Handle check-out process
      */
-    private void handleCheckOut() throws IOException {
+    private void handleCheckOut() {
         out.println("\nCHECK-OUT GUEST");
         out.println("--------------");
 
@@ -421,33 +398,8 @@ public class ClientHandler implements Runnable {
                 return;
             }
 
-            if (!reservation.getStatus().equals(ReservationStatus.CHECKED_IN.getDisplayName())) {
-                out.println("\nThis reservation cannot be checked out. Current status: " + reservation.getStatus());
-                return;
-            }
-
-            Guest guest = guestService.getGuestById(reservation.getGuestID());
-
-            out.println("\nReservation Details:");
-            out.println("Guest: " + guest.getName());
-            out.println("Check-in: " + reservation.getCheckInDate());
-            out.println("Check-out: " + reservation.getCheckOutDate());
-
-            // Here we'd normally handle billing, but we'll keep it simple
-            out.println("\nPlease remind the guest to leave feedback at the kiosk.");
-
-            out.print("\nConfirm check-out (y/n): ");
-            out.flush();
-
-            String confirm = in.readLine();
-
-            if ("y".equalsIgnoreCase(confirm)) {
-                reservationService.checkOut(reservationId);
-                out.println("\nCheck-out completed successfully!");
-                LoggingManager.logAdminActivity(loggedInAdmin.getUsername(), "Checked out reservation #" + reservationId);
-            } else {
-                out.println("\nCheck-out cancelled.");
-            }
+            reservation.getStatus();
+            out.println("\nThis reservation cannot be checked out. Current status: " + reservation.getStatus());
 
         } catch (NumberFormatException e) {
             out.println("\nInvalid reservation ID. Please enter a valid number.");
@@ -460,7 +412,7 @@ public class ClientHandler implements Runnable {
     /**
      * Handle reservation cancellation
      */
-    private void handleCancelReservation() throws IOException {
+    private void handleCancelReservation() {
         out.println("\nCANCEL RESERVATION");
         out.println("-----------------");
 
@@ -477,12 +429,9 @@ public class ClientHandler implements Runnable {
                 return;
             }
 
-            if (reservation.getStatus().equals(ReservationStatus.CHECKED_IN.getDisplayName()) ||
-                    reservation.getStatus().equals(ReservationStatus.CHECKED_OUT.getDisplayName()) ||
-                    reservation.getStatus().equals(ReservationStatus.CANCELLED.getDisplayName())) {
-                out.println("\nThis reservation cannot be cancelled. Current status: " + reservation.getStatus());
-                return;
-            }
+            reservation.getStatus();
+            reservation.getStatus();
+            reservation.getStatus();
 
             Guest guest = guestService.getGuestById(reservation.getGuestID());
 
@@ -515,7 +464,7 @@ public class ClientHandler implements Runnable {
     /**
      * Handle applying discount to a reservation
      */
-    private void handleApplyDiscount() throws IOException {
+    private void handleApplyDiscount() {
         out.println("\nAPPLY DISCOUNT");
         out.println("-------------");
 

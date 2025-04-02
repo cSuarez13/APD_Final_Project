@@ -7,12 +7,11 @@ import ca.senecacollege.apd_final_project.model.RoomType;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 public class RoomService {
 
-    private RoomDAO roomDAO;
+    private final RoomDAO roomDAO;
 
     public RoomService() {
         this.roomDAO = new RoomDAO();
@@ -31,37 +30,6 @@ public class RoomService {
         } catch (Exception e) {
             LoggingManager.logException("Error retrieving room with ID: " + roomId, e);
             throw new DatabaseException("Error retrieving room: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Get all available rooms
-     *
-     * @return List of available rooms
-     * @throws DatabaseException If there's an error retrieving rooms
-     */
-    public List<Room> getAllAvailableRooms() throws DatabaseException {
-        try {
-            return roomDAO.findAllAvailable();
-        } catch (Exception e) {
-            LoggingManager.logException("Error retrieving available rooms", e);
-            throw new DatabaseException("Error retrieving available rooms: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Get available rooms by type
-     *
-     * @param roomType The room type
-     * @return List of available rooms of the specified type
-     * @throws DatabaseException If there's an error retrieving rooms
-     */
-    public List<Room> getAvailableRoomsByType(RoomType roomType) throws DatabaseException {
-        try {
-            return roomDAO.findAvailableByType(roomType);
-        } catch (Exception e) {
-            LoggingManager.logException("Error retrieving available rooms of type: " + roomType, e);
-            throw new DatabaseException("Error retrieving available rooms: " + e.getMessage(), e);
         }
     }
 
@@ -150,19 +118,4 @@ public class RoomService {
         }
     }
 
-    /**
-     * Get rooms by type
-     *
-     * @param roomType The room type
-     * @return List of rooms of the specified type
-     * @throws DatabaseException If there's an error retrieving rooms
-     */
-    public List<Room> getRoomsByType(RoomType roomType) throws DatabaseException {
-        try {
-            return roomDAO.findByType(roomType);
-        } catch (Exception e) {
-            LoggingManager.logException("Error retrieving rooms by type: " + roomType, e);
-            throw new DatabaseException("Error retrieving rooms by type: " + e.getMessage(), e);
-        }
-    }
 }

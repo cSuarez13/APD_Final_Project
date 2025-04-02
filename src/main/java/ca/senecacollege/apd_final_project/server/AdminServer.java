@@ -15,10 +15,10 @@ import java.util.concurrent.Executors;
  * allowing them to manage the hotel reservation system remotely
  */
 public class AdminServer {
-    private int port;
+    private final int port;
     private ServerSocket serverSocket;
     private boolean running = false;
-    private ExecutorService threadPool;
+    private final ExecutorService threadPool;
 
     /**
      * Constructor

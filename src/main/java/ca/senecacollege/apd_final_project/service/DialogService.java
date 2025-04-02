@@ -1,16 +1,15 @@
 package ca.senecacollege.apd_final_project.service;
 
 import ca.senecacollege.apd_final_project.util.Constants;
-import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -60,12 +59,11 @@ public class DialogService {
     /**
      * Show an error alert dialog with exception details
      *
-     * @param owner The owner stage
      * @param title The dialog title
      * @param message The dialog message
      * @param exception The exception
      */
-    public static void showError(Stage owner, String title, String message, Throwable exception) {
+    public static void showError(Stage ignoredOwner, String title, String message, Throwable exception) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
         alert.setHeaderText(null);
@@ -99,22 +97,12 @@ public class DialogService {
 
         // Apply CSS
         DialogPane dialogPane = alert.getDialogPane();
-        dialogPane.getStylesheets().add(DialogService.class.getResource(Constants.CSS_ADMIN).toExternalForm());
+        dialogPane.getStylesheets().add(Objects.requireNonNull(DialogService.class.getResource(Constants.CSS_ADMIN)).toExternalForm());
 
         // Log the error
         LoggingManager.logException(title + ": " + message, exception);
 
         alert.showAndWait();
-    }
-
-    /**
-     * Show a non-intrusive error popup
-     *
-     * @param owner The owner stage
-     * @param message The error message
-     */
-    public static void showErrorPopup(Stage owner, String message) {
-        ErrorPopupManager.showErrorPopup(owner, message);
     }
 
     /**
@@ -130,59 +118,6 @@ public class DialogService {
 
         Optional<ButtonType> result = alert.showAndWait();
         return result.isPresent() && result.get() == ButtonType.OK;
-    }
-
-    /**
-     * Show a custom input dialog
-     *
-     * @param owner The owner stage
-     * @param title The dialog title
-     * @param message The dialog message
-     * @param defaultValue The default value for the input field
-     * @return The user input, or null if the dialog was cancelled
-     */
-    public static String showInputDialog(Stage owner, String title, String message, String defaultValue) {
-        TextInputDialog dialog = new TextInputDialog(defaultValue);
-        dialog.setTitle(title);
-        dialog.setHeaderText(null);
-        dialog.setContentText(message);
-
-        if (owner != null) {
-            dialog.initOwner(owner);
-        }
-
-        // Apply CSS
-        DialogPane dialogPane = dialog.getDialogPane();
-        dialogPane.getStylesheets().add(DialogService.class.getResource(Constants.CSS_ADMIN).toExternalForm());
-
-        Optional<String> result = dialog.showAndWait();
-        return result.orElse(null);
-    }
-
-    /**
-     * Show a custom dialog with content
-     *
-     * @param owner The owner stage
-     * @param title The dialog title
-     * @param content The dialog content
-     * @return The button type that was clicked
-     */
-    public static ButtonType showCustomDialog(Stage owner, String title, VBox content) {
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle(title);
-        dialog.setHeaderText(null);
-
-        if (owner != null) {
-            dialog.initOwner(owner);
-        }
-
-        DialogPane dialogPane = dialog.getDialogPane();
-        dialogPane.setContent(content);
-        dialogPane.getStylesheets().add(DialogService.class.getResource(Constants.CSS_ADMIN).toExternalForm());
-
-        dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-
-        return dialog.showAndWait().orElse(ButtonType.CANCEL);
     }
 
     /**
@@ -206,7 +141,7 @@ public class DialogService {
 
         // Apply CSS
         DialogPane dialogPane = alert.getDialogPane();
-        dialogPane.getStylesheets().add(DialogService.class.getResource(Constants.CSS_ADMIN).toExternalForm());
+        dialogPane.getStylesheets().add(Objects.requireNonNull(DialogService.class.getResource(Constants.CSS_ADMIN)).toExternalForm());
 
         return alert;
     }

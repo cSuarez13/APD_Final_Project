@@ -277,33 +277,6 @@ public class BillingDAO {
     }
 
     /**
-     * Get all billings
-     *
-     * @return List of all billings
-     * @throws DatabaseException If there's an error retrieving billings
-     */
-    public List<Billing> findAll() throws DatabaseException {
-        String sql = "SELECT * FROM bills ORDER BY billing_date DESC";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            List<Billing> billings = new ArrayList<>();
-
-            while (rs.next()) {
-                billings.add(mapResultSetToBilling(rs));
-            }
-
-            return billings;
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while retrieving all billings", e);
-            throw new DatabaseException("Error retrieving billings: " + e.getMessage(), e);
-        }
-    }
-
-    /**
      * Map a result set row to a Billing object
      *
      * @param rs The result set

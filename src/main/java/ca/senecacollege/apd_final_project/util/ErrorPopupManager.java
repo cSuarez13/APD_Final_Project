@@ -52,13 +52,13 @@ public class ErrorPopupManager {
 
             // Position popup in the center top of the screen
             Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-            double popupWidth = 400; // Estimated width
-            double popupHeight = 100; // Estimated height
+            double popupWidth; // Estimated width
+            // Estimated height
 
             popup.show(parentStage);
             // Now we can get the actual dimensions
             popupWidth = container.getWidth();
-            popupHeight = container.getHeight();
+            container.getHeight();
 
             // Center horizontally, position at top quarter of screen
             popup.hide();

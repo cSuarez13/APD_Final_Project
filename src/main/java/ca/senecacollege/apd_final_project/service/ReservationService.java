@@ -14,8 +14,8 @@ import java.util.List;
 
 public class ReservationService {
 
-    private ReservationDAO reservationDAO;
-    private RoomService roomService;
+    private final ReservationDAO reservationDAO;
+    private final RoomService roomService;
 
     public ReservationService() {
         this.reservationDAO = new ReservationDAO();

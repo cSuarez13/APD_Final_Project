@@ -71,15 +71,4 @@ public class LoggingManager {
         EXCEPTION_LOGGER.log(Level.SEVERE, message);
     }
 
-    public static Logger getSystemLogger() {
-        return SYSTEM_LOGGER;
-    }
-
-    public static Logger getAdminLogger() {
-        return ADMIN_LOGGER;
-    }
-
-    public static Logger getExceptionLogger() {
-        return EXCEPTION_LOGGER;
-    }
 }

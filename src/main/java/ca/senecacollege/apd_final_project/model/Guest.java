@@ -24,11 +24,6 @@ public class Guest {
         this.address.set(address);
     }
 
-    // GuestID property
-    public IntegerProperty guestIDProperty() {
-        return guestID;
-    }
-
     public int getGuestID() {
         return guestID.get();
     }
@@ -76,11 +71,6 @@ public class Guest {
         this.email.set(email);
     }
 
-    // Address property
-    public StringProperty addressProperty() {
-        return address;
-    }
-
     public String getAddress() {
         return address.get();
     }
@@ -89,40 +79,12 @@ public class Guest {
         this.address.set(address);
     }
 
-    // Feedback property
-    public StringProperty feedbackProperty() {
-        return feedback;
-    }
-
     public String getFeedback() {
         return feedback.get();
     }
 
     public void setFeedback(String feedback) {
         this.feedback.set(feedback);
-    }
-
-    public String getGuestDetails() {
-        return "Guest ID: " + getGuestID() +
-                "\nName: " + getName() +
-                "\nPhone: " + getPhoneNumber() +
-                "\nEmail: " + getEmail() +
-                "\nAddress: " + getAddress();
-    }
-
-    public void setGuestDetails(String name, String phoneNumber, String email, String address) {
-        setName(name);
-        setPhoneNumber(phoneNumber);
-        setEmail(email);
-        setAddress(address);
-    }
-
-    public boolean validateGuestDetails() {
-        // Basic validation
-        return getName() != null && !getName().isEmpty() &&
-                getPhoneNumber() != null && !getPhoneNumber().isEmpty() &&
-                getEmail() != null && !getEmail().isEmpty() &&
-                getAddress() != null && !getAddress().isEmpty();
     }
 
     @Override

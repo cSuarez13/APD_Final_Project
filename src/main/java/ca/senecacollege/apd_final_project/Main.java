@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -29,7 +30,7 @@ public class Main extends Application {
 
             // Set up the scene with CSS
             Scene scene = new Scene(root);
-            scene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
+            scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
 
             // Configure and show the primary stage
             primaryStage.setTitle(Constants.APP_NAME);

@@ -39,22 +39,12 @@ public class Reservation {
         this.status.set(status);
     }
 
-    // ReservationID property
-    public IntegerProperty reservationIDProperty() {
-        return reservationID;
-    }
-
     public int getReservationID() {
         return reservationID.get();
     }
 
     public void setReservationID(int reservationID) {
         this.reservationID.set(reservationID);
-    }
-
-    // GuestID property
-    public IntegerProperty guestIDProperty() {
-        return guestID;
     }
 
     public int getGuestID() {
@@ -65,22 +55,12 @@ public class Reservation {
         this.guestID.set(guestID);
     }
 
-    // RoomID property
-    public IntegerProperty roomIDProperty() {
-        return roomID;
-    }
-
     public int getRoomID() {
         return roomID.get();
     }
 
     public void setRoomID(int roomID) {
         this.roomID.set(roomID);
-    }
-
-    // CheckInDate property
-    public ObjectProperty<LocalDate> checkInDateProperty() {
-        return checkInDate;
     }
 
     public LocalDate getCheckInDate() {
@@ -91,11 +71,6 @@ public class Reservation {
         this.checkInDate.set(checkInDate);
     }
 
-    // CheckOutDate property
-    public ObjectProperty<LocalDate> checkOutDateProperty() {
-        return checkOutDate;
-    }
-
     public LocalDate getCheckOutDate() {
         return checkOutDate.get();
     }
@@ -104,22 +79,12 @@ public class Reservation {
         this.checkOutDate.set(checkOutDate);
     }
 
-    // NumberOfGuests property
-    public IntegerProperty numberOfGuestsProperty() {
-        return numberOfGuests;
-    }
-
     public int getNumberOfGuests() {
         return numberOfGuests.get();
     }
 
     public void setNumberOfGuests(int numberOfGuests) {
         this.numberOfGuests.set(numberOfGuests);
-    }
-
-    // Status property
-    public ObjectProperty<ReservationStatus> statusProperty() {
-        return status;
     }
 
     public ReservationStatus getStatus() {
@@ -147,23 +112,6 @@ public class Reservation {
 
     public void setStatus(ReservationStatus status) {
         this.status.set(status);
-    }
-
-    /**
-     * Change the reservation status if the transition is valid
-     * @param newStatus The new status
-     * @throws IllegalStateException If the transition is not valid
-     */
-    public void changeStatus(ReservationStatus newStatus) throws IllegalStateException {
-        ReservationStatus currentStatus = getStatus();
-        if (currentStatus == null) {
-            setStatus(newStatus);
-        } else if (currentStatus.canTransitionTo(newStatus)) {
-            setStatus(newStatus);
-        } else {
-            throw new IllegalStateException(
-                    "Cannot transition from " + currentStatus + " to " + newStatus);
-        }
     }
 
     // Helper methods
@@ -194,53 +142,6 @@ public class Reservation {
         setCheckOutDate(checkOutDate);
         setNumberOfGuests(numberOfGuests);
         setStatus(ReservationStatus.PENDING);
-    }
-
-    /**
-     * Cancel the reservation
-     * @throws IllegalStateException If the reservation cannot be cancelled
-     */
-    public void cancelReservation() throws IllegalStateException {
-        changeStatus(ReservationStatus.CANCELLED);
-    }
-
-    /**
-     * Confirm the reservation
-     * @throws IllegalStateException If the reservation cannot be confirmed
-     */
-    public void confirmReservation() throws IllegalStateException {
-        changeStatus(ReservationStatus.CONFIRMED);
-    }
-
-    /**
-     * Check in the guest
-     * @throws IllegalStateException If the guest cannot be checked in
-     */
-    public void checkIn() throws IllegalStateException {
-        changeStatus(ReservationStatus.CHECKED_IN);
-    }
-
-    /**
-     * Check out the guest
-     * @throws IllegalStateException If the guest cannot be checked out
-     */
-    public void checkOut() throws IllegalStateException {
-        changeStatus(ReservationStatus.CHECKED_OUT);
-    }
-
-    /**
-     * Get a detailed representation of the reservation
-     * @return Reservation details
-     */
-    public String getReservationDetails() {
-        return "Reservation #" + getReservationID() +
-                "\nGuest ID: " + getGuestID() +
-                "\nRoom ID: " + getRoomID() +
-                "\nCheck-in: " + getCheckInDate() +
-                "\nCheck-out: " + getCheckOutDate() +
-                "\nNumber of nights: " + calculateNumberOfNights() +
-                "\nNumber of guests: " + getNumberOfGuests() +
-                "\nStatus: " + getStatus();
     }
 
     @Override

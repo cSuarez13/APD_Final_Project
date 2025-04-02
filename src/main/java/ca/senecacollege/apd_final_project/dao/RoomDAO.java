@@ -165,9 +165,8 @@ public class RoomDAO {
      * @param checkInDate Check-in date
      * @param checkOutDate Check-out date
      * @return true if at least one room of the specified type is available, false otherwise
-     * @throws DatabaseException If there's an error checking availability
      */
-    public boolean isRoomTypeAvailable(RoomType roomType, LocalDate checkInDate, LocalDate checkOutDate) throws DatabaseException {
+    public boolean isRoomTypeAvailable(RoomType roomType, LocalDate checkInDate, LocalDate checkOutDate) {
         // For debugging
         LoggingManager.logSystemInfo("Checking availability for " + roomType +
                 " from " + checkInDate + " to " + checkOutDate);
@@ -247,13 +246,13 @@ public class RoomDAO {
 
             try (PreparedStatement stmt = conn.prepareStatement(insertSQL)) {
                 int roomTypeId = getRoomTypeId(roomType);
-                int floor = roomTypeId; // Floor corresponds to room type
+                // Floor corresponds to room type
                 String roomNumber = roomTypeId + "01"; // e.g., 101, 201, etc.
                 double price = roomType.getBasePrice();
 
                 stmt.setInt(1, roomTypeId);
                 stmt.setString(2, roomNumber);
-                stmt.setInt(3, floor);
+                stmt.setInt(3, roomTypeId);
                 stmt.setDouble(4, price);
 
                 int result = stmt.executeUpdate();
@@ -380,60 +379,6 @@ public class RoomDAO {
     }
 
     /**
-     * Update the availability of a room
-     *
-     * @param roomId The room ID
-     * @param available The availability status
-     * @throws DatabaseException If there's an error updating the availability
-     */
-    public void updateAvailability(int roomId, boolean available) throws DatabaseException {
-        String sql = "UPDATE rooms SET is_available = ? WHERE room_id = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setBoolean(1, available);
-            stmt.setInt(2, roomId);
-
-            int affectedRows = stmt.executeUpdate();
-
-            if (affectedRows == 0) {
-                throw new DatabaseException("Updating room availability failed, no rows affected.");
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while updating room availability", e);
-            throw new DatabaseException("Error updating room availability: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Delete a room
-     *
-     * @param roomId The room ID to delete
-     * @throws DatabaseException If there's an error deleting the room
-     */
-    public void delete(int roomId) throws DatabaseException {
-        String sql = "DELETE FROM rooms WHERE room_id = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, roomId);
-
-            int affectedRows = stmt.executeUpdate();
-
-            if (affectedRows == 0) {
-                throw new DatabaseException("Deleting room failed, no rows affected.");
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while deleting room", e);
-            throw new DatabaseException("Error deleting room: " + e.getMessage(), e);
-        }
-    }
-
-    /**
      * Map a result set row to a Room object
      *
      * @param rs The result set
@@ -457,18 +402,13 @@ public class RoomDAO {
      * @return The database ID
      */
     private int getRoomTypeId(RoomType roomType) {
-        switch (roomType) {
-            case SINGLE:
-                return 1;
-            case DOUBLE:
-                return 2;
-            case DELUXE:
-                return 3;
-            case PENT_HOUSE:
-                return 4;
-            default:
-                return 1; // Default to SINGLE
-        }
+        return switch (roomType) {
+            case SINGLE -> 1;
+            case DOUBLE -> 2;
+            case DELUXE -> 3;
+            case PENT_HOUSE -> 4;
+            // Default to SINGLE
+        };
     }
 
     /**
@@ -478,18 +418,13 @@ public class RoomDAO {
      * @return The room type
      */
     private RoomType getRoomTypeById(int roomTypeId) {
-        switch (roomTypeId) {
-            case 1:
-                return RoomType.SINGLE;
-            case 2:
-                return RoomType.DOUBLE;
-            case 3:
-                return RoomType.DELUXE;
-            case 4:
-                return RoomType.PENT_HOUSE;
-            default:
-                return RoomType.SINGLE; // Default to SINGLE
-        }
+        return switch (roomTypeId) {
+            case 1 -> RoomType.SINGLE;
+            case 2 -> RoomType.DOUBLE;
+            case 3 -> RoomType.DELUXE;
+            case 4 -> RoomType.PENT_HOUSE;
+            default -> RoomType.SINGLE; // Default to SINGLE
+        };
     }
 
     /**
@@ -499,17 +434,9 @@ public class RoomDAO {
      * @return The number of beds
      */
     private int getBedsForRoomType(RoomType roomType) {
-        switch (roomType) {
-            case SINGLE:
-                return 1;
-            case DOUBLE:
-                return 2;
-            case DELUXE:
-                return 1;
-            case PENT_HOUSE:
-                return 1;
-            default:
-                return 1;
-        }
+        return switch (roomType) {
+            case SINGLE, DELUXE, PENT_HOUSE -> 1;
+            case DOUBLE -> 2;
+        };
     }
 }

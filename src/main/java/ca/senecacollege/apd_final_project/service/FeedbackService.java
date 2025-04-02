@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class FeedbackService {
 
-    private FeedbackDAO feedbackDAO;
+    private final FeedbackDAO feedbackDAO;
 
     /**
      * Constructor
@@ -27,67 +27,17 @@ public class FeedbackService {
      * Save a new feedback
      *
      * @param feedback The feedback to save
-     * @return The generated feedback ID
      * @throws DatabaseException If there's an error saving the feedback
      */
-    public int saveFeedback(Feedback feedback) throws DatabaseException {
+    public void saveFeedback(Feedback feedback) throws DatabaseException {
         try {
             validateFeedback(feedback);
-            int feedbackId = feedbackDAO.save(feedback);
+            feedbackDAO.save(feedback);
             LoggingManager.logSystemInfo("Saved feedback for reservation #" + feedback.getReservationID() +
                     " with rating " + feedback.getRating());
-            return feedbackId;
         } catch (Exception e) {
             LoggingManager.logException("Error saving feedback for reservation #" + feedback.getReservationID(), e);
             throw new DatabaseException("Error saving feedback: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Get a feedback by ID
-     *
-     * @param feedbackId The feedback ID
-     * @return The feedback
-     * @throws DatabaseException If there's an error retrieving the feedback
-     */
-    public Feedback getFeedbackById(int feedbackId) throws DatabaseException {
-        try {
-            return feedbackDAO.findById(feedbackId);
-        } catch (Exception e) {
-            LoggingManager.logException("Error retrieving feedback #" + feedbackId, e);
-            throw new DatabaseException("Error retrieving feedback: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Get feedback by guest ID
-     *
-     * @param guestId The guest ID
-     * @return List of feedback from this guest
-     * @throws DatabaseException If there's an error retrieving the feedback
-     */
-    public List<Feedback> getFeedbackByGuest(int guestId) throws DatabaseException {
-        try {
-            return feedbackDAO.findByGuest(guestId);
-        } catch (Exception e) {
-            LoggingManager.logException("Error retrieving feedback for guest #" + guestId, e);
-            throw new DatabaseException("Error retrieving feedback: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Get feedback by reservation ID
-     *
-     * @param reservationId The reservation ID
-     * @return List of feedback for this reservation (usually just one)
-     * @throws DatabaseException If there's an error retrieving the feedback
-     */
-    public List<Feedback> getFeedbackByReservation(int reservationId) throws DatabaseException {
-        try {
-            return feedbackDAO.findByReservation(reservationId);
-        } catch (Exception e) {
-            LoggingManager.logException("Error retrieving feedback for reservation #" + reservationId, e);
-            throw new DatabaseException("Error retrieving feedback: " + e.getMessage(), e);
         }
     }
 
@@ -109,70 +59,6 @@ public class FeedbackService {
     }
 
     /**
-     * Get all feedback with a specific rating
-     *
-     * @param rating The rating (1-5)
-     * @return List of feedback with this rating
-     * @throws DatabaseException If there's an error retrieving the feedback
-     */
-    public List<Feedback> getFeedbackByRating(int rating) throws DatabaseException {
-        try {
-            return feedbackDAO.findByRating(rating);
-        } catch (Exception e) {
-            LoggingManager.logException("Error retrieving feedback with rating " + rating, e);
-            throw new DatabaseException("Error retrieving feedback: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Get all feedback
-     *
-     * @return List of all feedback
-     * @throws DatabaseException If there's an error retrieving the feedback
-     */
-    public List<Feedback> getAllFeedback() throws DatabaseException {
-        try {
-            return feedbackDAO.findAll();
-        } catch (Exception e) {
-            LoggingManager.logException("Error retrieving all feedback", e);
-            throw new DatabaseException("Error retrieving feedback: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Update existing feedback
-     *
-     * @param feedback The feedback to update
-     * @throws DatabaseException If there's an error updating the feedback
-     */
-    public void updateFeedback(Feedback feedback) throws DatabaseException {
-        try {
-            validateFeedback(feedback);
-            feedbackDAO.update(feedback);
-            LoggingManager.logSystemInfo("Updated feedback #" + feedback.getFeedbackID());
-        } catch (Exception e) {
-            LoggingManager.logException("Error updating feedback #" + feedback.getFeedbackID(), e);
-            throw new DatabaseException("Error updating feedback: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Delete feedback
-     *
-     * @param feedbackId The feedback ID to delete
-     * @throws DatabaseException If there's an error deleting the feedback
-     */
-    public void deleteFeedback(int feedbackId) throws DatabaseException {
-        try {
-            feedbackDAO.delete(feedbackId);
-            LoggingManager.logSystemInfo("Deleted feedback #" + feedbackId);
-        } catch (Exception e) {
-            LoggingManager.logException("Error deleting feedback #" + feedbackId, e);
-            throw new DatabaseException("Error deleting feedback: " + e.getMessage(), e);
-        }
-    }
-
-    /**
      * Check if feedback exists for a reservation
      *
      * @param reservationId The reservation ID
@@ -185,38 +71,6 @@ public class FeedbackService {
         } catch (Exception e) {
             LoggingManager.logException("Error checking if feedback exists for reservation #" + reservationId, e);
             throw new DatabaseException("Error checking for feedback: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Get average rating across all feedback
-     *
-     * @return The average rating
-     * @throws DatabaseException If there's an error calculating the average
-     */
-    public double getAverageRating() throws DatabaseException {
-        try {
-            return feedbackDAO.getAverageRating();
-        } catch (Exception e) {
-            LoggingManager.logException("Error calculating average rating", e);
-            throw new DatabaseException("Error calculating average rating: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Get average rating for a specific date range
-     *
-     * @param startDate The start date
-     * @param endDate The end date
-     * @return The average rating for the date range
-     * @throws DatabaseException If there's an error calculating the average
-     */
-    public double getAverageRatingByDateRange(LocalDate startDate, LocalDate endDate) throws DatabaseException {
-        try {
-            return feedbackDAO.getAverageRatingByDateRange(startDate, endDate);
-        } catch (Exception e) {
-            LoggingManager.logException("Error calculating average rating for date range", e);
-            throw new DatabaseException("Error calculating average rating: " + e.getMessage(), e);
         }
     }
 

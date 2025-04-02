@@ -20,36 +20,6 @@ public class TableUtils {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /**
-     * Configure table columns to resize properly
-     * @param tableView The table to configure
-     */
-    public static void configureTableColumnWidth(TableView<?> tableView) {
-        // Use UNCONSTRAINED_RESIZE_POLICY for better column width distribution
-        tableView.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
-
-        // Distribute column widths proportionally
-        double tableWidth = tableView.getWidth();
-        double totalColumnWidth = 0;
-
-        for (TableColumn<?,?> column : tableView.getColumns()) {
-            totalColumnWidth += column.getWidth();
-        }
-
-        if (totalColumnWidth > 0) {
-            for (TableColumn<?,?> column : tableView.getColumns()) {
-                // Set each column to proportional width
-                double percentage = column.getWidth() / totalColumnWidth;
-                column.setPrefWidth(tableWidth * percentage);
-            }
-        }
-
-        // Add admin-table style class if not present
-        if (!tableView.getStyleClass().contains("admin-table")) {
-            tableView.getStyleClass().add("admin-table");
-        }
-    }
-
-    /**
      * Set up a reservations table with standard columns
      * @param tableView The table view to set up
      * @param data The data to populate the table with
@@ -91,8 +61,8 @@ public class TableUtils {
     }
 
     /**
-     * Setup a guest search results table with standard columns
-     * @param tableView The table view to setup
+     * Set up a guest search results table with standard columns
+     * @param tableView The table view to set up
      * @param data The data to populate the table with
      */
     public static void setupGuestTable(TableView<Guest> tableView, ObservableList<Guest> data) {

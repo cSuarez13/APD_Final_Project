@@ -285,30 +285,4 @@ public class GuestDAO {
             throw new DatabaseException("Error updating guest feedback: " + e.getMessage(), e);
         }
     }
-
-    /**
-     * Delete a guest
-     *
-     * @param guestId The guest ID
-     * @throws DatabaseException If there's an error deleting the guest
-     */
-    public void delete(int guestId) throws DatabaseException {
-        String sql = "DELETE FROM guests WHERE guest_id = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, guestId);
-
-            int affectedRows = stmt.executeUpdate();
-
-            if (affectedRows == 0) {
-                throw new DatabaseException("Deleting guest failed, no rows affected.");
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while deleting guest", e);
-            throw new DatabaseException("Error deleting guest: " + e.getMessage(), e);
-        }
-    }
 }

@@ -259,28 +259,28 @@ public class GuestDetailsController extends BaseController {
     protected boolean validateFields() {
         try {
             // Validate name
-            if (!ValidationUtils.isNotNullOrEmpty(txtName.getText())) {
+            if (ValidationUtils.isNotNullOrEmpty(txtName.getText())) {
                 throw new ValidationException("Please enter your name");
             }
 
             // Validate phone
-            if (!ValidationUtils.isNotNullOrEmpty(txtPhone.getText())) {
+            if (ValidationUtils.isNotNullOrEmpty(txtPhone.getText())) {
                 throw new ValidationException("Please enter your phone number");
             }
-            if (!ValidationUtils.isValidPhoneNumber(txtPhone.getText())) {
+            if (ValidationUtils.isValidPhoneNumber(txtPhone.getText())) {
                 throw new ValidationException("Please enter a valid phone number");
             }
 
             // Validate email
-            if (!ValidationUtils.isNotNullOrEmpty(txtEmail.getText())) {
+            if (ValidationUtils.isNotNullOrEmpty(txtEmail.getText())) {
                 throw new ValidationException("Please enter your email");
             }
-            if (!ValidationUtils.isValidEmail(txtEmail.getText())) {
+            if (ValidationUtils.isValidEmail(txtEmail.getText())) {
                 throw new ValidationException("Please enter a valid email address");
             }
 
             // Validate address
-            if (!ValidationUtils.isNotNullOrEmpty(txtAddress.getText())) {
+            if (ValidationUtils.isNotNullOrEmpty(txtAddress.getText())) {
                 throw new ValidationException("Please enter your address");
             }
 

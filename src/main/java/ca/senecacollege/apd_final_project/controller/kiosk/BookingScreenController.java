@@ -314,7 +314,7 @@ public class BookingScreenController extends BaseController {
             }
 
             // Check if check-in date is today or in the future
-            if (!ValidationUtils.isValidFutureDate(dpCheckIn.getValue())) {
+            if (ValidationUtils.isValidFutureDate(dpCheckIn.getValue())) {
                 throw new ValidationException("Check-in date must be today or a future date.");
             }
 
@@ -324,7 +324,7 @@ public class BookingScreenController extends BaseController {
             }
 
             // Check if check-out date is after check-in date
-            if (!ValidationUtils.isValidDateRange(dpCheckIn.getValue(), dpCheckOut.getValue())) {
+            if (ValidationUtils.isValidDateRange(dpCheckIn.getValue(), dpCheckOut.getValue())) {
                 throw new ValidationException("Check-out date must be after check-in date.");
             }
 

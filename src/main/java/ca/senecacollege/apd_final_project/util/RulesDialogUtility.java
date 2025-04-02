@@ -8,6 +8,8 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.util.Objects;
+
 /**
  * Utility class for displaying the hotel rules dialog
  */
@@ -26,7 +28,7 @@ public class RulesDialogUtility {
         dialog.initOwner(stage);
 
         DialogPane dialogPane = dialog.getDialogPane();
-        dialogPane.getStylesheets().add(RulesDialogUtility.class.getResource(Constants.CSS_KIOSK).toExternalForm());
+        dialogPane.getStylesheets().add(Objects.requireNonNull(RulesDialogUtility.class.getResource(Constants.CSS_KIOSK)).toExternalForm());
         dialogPane.setStyle("-fx-background-color: #2d2d2d;");
 
         // Calculate dialog size based on screen dimensions
