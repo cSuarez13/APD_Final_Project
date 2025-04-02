@@ -1,14 +1,10 @@
 package ca.senecacollege.apd_final_project.controller.admin;
 
 import ca.senecacollege.apd_final_project.controller.BaseController;
-import ca.senecacollege.apd_final_project.exception.DatabaseException;
-import ca.senecacollege.apd_final_project.exception.ReservationException;
 import ca.senecacollege.apd_final_project.model.*;
 import ca.senecacollege.apd_final_project.service.*;
 import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
-import ca.senecacollege.apd_final_project.util.ValidationUtils;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
@@ -41,15 +37,11 @@ public class CheckoutController extends BaseController {
     @FXML
     private Label lblTotal;
     @FXML
-    private Button btnSearch;
-    @FXML
     private Button btnCheckout;
     @FXML
     private Button btnCancel;
     @FXML
     private CheckBox chkFeedbackReminder;
-    @FXML
-    private Label lblError;
 
     // Services
     private ReservationService reservationService;
@@ -98,7 +90,7 @@ public class CheckoutController extends BaseController {
     }
 
     @FXML
-    private void handleSearchButton(ActionEvent event) {
+    private void handleSearchButton() {
         // Clear previous data
         clearFields();
         hideError();
@@ -147,7 +139,7 @@ public class CheckoutController extends BaseController {
     }
 
     @FXML
-    private void handleCheckoutButton(ActionEvent event) {
+    private void handleCheckoutButton() {
         if (currentReservation == null) {
             return;
         }
@@ -165,7 +157,7 @@ public class CheckoutController extends BaseController {
             currentBill.setAmount(subtotal);
 
             // Apply discount if provided
-            double discount = 0.0;
+            double discount;
             if (!txtDiscount.getText().isEmpty()) {
                 discount = Double.parseDouble(txtDiscount.getText());
                 validationService.validateBilling(subtotal, discount);
@@ -206,7 +198,7 @@ public class CheckoutController extends BaseController {
     }
 
     @FXML
-    private void handleCancelButton(ActionEvent event) {
+    private void handleCancelButton() {
         // Clear all fields and close the window
         clearAll();
         closeWindow();
@@ -336,6 +328,6 @@ public class CheckoutController extends BaseController {
     public void setReservationId(int reservationId) {
         txtReservationId.setText(String.valueOf(reservationId));
         // Trigger the search action programmatically
-        handleSearchButton(new ActionEvent());
+        handleSearchButton();
     }
 }

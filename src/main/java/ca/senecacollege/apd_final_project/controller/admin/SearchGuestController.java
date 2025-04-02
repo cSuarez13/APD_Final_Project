@@ -9,12 +9,10 @@ import ca.senecacollege.apd_final_project.model.ReservationStatus;
 import ca.senecacollege.apd_final_project.service.GuestService;
 import ca.senecacollege.apd_final_project.service.ReservationService;
 import ca.senecacollege.apd_final_project.util.Constants;
-import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 import ca.senecacollege.apd_final_project.util.TableUtils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -27,6 +25,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class SearchGuestController extends BaseController {
@@ -36,9 +35,6 @@ public class SearchGuestController extends BaseController {
 
     @FXML
     private TextField txtSearchTerm;
-
-    @FXML
-    private Button btnSearch;
 
     @FXML
     private TableView<Guest> tblGuests;
@@ -58,14 +54,11 @@ public class SearchGuestController extends BaseController {
     @FXML
     private Button btnCheckOut;
 
-    @FXML
-    private Button btnCancel;
-
     private GuestService guestService;
     private ReservationService reservationService;
 
-    private ObservableList<Guest> guestList = FXCollections.observableArrayList();
-    private ObservableList<Reservation> reservationList = FXCollections.observableArrayList();
+    private final ObservableList<Guest> guestList = FXCollections.observableArrayList();
+    private final ObservableList<Reservation> reservationList = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -94,9 +87,7 @@ public class SearchGuestController extends BaseController {
         });
 
         // Add listener to reservation table selection to update button states
-        tblReservations.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            updateButtonStates();
-        });
+        tblReservations.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> updateButtonStates());
 
         // Initially disable action buttons
         btnViewDetails.setDisable(true);
@@ -114,7 +105,7 @@ public class SearchGuestController extends BaseController {
     }
 
     @FXML
-    private void handleSearchAction(ActionEvent event) {
+    private void handleSearchAction() {
         // Clear previous results
         guestList.clear();
         reservationList.clear();
@@ -127,21 +118,16 @@ public class SearchGuestController extends BaseController {
         }
 
         try {
-            List<Guest> results = null;
+            List<Guest> results;
             String searchBy = cmbSearchBy.getValue();
 
             // Search based on selected criteria
-            switch (searchBy) {
-                case "Name":
-                    results = guestService.searchGuestsByName(searchTerm);
-                    break;
-                case "Phone":
-                    results = guestService.searchGuestsByPhone(searchTerm);
-                    break;
-                case "Email":
-                    results = guestService.searchGuestsByEmail(searchTerm);
-                    break;
-            }
+            results = switch (searchBy) {
+                case "Name" -> guestService.searchGuestsByName(searchTerm);
+                case "Phone" -> guestService.searchGuestsByPhone(searchTerm);
+                case "Email" -> guestService.searchGuestsByEmail(searchTerm);
+                default -> null;
+            };
 
             // Update the guest list
             if (results != null && !results.isEmpty()) {
@@ -202,7 +188,7 @@ public class SearchGuestController extends BaseController {
     }
 
     @FXML
-    private void handleNewReservationAction(ActionEvent event) {
+    private void handleNewReservationAction() {
         Guest selectedGuest = tblGuests.getSelectionModel().getSelectedItem();
 
         if (selectedGuest == null) return;
@@ -219,7 +205,7 @@ public class SearchGuestController extends BaseController {
             stage.setScene(new Scene(root));
 
             // Apply CSS
-            root.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
+            root.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_ADMIN)).toExternalForm());
 
             // Set a larger stage size
             stage.setWidth(800);
@@ -238,7 +224,7 @@ public class SearchGuestController extends BaseController {
     }
 
     @FXML
-    private void handleViewDetailsAction(ActionEvent event) {
+    private void handleViewDetailsAction() {
         Guest selectedGuest = tblGuests.getSelectionModel().getSelectedItem();
         if (selectedGuest == null) return;
 
@@ -257,7 +243,7 @@ public class SearchGuestController extends BaseController {
 
             dialog.getDialogPane().setContent(content);
             dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
-            dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
+            dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_ADMIN)).toExternalForm());
 
             dialog.showAndWait();
 
@@ -315,7 +301,7 @@ public class SearchGuestController extends BaseController {
     }
 
     @FXML
-    private void handleCheckInAction(ActionEvent event) {
+    private void handleCheckInAction() {
         Guest selectedGuest = tblGuests.getSelectionModel().getSelectedItem();
         Reservation selectedReservation = tblReservations.getSelectionModel().getSelectedItem();
 
@@ -340,7 +326,7 @@ public class SearchGuestController extends BaseController {
             stage.setScene(new Scene(root));
 
             // Apply CSS
-            root.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
+            root.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_ADMIN)).toExternalForm());
 
             // Show the dialog and wait for it to close
             stage.showAndWait();
@@ -358,7 +344,7 @@ public class SearchGuestController extends BaseController {
     }
 
     @FXML
-    private void handleCheckOutAction(ActionEvent event) {
+    private void handleCheckOutAction() {
         Guest selectedGuest = tblGuests.getSelectionModel().getSelectedItem();
         Reservation selectedReservation = tblReservations.getSelectionModel().getSelectedItem();
 
@@ -383,7 +369,7 @@ public class SearchGuestController extends BaseController {
             stage.setScene(new Scene(root));
 
             // Apply CSS
-            root.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
+            root.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_ADMIN)).toExternalForm());
 
             // Show the dialog and wait for it to close
             stage.showAndWait();
@@ -401,7 +387,7 @@ public class SearchGuestController extends BaseController {
     }
 
     @FXML
-    private void handleCancelAction(ActionEvent event) {
+    private void handleCancelAction() {
         // Close the window
         closeWindow();
     }

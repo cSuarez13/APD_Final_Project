@@ -39,8 +39,8 @@ public class DashboardContentController extends BaseController {
     private GuestService guestService;
     private ReservationService reservationService;
 
-    private ObservableList<Reservation> todayCheckIns = FXCollections.observableArrayList();
-    private ObservableList<Reservation> todayCheckOuts = FXCollections.observableArrayList();
+    private final ObservableList<Reservation> todayCheckIns = FXCollections.observableArrayList();
+    private final ObservableList<Reservation> todayCheckOuts = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -62,11 +62,10 @@ public class DashboardContentController extends BaseController {
     @Override
     public void initData(Admin admin) {
         super.initData(admin);
-        // Additional initialization if needed
     }
 
     /**
-     * Setup the dashboard tables
+     * Set up the dashboard tables
      */
     private void setupDashboardTables() {
         // Setup tables for dashboard

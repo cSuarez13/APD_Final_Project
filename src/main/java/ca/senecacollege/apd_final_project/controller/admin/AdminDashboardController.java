@@ -20,6 +20,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class AdminDashboardController extends BaseController {
@@ -78,7 +79,7 @@ public class AdminDashboardController extends BaseController {
             Parent view = null;
 
             if (clickedButton.equals(btnDashboard)) {
-                view = loadFXML(Constants.FXML_DASHBOARD_CONTENT);
+                view = loadFXML();
             } else if (clickedButton.equals(btnSearchGuests)) {
                 view = loadControllerView(Constants.FXML_SEARCH_GUEST, SearchGuestController.class);
             } else if (clickedButton.equals(btnReservations)) {
@@ -106,10 +107,10 @@ public class AdminDashboardController extends BaseController {
     /**
      * Load a FXML file
      */
-    private Parent loadFXML(String fxmlPath) throws IOException {
-        URL resourceUrl = getClass().getResource(fxmlPath);
+    private Parent loadFXML() throws IOException {
+        URL resourceUrl = getClass().getResource(Constants.FXML_DASHBOARD_CONTENT);
         if (resourceUrl == null) {
-            throw new IOException("Resource not found: " + fxmlPath);
+            throw new IOException("Resource not found: " + Constants.FXML_DASHBOARD_CONTENT);
         }
         return FXMLLoader.load(resourceUrl);
     }
@@ -144,7 +145,7 @@ public class AdminDashboardController extends BaseController {
     }
 
     @FXML
-    private void handleLogout(ActionEvent event) {
+    private void handleLogout() {
         logAdminActivity("Logged out");
 
         try {
@@ -163,8 +164,8 @@ public class AdminDashboardController extends BaseController {
             Scene adminLoginScene = new Scene(adminLoginRoot);
 
             // Apply the admin CSS
-            adminLoginScene.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
-            adminLoginScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
+            adminLoginScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_ADMIN)).toExternalForm());
+            adminLoginScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
 
             // Configure stage size and position
             double stageWidth = ScreenSizeManager.calculateStageWidth(500);

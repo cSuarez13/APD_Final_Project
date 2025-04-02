@@ -6,14 +6,11 @@ import ca.senecacollege.apd_final_project.model.Admin;
 import ca.senecacollege.apd_final_project.model.Reservation;
 import ca.senecacollege.apd_final_project.model.ReservationStatus;
 import ca.senecacollege.apd_final_project.service.DialogService;
-import ca.senecacollege.apd_final_project.service.GuestService;
 import ca.senecacollege.apd_final_project.service.ReservationService;
 import ca.senecacollege.apd_final_project.service.ServiceLocator;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
-import ca.senecacollege.apd_final_project.util.TableUtils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -39,8 +36,7 @@ public class ReservationController extends BaseController {
     private TableView<Reservation> tblAllReservations;
 
     private ReservationService reservationService;
-    private GuestService guestService;
-    private ObservableList<Reservation> allReservations = FXCollections.observableArrayList();
+    private final ObservableList<Reservation> allReservations = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -50,7 +46,6 @@ public class ReservationController extends BaseController {
 
         // Get services using ServiceLocator
         reservationService = ServiceLocator.getService(ReservationService.class);
-        guestService = ServiceLocator.getService(GuestService.class);
 
         // Initialize reservation filter combo box
         cmbReservationFilter.setItems(FXCollections.observableArrayList(
@@ -220,7 +215,7 @@ public class ReservationController extends BaseController {
      * Handle cancel reservation button click
      */
     @FXML
-    private void handleCancelReservation(ActionEvent event) {
+    private void handleCancelReservation() {
         Reservation selectedReservation = tblAllReservations.getSelectionModel().getSelectedItem();
 
         if (selectedReservation == null) {
@@ -228,7 +223,7 @@ public class ReservationController extends BaseController {
             return;
         }
 
-        // Double check the status to ensure it can be cancelled
+        // Double-check the status to ensure it can be cancelled
         if (selectedReservation.getStatus() != ReservationStatus.PENDING &&
                 selectedReservation.getStatus() != ReservationStatus.CONFIRMED) {
             showError("This reservation cannot be cancelled. Current status: " +

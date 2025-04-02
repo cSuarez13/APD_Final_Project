@@ -6,7 +6,6 @@ import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 import ca.senecacollege.apd_final_project.util.ScreenSizeManager;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -17,6 +16,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class LoginController implements Initializable {
@@ -39,7 +39,7 @@ public class LoginController implements Initializable {
         // Set up enter key event for password field
         txtPassword.setOnKeyPressed(event -> {
             if (event.getCode().toString().equals("ENTER")) {
-                handleLoginButton(new ActionEvent());
+                handleLoginButton();
             }
         });
 
@@ -81,7 +81,7 @@ public class LoginController implements Initializable {
     }
 
     @FXML
-    private void handleLoginButton(ActionEvent event) {
+    private void handleLoginButton() {
         String username = txtUsername.getText().trim();
         String password = txtPassword.getText().trim();
 
@@ -131,8 +131,8 @@ public class LoginController implements Initializable {
             Scene dashboardScene = new Scene(dashboardRoot);
 
             // Apply the admin CSS
-            dashboardScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
-            dashboardScene.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
+            dashboardScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
+            dashboardScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_ADMIN)).toExternalForm());
 
             dashboardStage.setTitle("Admin Dashboard - " + admin.getName());
             dashboardStage.setScene(dashboardScene);
@@ -150,7 +150,7 @@ public class LoginController implements Initializable {
             dashboardStage.setX(centerPos[0]);
             dashboardStage.setY(centerPos[1]);
 
-            // Show maximized for admin dashboard (large interface)
+            // Show maximized for admin dashboard
             dashboardStage.setMaximized(true);
             dashboardStage.show();
 

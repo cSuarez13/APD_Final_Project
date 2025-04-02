@@ -13,7 +13,6 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
@@ -22,7 +21,6 @@ import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -33,10 +31,7 @@ import java.io.PrintWriter;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ReportController extends BaseController {
@@ -51,13 +46,7 @@ public class ReportController extends BaseController {
     private DatePicker dpEndDate;
 
     @FXML
-    private Button btnGenerateReport;
-
-    @FXML
     private Button btnExportReport;
-
-    @FXML
-    private Button btnClose;
 
     @FXML
     private BorderPane occupancyPane;
@@ -80,15 +69,6 @@ public class ReportController extends BaseController {
 
     @FXML
     private TableView<FeedbackSummaryData> tblFeedback;
-
-    @FXML
-    private VBox occupancySection;
-
-    @FXML
-    private VBox revenueSection;
-
-    @FXML
-    private VBox feedbackSection;
 
     // Current report data
     private List<Reservation> currentReservations;
@@ -230,7 +210,7 @@ public class ReportController extends BaseController {
     }
 
     @FXML
-    private void handleGenerateReport(ActionEvent event) {
+    private void handleGenerateReport() {
         // Clear previous data
         clearReportData();
 
@@ -280,7 +260,7 @@ public class ReportController extends BaseController {
     }
 
     @FXML
-    private void handleExportReport(ActionEvent event) {
+    private void handleExportReport() {
         if (currentReportType == null || currentStartDate == null || currentEndDate == null) {
             showError("No report has been generated to export.");
             return;
@@ -303,12 +283,10 @@ public class ReportController extends BaseController {
 
             if (file != null) {
                 // Export the report based on type
-                if (currentReportType.equals("Occupancy Report")) {
-                    exportOccupancyReport(file);
-                } else if (currentReportType.equals("Revenue Report")) {
-                    exportRevenueReport(file);
-                } else if (currentReportType.equals("Guest Feedback Report")) {
-                    exportFeedbackReport(file);
+                switch (currentReportType) {
+                    case "Occupancy Report" -> exportOccupancyReport(file);
+                    case "Revenue Report" -> exportRevenueReport(file);
+                    case "Guest Feedback Report" -> exportFeedbackReport(file);
                 }
 
                 // Show success message
@@ -363,7 +341,7 @@ public class ReportController extends BaseController {
         // Count occupied rooms by type
         for (Reservation reservation : currentReservations) {
             ReservationStatus status = reservation.getStatus();
-            if (status != null && (status == ReservationStatus.CHECKED_IN || status == ReservationStatus.CONFIRMED)) {
+            if ((status == ReservationStatus.CHECKED_IN || status == ReservationStatus.CONFIRMED)) {
                 try {
                     Room room = roomService.getRoomById(reservation.getRoomID());
                     if (room != null) {
@@ -479,8 +457,7 @@ public class ReportController extends BaseController {
         // Truncate to 5 rows if more exist (excluding the total row)
         if (revenueData.size() > 6) {
             revenueData = FXCollections.observableArrayList(
-                    revenueData.subList(0, 5).stream()
-                            .collect(Collectors.toList())
+                    new ArrayList<>(revenueData.subList(0, 5))
             );
             revenueData.add(revenueData.size(), new RevenueSummaryData("TOTAL", totalRoomRevenue, totalTaxes, totalDiscounts));
         }
@@ -762,6 +739,16 @@ public class ReportController extends BaseController {
         occupiedRoomsCol.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().getOccupiedRooms()));
         occupiedRoomsCol.setPrefWidth(150);
 
+        TableColumn<RoomOccupancyData, Number> occupancyRateCol = getRoomOccupancyDataNumberTableColumn();
+
+        // Add columns to table
+        tblOccupancy.getColumns().addAll(roomTypeCol, totalRoomsCol, occupiedRoomsCol, occupancyRateCol);
+
+        // Configure table layout
+        tblOccupancy.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+    }
+
+    private static TableColumn<RoomOccupancyData, Number> getRoomOccupancyDataNumberTableColumn() {
         TableColumn<RoomOccupancyData, Number> occupancyRateCol = new TableColumn<>("Occupancy Rate (%)");
         occupancyRateCol.setCellValueFactory(data -> new SimpleDoubleProperty(data.getValue().getOccupancyRate()));
         occupancyRateCol.setPrefWidth(200);
@@ -776,16 +763,7 @@ public class ReportController extends BaseController {
                 }
             }
         });
-
-        // Add columns to table
-        tblOccupancy.getColumns().addAll(roomTypeCol, totalRoomsCol, occupiedRoomsCol, occupancyRateCol);
-
-        // Configure table layout
-        tblOccupancy.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-
-        // Remove fixed cell size - let it adapt to available space
-        // tblOccupancy.setFixedCellSize(35.0);
-        // tblOccupancy.setPrefHeight(5 * 35.0 + 30); // 5 rows + header
+        return occupancyRateCol;
     }
 
     private void setupRevenueTable() {

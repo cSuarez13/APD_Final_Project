@@ -30,7 +30,6 @@
     -fx-font-weight: bold;
 }
 
-/* Label with suggestion styling */
 .label-suggestion {
     -fx-text-fill: #b491c8;
     -fx-background-color: rgba(180, 145, 200, 0.2);
@@ -96,7 +95,6 @@
     -fx-background-color: #7b1fa2;
 }
 
-/* Input Styling for Kiosk - Improved for better visibility */
 .text-field, .date-picker, .combo-box, .spinner, .kiosk-input,
 .text-input, .text-field .text, .date-picker .text-field, .combo-box .text-field {
     -fx-background-color: #2a2a2a;
@@ -108,7 +106,6 @@
     -fx-font-size: 16px;
 }
 
-/* Force text to be white in all text inputs */
 .text-field .text {
     -fx-fill: white !important;
 }
@@ -118,7 +115,6 @@
     -fx-effect: dropshadow(gaussian, rgba(156, 39, 176, 0.4), 10, 0, 0, 0);
 }
 
-/* TextField inside components should have white/purple text */
 .date-picker > .text-field, .combo-box > .text-field, .spinner > .text-field,
 .date-picker .text-field, .combo-box .text-field, .spinner .text-field,
 .date-picker .text-input, .combo-box .text-input, .spinner .text-input,
@@ -364,7 +360,6 @@
     -fx-effect: dropshadow(gaussian, rgba(180,145,200,0.6), 8, 0, 0, 1);
 }
 
-/* Ensure labels are interactive */
 .rating-star {
     -fx-background-color: transparent;
     -fx-padding: 5px;

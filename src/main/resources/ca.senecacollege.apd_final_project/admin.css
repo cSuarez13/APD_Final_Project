@@ -1,8 +1,6 @@
 /* Import base styles */
 @import 'application.css';
 
-/* Admin Theme Colors */
-/* CSS variables must be within a selector in JavaFX CSS */
 .root {
     /* Dark backgrounds */
     -admin-bg-dark: #121212;
@@ -212,26 +210,26 @@
     -fx-table-cell-border-color: #444444;
     -fx-table-header-border-color: #555555;
     -fx-padding: 0;
-    -fx-font-size: 14px; /* Larger base font size for tables */
+    -fx-font-size: 14px;
 }
 
 .admin-table .column-header, .table-view .column-header {
     -fx-background-color: -admin-primary-dark;
     -fx-text-fill: white;
-    -fx-font-size: 15px; /* Larger font for headers */
+    -fx-font-size: 15px;
 }
 
 .admin-table .column-header .label, .table-view .column-header .label {
     -fx-text-fill: white;
     -fx-font-weight: bold;
-    -fx-padding: 8 8 8 8; /* More padding for headers */
+    -fx-padding: 8 8 8 8;
 }
 
 .admin-table .table-row-cell, .table-view .table-row-cell {
     -fx-background-color: -admin-bg-dark;
     -fx-table-cell-border-color: #444444;
     -fx-alignment: CENTER-LEFT;
-    -fx-cell-size: 40; /* Taller rows for better readability */
+    -fx-cell-size: 40;
 }
 
 .admin-table .table-row-cell:odd, .table-view .table-row-cell:odd {
@@ -240,7 +238,7 @@
 
 .admin-table .table-row-cell .text, .table-view .table-row-cell .text {
     -fx-fill: white;
-    -fx-font-size: 14px; /* Consistent font size for cell content */
+    -fx-font-size: 14px;
 }
 
 .admin-table .table-row-cell:selected, .table-view .table-row-cell:selected {
@@ -251,7 +249,6 @@
     -fx-fill: white;
 }
 
-/* Make table columns stretch to fill space */
 .admin-table .table-column, .table-view .table-column {
     -fx-alignment: CENTER-LEFT;
 }
@@ -465,14 +462,11 @@
     -fx-background-color: -admin-bg-dark;
 }
 
-/* Additional CSS for admin.css - Add these specific rules at the end of your admin.css file */
-
 /* Force table columns to fill width */
 .table-view {
     -fx-table-column-fill: 100%;
 }
 
-/* Ensure search tables have the same styling as dashboard tables */
 #tblGuests, #tblReservations {
     -fx-background-color: -admin-bg-dark;
     -fx-control-inner-background: -admin-bg-dark;
@@ -518,7 +512,7 @@
     -fx-fill: white;
 }
 
-/* Chart styling for transparent legends */
+/* Chart styling */
 .chart {
     -fx-background-color: transparent;
 }
@@ -535,7 +529,6 @@
     -fx-background-radius: 0;
 }
 
-/* Additional chart text styling */
 .chart-pie-label {
     -fx-fill: white;
 }

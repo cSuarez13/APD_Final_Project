@@ -1,8 +1,6 @@
 package ca.senecacollege.apd_final_project.controller.admin;
 
 import ca.senecacollege.apd_final_project.controller.BaseController;
-import ca.senecacollege.apd_final_project.exception.DatabaseException;
-import ca.senecacollege.apd_final_project.exception.ValidationException;
 import ca.senecacollege.apd_final_project.model.Admin;
 import ca.senecacollege.apd_final_project.model.Guest;
 import ca.senecacollege.apd_final_project.model.Reservation;
@@ -10,9 +8,6 @@ import ca.senecacollege.apd_final_project.model.Room;
 import ca.senecacollege.apd_final_project.model.ReservationStatus;
 import ca.senecacollege.apd_final_project.service.*;
 import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
-import ca.senecacollege.apd_final_project.util.LoggingManager;
-import ca.senecacollege.apd_final_project.util.ValidationUtils;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
@@ -23,7 +18,7 @@ import java.util.ResourceBundle;
 public class CheckInController extends BaseController {
 
     @FXML
-    public TextField txtReservationId; // Changed to public
+    public TextField txtReservationId;
 
     @FXML
     private Label lblGuestName;
@@ -78,7 +73,7 @@ public class CheckInController extends BaseController {
     }
 
     @FXML
-    private void handleSearchButton(ActionEvent event) {
+    private void handleSearchButton() {
         performReservationSearch();
     }
 
@@ -131,7 +126,7 @@ public class CheckInController extends BaseController {
     }
 
     @FXML
-    private void handleConfirmButton(ActionEvent event) {
+    private void handleConfirmButton() {
         if (currentReservation == null) {
             return;
         }
@@ -163,7 +158,7 @@ public class CheckInController extends BaseController {
     }
 
     @FXML
-    private void handleCancelButton(ActionEvent event) {
+    private void handleCancelButton() {
         // Clear all fields and close the window
         clearAll();
         closeWindow();
@@ -249,12 +244,4 @@ public class CheckInController extends BaseController {
         performReservationSearch();
     }
 
-    /**
-     * Log a system activity
-     *
-     * @param activity The activity to log
-     */
-    private void logSystemActivity(String activity) {
-        LoggingManager.logSystemInfo(activity);
-    }
 }
