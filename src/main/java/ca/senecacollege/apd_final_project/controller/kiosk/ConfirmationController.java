@@ -66,7 +66,6 @@ public class ConfirmationController extends BaseController {
         guestService = ServiceLocator.getService(GuestService.class);
         roomService = ServiceLocator.getService(RoomService.class);
 
-        // Apply styles to ensure text is visible
         applyStyles();
 
         // Adjust window size
@@ -80,7 +79,6 @@ public class ConfirmationController extends BaseController {
      * Apply styles to ensure text elements are properly colored
      */
     private void applyStyles() {
-        // Apply white text color to all labels
         lblReservationId.setStyle("-fx-text-fill: white;");
         lblGuestName.setStyle("-fx-text-fill: white;");
         lblRoomInfo.setStyle("-fx-text-fill: white;");
@@ -92,10 +90,8 @@ public class ConfirmationController extends BaseController {
         lblTax.setStyle("-fx-text-fill: white;");
         lblTotal.setStyle("-fx-text-fill: #b491c8; -fx-font-weight: bold;"); // Highlight the total
 
-        // Apply styles to scene labels once the scene is available
         lblReservationId.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
-                // Find all labels in the scene and ensure white text
                 newScene.getRoot().lookupAll(".label").forEach(node -> {
                     if (node instanceof Label && !node.getStyleClass().contains("label-header")
                             && !node.getStyleClass().contains("label-total")) {
@@ -115,8 +111,7 @@ public class ConfirmationController extends BaseController {
             if (newScene != null) {
                 Stage stage = (Stage) newScene.getWindow();
 
-                // Calculate dimensions - use at most 90% of screen height to ensure full content is visible
-                // and maintain aspect ratio
+                // Calculate dimensions - use at most 90% of screen height
                 double stageWidth = ScreenSizeManager.calculateStageWidth(1024);
                 double stageHeight = ScreenSizeManager.calculateStageHeight(750); // Increased height
 
@@ -209,7 +204,7 @@ public class ConfirmationController extends BaseController {
     @FXML
     private void handleDoneButton() {
         try {
-            // Load the welcome screen to restart the process
+            // Load the welcome screen
             FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_WELCOME));
             Parent welcomeRoot = loader.load();
 

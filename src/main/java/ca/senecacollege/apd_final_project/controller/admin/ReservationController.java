@@ -160,7 +160,7 @@ public class ReservationController extends BaseController {
             List<Reservation> reservations;
 
             if ("All".equals(filter)) {
-                reservations = reservationService.getActiveReservations(); // Replace with getAll when implemented
+                reservations = reservationService.getActiveReservations();
             } else if ("Active".equals(filter)) {
                 reservations = reservationService.getActiveReservations();
             } else if ("Confirmed".equals(filter)) {
@@ -189,7 +189,6 @@ public class ReservationController extends BaseController {
                 dummyReservation.setNumberOfGuests(2);
                 dummyReservation.setStatus(ReservationStatus.CONFIRMED);
 
-                // Create a new list with the dummy reservation
                 reservations = FXCollections.observableArrayList(dummyReservation);
             }
 

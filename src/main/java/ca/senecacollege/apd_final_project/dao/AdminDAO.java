@@ -7,95 +7,8 @@ import ca.senecacollege.apd_final_project.util.LoggingManager;
 
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 public class AdminDAO {
-
-    /**
-     * Find an admin by username
-     *
-     * @param username The username to search for
-     * @return The admin if found, null otherwise
-     * @throws DatabaseException If there's an error retrieving the admin
-     */
-    public Admin findByUsername(String username) throws DatabaseException {
-        String sql = "SELECT * FROM admins WHERE username = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, username);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapResultSetToAdmin(rs);
-                } else {
-                    return null;
-                }
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while finding admin by username", e);
-            throw new DatabaseException("Error finding admin: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Find an admin by ID
-     *
-     * @param adminId The admin ID to search for
-     * @return The admin if found, null otherwise
-     * @throws DatabaseException If there's an error retrieving the admin
-     */
-    public Admin findById(int adminId) throws DatabaseException {
-        String sql = "SELECT * FROM admins WHERE admin_id = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, adminId);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapResultSetToAdmin(rs);
-                } else {
-                    return null;
-                }
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while finding admin by ID", e);
-            throw new DatabaseException("Error finding admin: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Get all admins
-     *
-     * @return List of all admins
-     * @throws DatabaseException If there's an error retrieving admins
-     */
-    public List<Admin> findAll() throws DatabaseException {
-        String sql = "SELECT * FROM admins ORDER BY name";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            List<Admin> admins = new ArrayList<>();
-
-            while (rs.next()) {
-                admins.add(mapResultSetToAdmin(rs));
-            }
-
-            return admins;
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while retrieving all admins", e);
-            throw new DatabaseException("Error retrieving admins: " + e.getMessage(), e);
-        }
-    }
 
     /**
      * Save a new admin
@@ -164,32 +77,6 @@ public class AdminDAO {
         } catch (SQLException e) {
             LoggingManager.logException("Database error while updating admin", e);
             throw new DatabaseException("Error updating admin: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Delete an admin
-     *
-     * @param adminId The admin ID to delete
-     * @throws DatabaseException If there's an error deleting the admin
-     */
-    public void delete(int adminId) throws DatabaseException {
-        String sql = "DELETE FROM admins WHERE admin_id = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, adminId);
-
-            int affectedRows = stmt.executeUpdate();
-
-            if (affectedRows == 0) {
-                throw new DatabaseException("Deleting admin failed, no rows affected.");
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while deleting admin", e);
-            throw new DatabaseException("Error deleting admin: " + e.getMessage(), e);
         }
     }
 

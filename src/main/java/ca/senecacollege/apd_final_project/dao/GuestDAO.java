@@ -204,33 +204,6 @@ public class GuestDAO {
     }
 
     /**
-     * Get all guests
-     *
-     * @return List of all guests
-     * @throws DatabaseException If there's an error retrieving guests
-     */
-    public List<Guest> findAll() throws DatabaseException {
-        String sql = "SELECT * FROM guests ORDER BY name";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            List<Guest> guests = new ArrayList<>();
-
-            while (rs.next()) {
-                guests.add(mapResultSetToGuest(rs));
-            }
-
-            return guests;
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while retrieving all guests", e);
-            throw new DatabaseException("Error retrieving guests: " + e.getMessage(), e);
-        }
-    }
-
-    /**
      * Map a result set row to a Guest object
      *
      * @param rs The result set
@@ -251,8 +224,7 @@ public class GuestDAO {
             if (feedback != null) {
                 guest.setFeedback(feedback);
             }
-        } catch (SQLException e) {
-            // Ignore if feedback column doesn't exist
+        } catch (SQLException ignored) {
         }
 
         return guest;

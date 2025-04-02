@@ -180,11 +180,10 @@ public class ReportController extends BaseController {
                 "Occupancy Report", "Revenue Report", "Guest Feedback Report"));
         cmbReportType.getSelectionModel().selectFirst();
 
-        // Set default date range (last 30 days)
+        // Set default date range
         dpEndDate.setValue(LocalDate.now());
         dpStartDate.setValue(LocalDate.now().minusDays(30));
 
-        // No need for TabPane listener since we removed the tabs
         // Initialize tables
         setupOccupancyTable();
         setupRevenueTable();
@@ -623,7 +622,6 @@ public class ReportController extends BaseController {
                             feedback.getRating(),
                             feedback.getComments().replace("\"", "\"\""));  // Escape quotes for CSV
                 } catch (Exception e) {
-                    // Skip this feedback if there's an error
                     LoggingManager.logException("Error exporting feedback", e);
                 }
             }
@@ -639,7 +637,6 @@ public class ReportController extends BaseController {
         chart.setPrefHeight(300);
         chart.setMaxHeight(300);
 
-        // Remove the "All Rooms" entry for the chart
         for (int i = 0; i < data.size() - 1; i++) {
             RoomOccupancyData roomData = data.get(i);
 
@@ -681,7 +678,6 @@ public class ReportController extends BaseController {
         XYChart.Series<String, Number> discountsSeries = new XYChart.Series<>();
         discountsSeries.setName("Discounts");
 
-        // Remove the "TOTAL" entry for the chart
         for (int i = 0; i < data.size() - 1; i++) {
             RevenueSummaryData revenueData = data.get(i);
 
@@ -708,7 +704,6 @@ public class ReportController extends BaseController {
         chart.setPrefHeight(300);
         chart.setMaxHeight(300);
 
-        // Remove the "Overall" entry for the chart
         for (int i = 0; i < data.size() - 1; i++) {
             FeedbackSummaryData feedbackData = data.get(i);
 

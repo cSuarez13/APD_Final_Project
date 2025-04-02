@@ -63,14 +63,12 @@ public class BookingScreenController extends BaseController {
         // Apply styles directly to the components
         mainPane.setStyle("-fx-background-color: #121212;");
 
-        // Force text color in all form labels to be white
         for (javafx.scene.Node node : mainPane.lookupAll(".label")) {
             if (node instanceof Label label) {
                 label.setStyle("-fx-text-fill: white;");
             }
         }
 
-        // Adjust suggestion label styling
         lblSuggestion.setStyle("-fx-text-fill: #b491c8; -fx-background-color: rgba(180, 145, 200, 0.2); -fx-background-radius: 5px; -fx-padding: 10px;");
 
         // Setup spinner for guest count
@@ -78,7 +76,6 @@ public class BookingScreenController extends BaseController {
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10, 1);
         spnGuests.setValueFactory(valueFactory);
 
-        // Remove padding from spinner editor
         TextField spinnerEditor = spnGuests.getEditor();
         spinnerEditor.setPadding(new Insets(0));
         spinnerEditor.setStyle("-fx-text-fill: black; -fx-font-size: 14px;");
@@ -90,11 +87,9 @@ public class BookingScreenController extends BaseController {
         dpCheckIn.setValue(LocalDate.now());
         dpCheckOut.setValue(LocalDate.now().plusDays(1));
 
-        // Remove internal padding from date pickers
         dpCheckIn.getEditor().setPadding(new Insets(0));
         dpCheckOut.getEditor().setPadding(new Insets(0));
 
-        // Set text color in date picker editors to black with larger font
         dpCheckIn.getEditor().setStyle("-fx-text-fill: black; -fx-font-size: 14px;");
         dpCheckOut.getEditor().setStyle("-fx-text-fill: black; -fx-font-size: 14px;");
 
@@ -195,7 +190,6 @@ public class BookingScreenController extends BaseController {
         String suggestion = suggestionBuilder.toString();
         lblSuggestion.setText(suggestion);
 
-        // Ensure suggestion label has the desired style
         lblSuggestion.setStyle("-fx-text-fill: #b491c8; -fx-background-color: rgba(180, 145, 200, 0.2); -fx-background-radius: 5px; -fx-padding: 10px;");
 
         // Set first recommended room type as default if nothing is selected

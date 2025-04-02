@@ -22,7 +22,7 @@ public abstract class BaseController implements Initializable {
 
     // Common properties for all controllers
     protected Admin currentAdmin;
-    protected Label lblError; // Optional error label in the UI
+    protected Label lblError;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {

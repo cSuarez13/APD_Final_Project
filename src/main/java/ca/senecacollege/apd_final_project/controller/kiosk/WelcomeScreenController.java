@@ -69,11 +69,9 @@ public class WelcomeScreenController extends BaseController {
             // Create new scene with calculated dimensions
             Scene bookingScene = new Scene(bookingRoot, targetWidth, targetHeight);
 
-            // Apply both stylesheets - order matters
             bookingScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
             bookingScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_KIOSK)).toExternalForm());
 
-            // Calculate center position
             double[] centerPos = ScreenSizeManager.centerStageOnScreen(targetWidth, targetHeight);
 
             // Apply position and scene

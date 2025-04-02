@@ -32,7 +32,6 @@ public class ReservationDAO {
             stmt.setDate(3, java.sql.Date.valueOf(reservation.getCheckInDate()));
             stmt.setDate(4, java.sql.Date.valueOf(reservation.getCheckOutDate()));
             stmt.setInt(5, reservation.getNumberOfGuests());
-            // Use the enum's display name or name as a string
             stmt.setString(6, reservation.getStatus().getDisplayName());
 
             int affectedRows = stmt.executeUpdate();
@@ -281,7 +280,6 @@ public class ReservationDAO {
             stmt.setDate(3, java.sql.Date.valueOf(reservation.getCheckInDate()));
             stmt.setDate(4, java.sql.Date.valueOf(reservation.getCheckOutDate()));
             stmt.setInt(5, reservation.getNumberOfGuests());
-            // Use the enum's display name or name as a string
             stmt.setString(6, reservation.getStatus().getDisplayName());
             stmt.setInt(7, reservation.getReservationID());
 
@@ -313,7 +311,6 @@ public class ReservationDAO {
         reservation.setCheckOutDate(rs.getDate("check_out_date").toLocalDate());
         reservation.setNumberOfGuests(rs.getInt("number_of_guests"));
 
-        // Convert string to ReservationStatus enum
         String statusStr = rs.getString("status");
         reservation.setStatus(ReservationStatus.fromDisplayName(statusStr));
 

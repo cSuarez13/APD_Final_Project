@@ -55,128 +55,6 @@ public class FeedbackDAO {
     }
 
     /**
-     * Find feedback by ID
-     *
-     * @param feedbackId The feedback ID
-     * @return The feedback, or null if not found
-     * @throws DatabaseException If there's an error retrieving the feedback
-     */
-    public Feedback findById(int feedbackId) throws DatabaseException {
-        String sql = "SELECT * FROM feedback WHERE feedback_id = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, feedbackId);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapResultSetToFeedback(rs);
-                } else {
-                    return null;
-                }
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while finding feedback by ID", e);
-            throw new DatabaseException("Error finding feedback: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Find feedback by guest ID
-     *
-     * @param guestId The guest ID
-     * @return List of feedback from this guest
-     * @throws DatabaseException If there's an error retrieving the feedback
-     */
-    public List<Feedback> findByGuest(int guestId) throws DatabaseException {
-        String sql = "SELECT * FROM feedback WHERE guest_id = ? ORDER BY submission_date DESC";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, guestId);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                List<Feedback> feedbackList = new ArrayList<>();
-
-                while (rs.next()) {
-                    feedbackList.add(mapResultSetToFeedback(rs));
-                }
-
-                return feedbackList;
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while finding feedback by guest", e);
-            throw new DatabaseException("Error finding feedback: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Find feedback by reservation ID
-     *
-     * @param reservationId The reservation ID
-     * @return List of feedback for this reservation (usually just one)
-     * @throws DatabaseException If there's an error retrieving the feedback
-     */
-    public List<Feedback> findByReservation(int reservationId) throws DatabaseException {
-        String sql = "SELECT * FROM feedback WHERE reservation_id = ? ORDER BY submission_date DESC";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, reservationId);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                List<Feedback> feedbackList = new ArrayList<>();
-
-                while (rs.next()) {
-                    feedbackList.add(mapResultSetToFeedback(rs));
-                }
-
-                return feedbackList;
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while finding feedback by reservation", e);
-            throw new DatabaseException("Error finding feedback: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Find feedback by rating
-     *
-     * @param rating The rating (1-5)
-     * @return List of feedback with this rating
-     * @throws DatabaseException If there's an error retrieving the feedback
-     */
-    public List<Feedback> findByRating(int rating) throws DatabaseException {
-        String sql = "SELECT * FROM feedback WHERE rating = ? ORDER BY submission_date DESC";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, rating);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                List<Feedback> feedbackList = new ArrayList<>();
-
-                while (rs.next()) {
-                    feedbackList.add(mapResultSetToFeedback(rs));
-                }
-
-                return feedbackList;
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while finding feedback by rating", e);
-            throw new DatabaseException("Error finding feedback: " + e.getMessage(), e);
-        }
-    }
-
-    /**
      * Find feedback by date range
      *
      * @param startDate The start date
@@ -210,33 +88,6 @@ public class FeedbackDAO {
     }
 
     /**
-     * Get all feedback
-     *
-     * @return List of all feedback
-     * @throws DatabaseException If there's an error retrieving the feedback
-     */
-    public List<Feedback> findAll() throws DatabaseException {
-        String sql = "SELECT * FROM feedback ORDER BY submission_date DESC";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            List<Feedback> feedbackList = new ArrayList<>();
-
-            while (rs.next()) {
-                feedbackList.add(mapResultSetToFeedback(rs));
-            }
-
-            return feedbackList;
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while retrieving all feedback", e);
-            throw new DatabaseException("Error retrieving feedback: " + e.getMessage(), e);
-        }
-    }
-
-    /**
      * Update feedback
      *
      * @param feedback The feedback to update
@@ -261,32 +112,6 @@ public class FeedbackDAO {
         } catch (SQLException e) {
             LoggingManager.logException("Database error while updating feedback", e);
             throw new DatabaseException("Error updating feedback: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Delete feedback
-     *
-     * @param feedbackId The feedback ID to delete
-     * @throws DatabaseException If there's an error deleting the feedback
-     */
-    public void delete(int feedbackId) throws DatabaseException {
-        String sql = "DELETE FROM feedback WHERE feedback_id = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, feedbackId);
-
-            int affectedRows = stmt.executeUpdate();
-
-            if (affectedRows == 0) {
-                throw new DatabaseException("Deleting feedback failed, no rows affected.");
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while deleting feedback", e);
-            throw new DatabaseException("Error deleting feedback: " + e.getMessage(), e);
         }
     }
 
@@ -316,62 +141,6 @@ public class FeedbackDAO {
         } catch (SQLException e) {
             LoggingManager.logException("Database error while checking if feedback exists", e);
             throw new DatabaseException("Error checking for feedback: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Get average rating
-     *
-     * @return The average rating across all feedback
-     * @throws DatabaseException If there's an error calculating the average
-     */
-    public double getAverageRating() throws DatabaseException {
-        String sql = "SELECT AVG(rating) FROM feedback";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            if (rs.next()) {
-                return rs.getDouble(1);
-            } else {
-                return 0;
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while calculating average rating", e);
-            throw new DatabaseException("Error calculating average rating: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Get average rating for a date range
-     *
-     * @param startDate The start date
-     * @param endDate The end date
-     * @return The average rating for the date range
-     * @throws DatabaseException If there's an error calculating the average
-     */
-    public double getAverageRatingByDateRange(LocalDate startDate, LocalDate endDate) throws DatabaseException {
-        String sql = "SELECT AVG(rating) FROM feedback WHERE DATE(submission_date) BETWEEN ? AND ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setDate(1, java.sql.Date.valueOf(startDate));
-            stmt.setDate(2, java.sql.Date.valueOf(endDate));
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getDouble(1);
-                } else {
-                    return 0;
-                }
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while calculating average rating for date range", e);
-            throw new DatabaseException("Error calculating average rating: " + e.getMessage(), e);
         }
     }
 

@@ -70,95 +70,6 @@ public class RoomDAO {
     }
 
     /**
-     * Find all available rooms
-     *
-     * @return List of available rooms
-     * @throws DatabaseException If there's an error retrieving rooms
-     */
-    public List<Room> findAllAvailable() throws DatabaseException {
-        String sql = "SELECT * FROM rooms WHERE is_available = TRUE ORDER BY room_number";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            List<Room> rooms = new ArrayList<>();
-
-            while (rs.next()) {
-                rooms.add(mapResultSetToRoom(rs));
-            }
-
-            return rooms;
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while retrieving available rooms", e);
-            throw new DatabaseException("Error retrieving available rooms: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Find rooms by type
-     *
-     * @param roomType The room type
-     * @return List of rooms of the specified type
-     * @throws DatabaseException If there's an error retrieving rooms
-     */
-    public List<Room> findByType(RoomType roomType) throws DatabaseException {
-        String sql = "SELECT * FROM rooms WHERE room_type_id = ? ORDER BY room_number";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, getRoomTypeId(roomType));
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                List<Room> rooms = new ArrayList<>();
-
-                while (rs.next()) {
-                    rooms.add(mapResultSetToRoom(rs));
-                }
-
-                return rooms;
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while finding rooms by type", e);
-            throw new DatabaseException("Error finding rooms: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Find available rooms by type
-     *
-     * @param roomType The room type
-     * @return List of available rooms of the specified type
-     * @throws DatabaseException If there's an error retrieving rooms
-     */
-    public List<Room> findAvailableByType(RoomType roomType) throws DatabaseException {
-        String sql = "SELECT * FROM rooms WHERE room_type_id = ? AND is_available = TRUE ORDER BY room_number";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, getRoomTypeId(roomType));
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                List<Room> rooms = new ArrayList<>();
-
-                while (rs.next()) {
-                    rooms.add(mapResultSetToRoom(rs));
-                }
-
-                return rooms;
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while finding available rooms by type", e);
-            throw new DatabaseException("Error finding available rooms: " + e.getMessage(), e);
-        }
-    }
-
-    /**
      * Check if a room type is available for the specified date range
      *
      * @param roomType The room type
@@ -184,10 +95,8 @@ public class RoomDAO {
                     // No rooms of this type exist at all
                     LoggingManager.logSystemInfo("No rooms of type " + roomType + " exist in the database");
 
-                    // Create some rooms of this type to solve the problem
                     createDefaultRooms(roomType);
 
-                    // Return true to allow booking to proceed
                     return true;
                 }
             }
@@ -195,45 +104,7 @@ public class RoomDAO {
             LoggingManager.logException("Error checking if rooms exist", e);
         }
 
-        // Simplified query for development - assume rooms are available
         return true;
-
-    /* Original SQL query - use this in production
-    String sql = "SELECT COUNT(*) FROM rooms r WHERE r.room_type_id = ? " +
-            "AND r.room_id NOT IN (" +
-            "SELECT res.room_id FROM reservations res " +
-            "WHERE res.status IN ('PENDING', 'CONFIRMED', 'CHECKED_IN') " +
-            "AND ((res.check_in_date BETWEEN ? AND ?) " +
-            "OR (res.check_out_date BETWEEN ? AND ?) " +
-            "OR (res.check_in_date <= ? AND res.check_out_date >= ?)))";
-
-    try (Connection conn = DatabaseConnection.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-        stmt.setInt(1, getRoomTypeId(roomType));
-        stmt.setDate(2, java.sql.Date.valueOf(checkInDate));
-        stmt.setDate(3, java.sql.Date.valueOf(checkOutDate));
-        stmt.setDate(4, java.sql.Date.valueOf(checkInDate));
-        stmt.setDate(5, java.sql.Date.valueOf(checkOutDate));
-        stmt.setDate(6, java.sql.Date.valueOf(checkInDate));
-        stmt.setDate(7, java.sql.Date.valueOf(checkOutDate));
-
-        try (ResultSet rs = stmt.executeQuery()) {
-            if (rs.next()) {
-                boolean available = rs.getInt(1) > 0;
-                LoggingManager.logSystemInfo("Room type " + roomType +
-                    " available: " + available + " (" + rs.getInt(1) + " rooms found)");
-                return available;
-            } else {
-                return false;
-            }
-        }
-
-    } catch (SQLException e) {
-        LoggingManager.logException("Database error while checking room type availability", e);
-        throw new DatabaseException("Error checking room type availability: " + e.getMessage(), e);
-    }
-    */
     }
 
     /**
@@ -322,8 +193,8 @@ public class RoomDAO {
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setInt(1, getRoomTypeId(room.getRoomType()));
-            stmt.setString(2, String.valueOf(room.getRoomID())); // Using room ID as room number for simplicity
-            stmt.setInt(3, 1); // Assuming floor 1 for simplicity
+            stmt.setString(2, String.valueOf(room.getRoomID()));
+            stmt.setInt(3, 1);
             stmt.setDouble(4, room.getPrice());
             stmt.setBoolean(5, room.isAvailable());
 
@@ -407,7 +278,6 @@ public class RoomDAO {
             case DOUBLE -> 2;
             case DELUXE -> 3;
             case PENT_HOUSE -> 4;
-            // Default to SINGLE
         };
     }
 
@@ -419,11 +289,10 @@ public class RoomDAO {
      */
     private RoomType getRoomTypeById(int roomTypeId) {
         return switch (roomTypeId) {
-            case 1 -> RoomType.SINGLE;
             case 2 -> RoomType.DOUBLE;
             case 3 -> RoomType.DELUXE;
             case 4 -> RoomType.PENT_HOUSE;
-            default -> RoomType.SINGLE; // Default to SINGLE
+            default -> RoomType.SINGLE;
         };
     }
 

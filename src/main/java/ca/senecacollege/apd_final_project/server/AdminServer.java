@@ -59,7 +59,6 @@ public class AdminServer {
                 LoggingManager.logException("Error accepting client connection", e);
                 throw e;
             }
-            // Otherwise, the server was stopped, which is expected
         } finally {
             stop();
         }

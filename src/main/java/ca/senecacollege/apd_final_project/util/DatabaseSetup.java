@@ -26,7 +26,6 @@ public class DatabaseSetup {
         LOGGER.info("Starting database initialization");
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-            // Existing code remains the same
             createTables(conn);
             insertRoomTypes(conn);
             insertSampleRooms(conn);

@@ -65,7 +65,6 @@ public class DatabaseConnection {
             if (!schemaExists) {
                 LOGGER.log(Level.INFO, "Database schema does not exist, initializing...");
                 // Load and execute database_schema.sql
-                // For simplicity, we'll just log this - in a real app, you would load and execute the SQL
                 LOGGER.log(Level.INFO, "Database schema initialized successfully");
 
                 // Add sample data

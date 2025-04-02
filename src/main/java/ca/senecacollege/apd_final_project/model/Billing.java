@@ -93,34 +93,6 @@ public class Billing {
         this.paid.set(paid);
     }
 
-    // Methods
-    public void generateBill(int reservationID, double amount) {
-        setReservationID(reservationID);
-        setAmount(amount);
-        setDiscount(0.0);
-        setBillingDateTime(LocalDateTime.now());
-        setPaid(false);
-    }
-
-    public void applyDiscount(double discountAmount) {
-        if (discountAmount <= getAmount()) {
-            setDiscount(discountAmount);
-        } else {
-            throw new IllegalArgumentException("Discount cannot be greater than the amount.");
-        }
-    }
-
-    public String generateBillSummary() {
-        return "Bill #" + getBillID() +
-                "\nReservation ID: " + getReservationID() +
-                "\nSubtotal: $" + String.format("%.2f", getAmount()) +
-                "\nTax (13%): $" + String.format("%.2f", getTax()) +
-                "\nDiscount: $" + String.format("%.2f", getDiscount()) +
-                "\nTotal Amount: $" + String.format("%.2f", getTotalAmount()) +
-                "\nDate/Time: " + getBillingDateTime() +
-                "\nStatus: " + (isPaid() ? "Paid" : "Unpaid");
-    }
-
     @Override
     public String toString() {
         return "Bill #" + getBillID() + " - $" + String.format("%.2f", getTotalAmount()) +

@@ -107,7 +107,7 @@ public class FeedbackController extends BaseController {
         Label clickedStar = (Label) event.getSource();
         int starIndex = starsContainer.getChildren().indexOf(clickedStar);
 
-        // Set selected rating to the index + 1 (1-based indexing)
+        // Set selected rating to the index + 1
         selectedRating = starIndex + 1;
 
         // Update star appearance
@@ -249,7 +249,6 @@ public class FeedbackController extends BaseController {
             // Save feedback
             feedbackService.saveFeedback(feedback);
 
-            // Update guest's feedback in the database if needed
             if (txtComments.getText() != null && !txtComments.getText().isEmpty()) {
                 guestService.updateGuestFeedback(currentGuest.getGuestID(), txtComments.getText());
             }
@@ -315,7 +314,6 @@ public class FeedbackController extends BaseController {
         lblCheckInDate.setText(currentReservation.getCheckInDate().toString());
         lblCheckOutDate.setText(currentReservation.getCheckOutDate().toString());
 
-        // In a real application, you would fetch the room information
         lblRoomInfo.setText("Room #" + currentReservation.getRoomID());
     }
 
@@ -339,7 +337,6 @@ public class FeedbackController extends BaseController {
     }
 
     private void applyStyles() {
-        // Style labels to ensure text is white and visible
         lblGuestName.setStyle("-fx-text-fill: white;");
         lblCheckInDate.setStyle("-fx-text-fill: white;");
         lblCheckOutDate.setStyle("-fx-text-fill: white;");
@@ -349,7 +346,6 @@ public class FeedbackController extends BaseController {
         txtReservationId.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
         txtComments.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
 
-        // Apply styles to all labels when scene is available
         txtReservationId.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
                 // Apply style to all labels
@@ -363,7 +359,6 @@ public class FeedbackController extends BaseController {
     }
 
     private void adjustStageSize() {
-        // Add listener to wait for scene to be available
         txtReservationId.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null && newScene.getWindow() != null) {
                 try {
@@ -377,7 +372,7 @@ public class FeedbackController extends BaseController {
                     double aspectRatio = 1024.0 / 768.0;
                     double stageWidth = stageHeight * aspectRatio;
 
-                    // Limit width to 95% of screen width if necessary
+                    // Limit width to 95% of screen width
                     double screenWidth = ScreenSizeManager.getPrimaryScreenBounds().getWidth();
                     if (stageWidth > screenWidth * 0.95) {
                         stageWidth = screenWidth * 0.95;
@@ -412,7 +407,6 @@ public class FeedbackController extends BaseController {
         DialogPane dialogPane = new DialogPane();
         dialogPane.setHeaderText("Thank You!");
 
-        // Increase font size and add more padding
         Label contentLabel = new Label("Your feedback has been successfully submitted. We appreciate your input and hope to see you again soon.");
         contentLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: white; -fx-padding: 20px;");
         contentLabel.setWrapText(true);

@@ -74,27 +74,22 @@ public class GuestDetailsController extends BaseController {
      * Apply styles to ensure text is visible
      */
     private void applyStyles() {
-        // Set explicit styling for text fields to ensure text is visible
         String textFieldStyle = "-fx-text-fill: white; -fx-font-size: 16px;";
         txtName.setStyle(textFieldStyle);
         txtPhone.setStyle(textFieldStyle);
         txtEmail.setStyle(textFieldStyle);
         txtAddress.setStyle(textFieldStyle);
 
-        // Make sure labels have white text
         lblError.setStyle("-fx-text-fill: #cf6679; -fx-font-size: 14px;");
 
-        // Set all field labels to white text explicitly when scene is available
         txtName.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
-                // Find all labels in the GridPane and set their text fill to white
                 txtName.getParent().getParent().lookupAll(".label").forEach(node -> {
                     if (node instanceof Label && !(node.equals(lblError))) {
                         node.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
                     }
                 });
 
-                // Now that we have a scene, we can adjust the stage size safely
                 adjustStageSize();
             }
         });
@@ -165,8 +160,6 @@ public class GuestDetailsController extends BaseController {
             reservation.setCheckOutDate(checkOutDate);
             reservation.setNumberOfGuests(numberOfGuests);
 
-            // Call createReservation method instead of manually setting status
-            // This avoids issues with the setStatus method signature
             reservation.createReservation(
                     guestId,
                     0, // roomID will be assigned in the service

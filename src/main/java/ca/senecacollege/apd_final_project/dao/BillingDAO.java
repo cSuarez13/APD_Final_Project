@@ -60,35 +60,6 @@ public class BillingDAO {
     }
 
     /**
-     * Find a billing by ID
-     *
-     * @param billId The billing ID
-     * @return The billing, or null if not found
-     * @throws DatabaseException If there's an error retrieving the billing
-     */
-    public Billing findById(int billId) throws DatabaseException {
-        String sql = "SELECT * FROM bills WHERE bill_id = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, billId);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapResultSetToBilling(rs);
-                } else {
-                    return null;
-                }
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while finding billing by ID", e);
-            throw new DatabaseException("Error finding billing: " + e.getMessage(), e);
-        }
-    }
-
-    /**
      * Update an existing billing
      *
      * @param billing The billing to update
@@ -123,94 +94,6 @@ public class BillingDAO {
     }
 
     /**
-     * Delete a billing
-     *
-     * @param billId The billing ID
-     * @throws DatabaseException If there's an error deleting the billing
-     */
-    public void delete(int billId) throws DatabaseException {
-        String sql = "DELETE FROM bills WHERE bill_id = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, billId);
-
-            int affectedRows = stmt.executeUpdate();
-
-            if (affectedRows == 0) {
-                throw new DatabaseException("Deleting billing failed, no rows affected.");
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while deleting billing", e);
-            throw new DatabaseException("Error deleting billing: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Find billings by reservation ID
-     *
-     * @param reservationId The reservation ID
-     * @return List of billings for the reservation
-     * @throws DatabaseException If there's an error retrieving billings
-     */
-    public List<Billing> findByReservationId(int reservationId) throws DatabaseException {
-        String sql = "SELECT * FROM bills WHERE reservation_id = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, reservationId);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                List<Billing> billings = new ArrayList<>();
-
-                while (rs.next()) {
-                    billings.add(mapResultSetToBilling(rs));
-                }
-
-                return billings;
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while finding billings by reservation ID", e);
-            throw new DatabaseException("Error finding billings: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Find billings by paid status
-     *
-     * @param isPaid The paid status to filter by
-     * @return List of billings with the specified paid status
-     * @throws DatabaseException If there's an error retrieving billings
-     */
-    public List<Billing> findByPaidStatus(boolean isPaid) throws DatabaseException {
-        String sql = "SELECT * FROM bills WHERE is_paid = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setBoolean(1, isPaid);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                List<Billing> billings = new ArrayList<>();
-
-                while (rs.next()) {
-                    billings.add(mapResultSetToBilling(rs));
-                }
-
-                return billings;
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while finding billings by paid status", e);
-            throw new DatabaseException("Error finding billings: " + e.getMessage(), e);
-        }
-    }
-
-    /**
      * Find billings within a date range
      *
      * @param startDateTime Start date/time
@@ -240,39 +123,6 @@ public class BillingDAO {
         } catch (SQLException e) {
             LoggingManager.logException("Database error while finding billings by date range", e);
             throw new DatabaseException("Error finding billings: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Find paid billings within a date range
-     *
-     * @param startDateTime Start date/time
-     * @param endDateTime End date/time
-     * @return List of paid billings within the date range
-     * @throws DatabaseException If there's an error retrieving billings
-     */
-    public List<Billing> findPaidByDateRange(LocalDateTime startDateTime, LocalDateTime endDateTime) throws DatabaseException {
-        String sql = "SELECT * FROM bills WHERE billing_date BETWEEN ? AND ? AND is_paid = TRUE";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setTimestamp(1, Timestamp.valueOf(startDateTime));
-            stmt.setTimestamp(2, Timestamp.valueOf(endDateTime));
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                List<Billing> billings = new ArrayList<>();
-
-                while (rs.next()) {
-                    billings.add(mapResultSetToBilling(rs));
-                }
-
-                return billings;
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while finding paid billings by date range", e);
-            throw new DatabaseException("Error finding paid billings: " + e.getMessage(), e);
         }
     }
 
