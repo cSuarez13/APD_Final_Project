@@ -148,29 +148,39 @@ public class AdminDashboardController extends BaseController {
         logAdminActivity("Logged out");
 
         try {
-            // Load the login screen
+            // Get the current stage and close it
+            Stage currentStage = getStage();
+            if (currentStage != null) {
+                currentStage.close();
+            }
+
+            // Load the admin login screen
             FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_LOGIN));
-            Parent loginRoot = loader.load();
+            Parent adminLoginRoot = loader.load();
 
-            // Get the current stage
-            Stage stage = getStage();
+            // Create a new stage for admin login
+            Stage adminLoginStage = new Stage();
+            Scene adminLoginScene = new Scene(adminLoginRoot);
 
-            // Create new scene
-            Scene loginScene = new Scene(loginRoot);
-            loginScene.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
+            // Apply the admin CSS
+            adminLoginScene.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
+            adminLoginScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
 
-            // Calculate and set stage size
+            // Configure stage size and position
             double stageWidth = ScreenSizeManager.calculateStageWidth(500);
-            double stageHeight = ScreenSizeManager.calculateStageHeight(400);
-            double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
+            double stageHeight = ScreenSizeManager.calculateStageHeight(600);
+            double[] stagePosition = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
 
-            // Set the new scene
-            stage.setScene(loginScene);
-            stage.setWidth(stageWidth);
-            stage.setHeight(stageHeight);
-            stage.setX(centerPos[0]);
-            stage.setY(centerPos[1]);
-            stage.setMaximized(false);
+            // Set stage properties
+            adminLoginStage.setWidth(stageWidth);
+            adminLoginStage.setHeight(stageHeight);
+            adminLoginStage.setX(stagePosition[0]);
+            adminLoginStage.setY(stagePosition[1]);
+            adminLoginStage.setTitle("Admin Login");
+            adminLoginStage.setScene(adminLoginScene);
+            adminLoginStage.show();
+
+            LoggingManager.logSystemInfo("Admin login interface opened");
 
         } catch (IOException e) {
             LoggingManager.logException("Error navigating to login screen", e);

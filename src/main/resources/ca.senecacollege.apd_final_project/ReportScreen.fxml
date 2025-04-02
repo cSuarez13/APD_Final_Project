@@ -122,8 +122,6 @@
             <children>
                 <Button fx:id="btnExportReport" disable="true" mnemonicParsing="false" onAction="#handleExportReport"
                         styleClass="button-secondary" text="Export Report"/>
-                <Button fx:id="btnClose" cancelButton="true" mnemonicParsing="false" onAction="#handleCloseButton"
-                        styleClass="button-secondary" text="Close"/>
             </children>
         </HBox>
     </bottom>

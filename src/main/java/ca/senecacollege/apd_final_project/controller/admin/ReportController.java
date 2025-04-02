@@ -330,12 +330,6 @@ public class ReportController extends BaseController {
         }
     }
 
-    @FXML
-    private void handleCloseButton(ActionEvent event) {
-        // Close the window
-        closeWindow();
-    }
-
     /**
      * Generate the occupancy report
      */
