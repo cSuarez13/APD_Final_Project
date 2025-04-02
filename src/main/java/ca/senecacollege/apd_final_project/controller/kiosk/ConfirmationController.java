@@ -7,20 +7,19 @@ import ca.senecacollege.apd_final_project.model.Room;
 import ca.senecacollege.apd_final_project.service.*;
 import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.ScreenSizeManager;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class ConfirmationController extends BaseController {
@@ -46,8 +45,6 @@ public class ConfirmationController extends BaseController {
     @FXML
     private Label lblTotal;
     @FXML
-    private Button btnPrint;
-    @FXML
     private Button btnDone;
 
     private int reservationId;
@@ -59,7 +56,7 @@ public class ConfirmationController extends BaseController {
     private GuestService guestService;
     private RoomService roomService;
 
-    private DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
+    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -99,9 +96,9 @@ public class ConfirmationController extends BaseController {
             if (newScene != null) {
                 // Find all labels in the scene and ensure white text
                 newScene.getRoot().lookupAll(".label").forEach(node -> {
-                    if (node instanceof Label && !((Label) node).getStyleClass().contains("label-header")
-                            && !((Label) node).getStyleClass().contains("label-total")) {
-                        ((Label) node).setStyle("-fx-text-fill: white;");
+                    if (node instanceof Label && !node.getStyleClass().contains("label-header")
+                            && !node.getStyleClass().contains("label-total")) {
+                        node.setStyle("-fx-text-fill: white;");
                     }
                 });
             }
@@ -194,7 +191,7 @@ public class ConfirmationController extends BaseController {
     }
 
     @FXML
-    private void handlePrintButton(ActionEvent event) {
+    private void handlePrintButton() {
         try {
             logSystemActivity("Print confirmation requested for reservation ID: " + reservationId);
 
@@ -209,7 +206,7 @@ public class ConfirmationController extends BaseController {
     }
 
     @FXML
-    private void handleDoneButton(ActionEvent event) {
+    private void handleDoneButton() {
         try {
             // Load the welcome screen to restart the process
             FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_WELCOME));
@@ -220,8 +217,8 @@ public class ConfirmationController extends BaseController {
 
             // Create new scene
             Scene welcomeScene = new Scene(welcomeRoot);
-            welcomeScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
-            welcomeScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
+            welcomeScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
+            welcomeScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_KIOSK)).toExternalForm());
 
             // Set the scene dimensions using ScreenSizeManager
             double stageWidth = ScreenSizeManager.calculateStageWidth(1024);

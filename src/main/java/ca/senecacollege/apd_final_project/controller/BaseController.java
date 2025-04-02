@@ -11,10 +11,11 @@ import javafx.scene.control.Label;
 import javafx.stage.Stage;
 
 import java.net.URL;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 /**
- * Base controller class that provides common functionality for all controllers
+ * Base controller class that provides common functionality
  * Controllers should extend this class to inherit common methods and properties
  */
 public abstract class BaseController implements Initializable {
@@ -83,7 +84,7 @@ public abstract class BaseController implements Initializable {
 
         // Apply CSS to the dialog
         DialogPane dialogPane = alert.getDialogPane();
-        dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
+        dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_ADMIN)).toExternalForm());
 
         alert.showAndWait();
     }
@@ -124,7 +125,7 @@ public abstract class BaseController implements Initializable {
      */
     protected boolean validateFields() {
         // Default implementation - override in subclasses
-        return true;
+        return false;
     }
 
     /**

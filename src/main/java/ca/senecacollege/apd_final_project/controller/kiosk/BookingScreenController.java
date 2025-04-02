@@ -5,11 +5,9 @@ import ca.senecacollege.apd_final_project.exception.ValidationException;
 import ca.senecacollege.apd_final_project.model.RoomType;
 import ca.senecacollege.apd_final_project.service.RoomService;
 import ca.senecacollege.apd_final_project.service.ServiceLocator;
-import ca.senecacollege.apd_final_project.service.ValidationService;
 import ca.senecacollege.apd_final_project.service.DialogService;
 import ca.senecacollege.apd_final_project.util.*;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -25,6 +23,7 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class BookingScreenController extends BaseController {
@@ -51,28 +50,21 @@ public class BookingScreenController extends BaseController {
     private Button btnNext;
 
     @FXML
-    private Button btnBack;
-
-    @FXML
     private Button btnRules;
 
     private RoomService roomService;
-    private ValidationService validationService;
-    private RoomType suggestedRoomType;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         // Get services from ServiceLocator
         roomService = ServiceLocator.getService(RoomService.class);
-        validationService = ServiceLocator.getService(ValidationService.class);
 
         // Apply styles directly to the components
         mainPane.setStyle("-fx-background-color: #121212;");
 
         // Force text color in all form labels to be white
         for (javafx.scene.Node node : mainPane.lookupAll(".label")) {
-            if (node instanceof Label) {
-                Label label = (Label)node;
+            if (node instanceof Label label) {
                 label.setStyle("-fx-text-fill: white;");
             }
         }
@@ -132,7 +124,7 @@ public class BookingScreenController extends BaseController {
 
         // Setup room type combo box with custom string converter
         cmbRoomType.setItems(FXCollections.observableArrayList(RoomType.values()));
-        cmbRoomType.setConverter(new StringConverter<RoomType>() {
+        cmbRoomType.setConverter(new StringConverter<>() {
             @Override
             public String toString(RoomType roomType) {
                 if (roomType != null) {
@@ -172,34 +164,27 @@ public class BookingScreenController extends BaseController {
         if (guestCount <= Constants.MAX_GUESTS_SINGLE_ROOM) {
             // Single room is sufficient
             recommendedRooms.add(RoomType.SINGLE);
-            suggestedRoomType = RoomType.SINGLE;
             suggestionBuilder.append("a Single Room.");
         } else if (guestCount <= Constants.MAX_GUESTS_DOUBLE_ROOM) {
             // Double room is sufficient
             recommendedRooms.add(RoomType.DOUBLE);
-            suggestedRoomType = RoomType.DOUBLE;
             suggestionBuilder.append("a Double Room.");
         } else {
             // Multiple rooms needed
             int doubleRooms = guestCount / Constants.MAX_GUESTS_DOUBLE_ROOM;
             int remainingGuests = guestCount % Constants.MAX_GUESTS_DOUBLE_ROOM;
 
-            if (doubleRooms > 0) {
-                suggestionBuilder.append(doubleRooms)
-                        .append(" Double Room")
-                        .append(doubleRooms > 1 ? "s" : "");
+            suggestionBuilder.append(doubleRooms)
+                    .append(" Double Room")
+                    .append(doubleRooms > 1 ? "s" : "");
 
-                if (remainingGuests > 0) {
-                    suggestionBuilder.append(" and ");
-                }
+            if (remainingGuests > 0) {
+                suggestionBuilder.append(" and ");
             }
 
             if (remainingGuests > 0) {
                 String roomType = (remainingGuests <= Constants.MAX_GUESTS_SINGLE_ROOM ? "Single" : "Double");
                 suggestionBuilder.append("1 ").append(roomType).append(" Room");
-                suggestedRoomType = (roomType.equals("Single") ? RoomType.SINGLE : RoomType.DOUBLE);
-            } else {
-                suggestedRoomType = RoomType.DOUBLE;
             }
 
             suggestionBuilder.append(".");
@@ -219,9 +204,9 @@ public class BookingScreenController extends BaseController {
     }
 
     @FXML
-    private void handleNextButton(ActionEvent event) {
+    private void handleNextButton() {
         // Validate inputs
-        if (!validateFields()) {
+        if (validateFields()) {
             return;
         }
 
@@ -244,8 +229,8 @@ public class BookingScreenController extends BaseController {
 
             // Create new scene
             Scene guestDetailsScene = new Scene(guestDetailsRoot);
-            guestDetailsScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
-            guestDetailsScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
+            guestDetailsScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
+            guestDetailsScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_KIOSK)).toExternalForm());
 
             // Set the scene
             stage.setScene(guestDetailsScene);
@@ -272,7 +257,7 @@ public class BookingScreenController extends BaseController {
     }
 
     @FXML
-    private void handleBackButton(ActionEvent event) {
+    private void handleBackButton() {
         try {
             // Load the kiosk welcome screen
             FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_WELCOME));
@@ -283,8 +268,8 @@ public class BookingScreenController extends BaseController {
 
             // Create new scene
             Scene welcomeScene = new Scene(welcomeRoot);
-            welcomeScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
-            welcomeScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
+            welcomeScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
+            welcomeScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_KIOSK)).toExternalForm());
 
             // Set the scene
             stage.setScene(welcomeScene);
@@ -311,7 +296,7 @@ public class BookingScreenController extends BaseController {
     }
 
     @FXML
-    private void handleRulesButton(ActionEvent event) {
+    private void handleRulesButton() {
         RulesDialogUtility.showRulesDialog(btnRules);
     }
 
@@ -371,12 +356,12 @@ public class BookingScreenController extends BaseController {
             }
 
             // All validations passed
-            return true;
+            return false;
 
         } catch (ValidationException e) {
             // Show validation error using DialogService
             DialogService.showWarning(getStage(), "Validation Error", e.getMessage());
-            return false;
+            return true;
         }
     }
 

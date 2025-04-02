@@ -12,7 +12,6 @@ import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 import ca.senecacollege.apd_final_project.util.ScreenSizeManager;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -26,15 +25,13 @@ import javafx.scene.Node;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class FeedbackController extends BaseController {
 
     @FXML
     private TextField txtReservationId;
-
-    @FXML
-    private Button btnVerify;
 
     @FXML
     private Label lblGuestName;
@@ -56,12 +53,6 @@ public class FeedbackController extends BaseController {
 
     @FXML
     private Button btnSubmit;
-
-    @FXML
-    private Button btnCancel;
-
-    @FXML
-    private Label lblError;
 
     private FeedbackService feedbackService;
     private GuestService guestService;
@@ -106,9 +97,7 @@ public class FeedbackController extends BaseController {
                 highlightStarsUpTo(starIndex + 1);
             });
 
-            starLabel.setOnMouseExited(event -> {
-                updateStarAppearance();
-            });
+            starLabel.setOnMouseExited(event -> updateStarAppearance());
         }
     }
 
@@ -182,7 +171,7 @@ public class FeedbackController extends BaseController {
      * Handle verify reservation button action
      */
     @FXML
-    private void handleVerifyButton(ActionEvent event) {
+    private void handleVerifyButton() {
         // Clear previous data
         clearFields();
         hideError();
@@ -241,7 +230,7 @@ public class FeedbackController extends BaseController {
      * Handle submit feedback button action
      */
     @FXML
-    private void handleSubmitButton(ActionEvent event) {
+    private void handleSubmitButton() {
         if (currentReservation == null || currentGuest == null || selectedRating == 0) {
             return;
         }
@@ -282,7 +271,7 @@ public class FeedbackController extends BaseController {
      * Handle cancel button action
      */
     @FXML
-    private void handleCancelButton(ActionEvent event) {
+    private void handleCancelButton() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_MAIN));
             Parent mainRoot = loader.load();
@@ -290,7 +279,7 @@ public class FeedbackController extends BaseController {
             Stage stage = getStage();
 
             Scene mainScene = new Scene(mainRoot);
-            mainScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
+            mainScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
 
             stage.setScene(mainScene);
 
@@ -363,8 +352,8 @@ public class FeedbackController extends BaseController {
             if (newScene != null) {
                 // Apply style to all labels
                 for (Node node : newScene.getRoot().lookupAll(".label")) {
-                    if (node instanceof Label && !((Label) node).getStyleClass().contains("label-header")) {
-                        ((Label) node).setStyle("-fx-text-fill: white;");
+                    if (node instanceof Label && !node.getStyleClass().contains("label-header")) {
+                        node.setStyle("-fx-text-fill: white;");
                     }
                 }
             }
@@ -427,7 +416,7 @@ public class FeedbackController extends BaseController {
         contentLabel.setWrapText(true);
 
         dialogPane.setContent(contentLabel);
-        dialogPane.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
+        dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_KIOSK)).toExternalForm());
 
         // Apply custom styling
         dialogPane.setStyle("-fx-background-color: #2a2a2a; -fx-min-width: 400px; -fx-min-height: 200px;");
@@ -454,7 +443,7 @@ public class FeedbackController extends BaseController {
             Parent mainRoot = loader.load();
 
             Scene mainScene = new Scene(mainRoot);
-            mainScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
+            mainScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
 
             stage.setScene(mainScene);
 

@@ -4,11 +4,9 @@ import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.exception.ValidationException;
 import ca.senecacollege.apd_final_project.model.Guest;
 import ca.senecacollege.apd_final_project.model.Reservation;
-import ca.senecacollege.apd_final_project.model.ReservationStatus;
 import ca.senecacollege.apd_final_project.model.RoomType;
 import ca.senecacollege.apd_final_project.service.*;
 import ca.senecacollege.apd_final_project.util.*;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -19,6 +17,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class GuestDetailsController extends BaseController {
@@ -39,9 +38,6 @@ public class GuestDetailsController extends BaseController {
     private Label lblError;
 
     @FXML
-    private Button btnBack;
-
-    @FXML
     private Button btnNext;
 
     @FXML
@@ -56,14 +52,12 @@ public class GuestDetailsController extends BaseController {
     // Services
     private GuestService guestService;
     private ReservationService reservationService;
-    private ValidationService validationService;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         // Get services from ServiceLocator
         guestService = ServiceLocator.getService(GuestService.class);
         reservationService = ServiceLocator.getService(ReservationService.class);
-        validationService = ServiceLocator.getService(ValidationService.class);
 
         // Hide error label initially
         hideError();
@@ -95,7 +89,7 @@ public class GuestDetailsController extends BaseController {
                 // Find all labels in the GridPane and set their text fill to white
                 txtName.getParent().getParent().lookupAll(".label").forEach(node -> {
                     if (node instanceof Label && !(node.equals(lblError))) {
-                        ((Label) node).setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+                        node.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
                     }
                 });
 
@@ -146,9 +140,9 @@ public class GuestDetailsController extends BaseController {
     }
 
     @FXML
-    private void handleNextButton(ActionEvent event) {
+    private void handleNextButton() {
         // Validate inputs
-        if (!validateFields()) {
+        if (validateFields()) {
             return;
         }
 
@@ -196,8 +190,8 @@ public class GuestDetailsController extends BaseController {
 
             // Create new scene
             Scene confirmationScene = new Scene(confirmationRoot);
-            confirmationScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
-            confirmationScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
+            confirmationScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
+            confirmationScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_KIOSK)).toExternalForm());
 
             // Set the new scene
             stage.setScene(confirmationScene);
@@ -221,22 +215,19 @@ public class GuestDetailsController extends BaseController {
     }
 
     @FXML
-    private void handleBackButton(ActionEvent event) {
+    private void handleBackButton() {
         try {
             // Load the booking screen again
             FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_BOOKING));
             Parent bookingRoot = loader.load();
-
-            // Get the controller
-            BookingScreenController bookingController = loader.getController();
 
             // Get the current stage
             Stage stage = getStage();
 
             // Create new scene
             Scene bookingScene = new Scene(bookingRoot);
-            bookingScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
-            bookingScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
+            bookingScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
+            bookingScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_KIOSK)).toExternalForm());
 
             // Set the new scene
             stage.setScene(bookingScene);
@@ -260,7 +251,7 @@ public class GuestDetailsController extends BaseController {
     }
 
     @FXML
-    private void handleRulesButton(ActionEvent event) {
+    private void handleRulesButton() {
         RulesDialogUtility.showRulesDialog(btnRules);
     }
 
@@ -294,11 +285,11 @@ public class GuestDetailsController extends BaseController {
             }
 
             // All validations passed
-            return true;
+            return false;
 
         } catch (ValidationException e) {
             DialogService.showWarning(getStage(), "Validation Error", e.getMessage());
-            return false;
+            return true;
         }
     }
 

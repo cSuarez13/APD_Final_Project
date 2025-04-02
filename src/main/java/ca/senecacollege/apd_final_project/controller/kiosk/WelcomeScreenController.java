@@ -4,7 +4,6 @@ import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.service.DialogService;
 import ca.senecacollege.apd_final_project.util.*;
 import javafx.animation.FadeTransition;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
@@ -16,6 +15,7 @@ import javafx.util.Duration;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class WelcomeScreenController extends BaseController {
@@ -49,7 +49,7 @@ public class WelcomeScreenController extends BaseController {
     }
 
     @FXML
-    private void handleStartButton(ActionEvent event) {
+    private void handleStartButton() {
         try {
             LoggingManager.logSystemInfo("Opening booking interface");
 
@@ -70,8 +70,8 @@ public class WelcomeScreenController extends BaseController {
             Scene bookingScene = new Scene(bookingRoot, targetWidth, targetHeight);
 
             // Apply both stylesheets - order matters
-            bookingScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
-            bookingScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
+            bookingScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
+            bookingScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_KIOSK)).toExternalForm());
 
             // Calculate center position
             double[] centerPos = ScreenSizeManager.centerStageOnScreen(targetWidth, targetHeight);
@@ -98,7 +98,7 @@ public class WelcomeScreenController extends BaseController {
     }
 
     @FXML
-    private void handleRulesButton(ActionEvent event) {
+    private void handleRulesButton() {
         RulesDialogUtility.showRulesDialog(btnRules);
     }
 

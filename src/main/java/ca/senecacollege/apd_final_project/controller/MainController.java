@@ -4,33 +4,22 @@ import ca.senecacollege.apd_final_project.service.DialogService;
 import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 import ca.senecacollege.apd_final_project.util.ScreenSizeManager;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class MainController extends BaseController {
 
     @FXML
-    private BorderPane mainBorderPane;
-
-    @FXML
     private Button btnKiosk;
-
-    @FXML
-    private Button btnAdmin;
-
-    @FXML
-    private Hyperlink lnkFeedback;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -38,7 +27,7 @@ public class MainController extends BaseController {
     }
 
     @FXML
-    private void handleKioskButton(ActionEvent event) {
+    private void handleKioskButton() {
         try {
             LoggingManager.logSystemInfo("Opening kiosk interface");
 
@@ -51,8 +40,8 @@ public class MainController extends BaseController {
             Scene kioskScene = new Scene(kioskRoot);
 
             // Apply the kiosk CSS
-            kioskScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
-            kioskScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
+            kioskScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_KIOSK)).toExternalForm());
+            kioskScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
 
             // Configure stage size and position
             double stageWidth = ScreenSizeManager.calculateStageWidth(1024);
@@ -78,7 +67,7 @@ public class MainController extends BaseController {
     }
 
     @FXML
-    private void handleAdminButton(ActionEvent event) {
+    private void handleAdminButton() {
         try {
             LoggingManager.logSystemInfo("Opening admin login interface");
 
@@ -91,8 +80,8 @@ public class MainController extends BaseController {
             Scene adminLoginScene = new Scene(adminLoginRoot);
 
             // Apply the admin CSS
-            adminLoginScene.getStylesheets().add(getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
-            adminLoginScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
+            adminLoginScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_ADMIN)).toExternalForm());
+            adminLoginScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
 
             // Configure stage size and position
             double stageWidth = ScreenSizeManager.calculateStageWidth(500);
@@ -118,7 +107,7 @@ public class MainController extends BaseController {
     }
 
     @FXML
-    private void handleFeedbackLink(ActionEvent event) {
+    private void handleFeedbackLink() {
         try {
             // Load the feedback screen
             FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_FEEDBACK));
@@ -129,8 +118,8 @@ public class MainController extends BaseController {
 
             // Create new scene
             Scene feedbackScene = new Scene(feedbackRoot);
-            feedbackScene.getStylesheets().add(getClass().getResource(Constants.CSS_MAIN).toExternalForm());
-            feedbackScene.getStylesheets().add(getClass().getResource(Constants.CSS_KIOSK).toExternalForm());
+            feedbackScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
+            feedbackScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_KIOSK)).toExternalForm());
 
             // Set the scene
             stage.setScene(feedbackScene);
