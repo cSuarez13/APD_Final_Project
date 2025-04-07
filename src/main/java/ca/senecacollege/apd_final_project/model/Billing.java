@@ -11,35 +11,67 @@ public class Billing {
     private final IntegerProperty reservationID = new SimpleIntegerProperty(this, "reservationID");
     private final DoubleProperty amount = new SimpleDoubleProperty(this, "amount");
     private final DoubleProperty tax = new SimpleDoubleProperty(this, "tax");
-    private final DoubleProperty totalAmount = new SimpleDoubleProperty(this, "totalAmount");
     private final DoubleProperty discount = new SimpleDoubleProperty(this, "discount");
+    private final DoubleProperty totalAmount = new SimpleDoubleProperty(this, "totalAmount");
+    private final StringProperty paymentMethod = new SimpleStringProperty(this, "paymentMethod");
     private final ObjectProperty<LocalDateTime> billingDateTime = new SimpleObjectProperty<>(this, "billingDateTime");
     private final BooleanProperty paid = new SimpleBooleanProperty(this, "paid");
 
-    // List to store the itemized room charges (not stored in database, calculated on-the-fly)
     private final List<BillingItem> billingItems = new ArrayList<>();
 
-    // Tax rate constant
-    public static final double TAX_RATE = 0.13; // 13% tax
-
+    // Add constructors
     public Billing() {
         // Default constructor
-        this.tax.bind(amount.multiply(TAX_RATE));
-        this.totalAmount.bind(amount.add(tax).subtract(discount));
     }
 
-    public Billing(int billID, int reservationID, double amount, double discount,
-                   LocalDateTime billingDateTime, boolean paid) {
+    public Billing(int billID, int reservationID, double amount, double tax, double discount,
+                   double totalAmount, String paymentMethod, LocalDateTime billingDateTime, boolean paid) {
         this.billID.set(billID);
         this.reservationID.set(reservationID);
         this.amount.set(amount);
+        this.tax.set(tax);
         this.discount.set(discount);
+        this.totalAmount.set(totalAmount);
+        this.paymentMethod.set(paymentMethod);
         this.billingDateTime.set(billingDateTime);
         this.paid.set(paid);
+    }
 
-        // Bind tax and total amount calculations
-        this.tax.bind(this.amount.multiply(TAX_RATE));
-        this.totalAmount.bind(this.amount.add(this.tax).subtract(this.discount));
+    // Add getters/setters for new fields
+    public double getTax() {
+        return tax.get();
+    }
+
+    public void setTax(double tax) {
+        this.tax.set(tax);
+    }
+
+    public DoubleProperty taxProperty() {
+        return tax;
+    }
+
+    public double getTotalAmount() {
+        return totalAmount.get();
+    }
+
+    public void setTotalAmount(double totalAmount) {
+        this.totalAmount.set(totalAmount);
+    }
+
+    public DoubleProperty totalAmountProperty() {
+        return totalAmount;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod.get();
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod.set(paymentMethod);
+    }
+
+    public StringProperty paymentMethodProperty() {
+        return paymentMethod;
     }
 
     public int getBillID() {
@@ -66,14 +98,6 @@ public class Billing {
         this.amount.set(amount);
     }
 
-    public double getTax() {
-        return tax.get();
-    }
-
-    public double getTotalAmount() {
-        return totalAmount.get();
-    }
-
     public double getDiscount() {
         return discount.get();
     }
@@ -98,9 +122,6 @@ public class Billing {
         this.paid.set(paid);
     }
 
-    public List<BillingItem> getBillingItems() {
-        return billingItems;
-    }
 
     public void addBillingItem(BillingItem item) {
         billingItems.add(item);

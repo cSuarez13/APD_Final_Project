@@ -21,7 +21,9 @@ public class RoomDAO {
      * @throws DatabaseException If there's an error retrieving the room
      */
     public Room findById(int roomId) throws DatabaseException {
-        String sql = "SELECT * FROM rooms WHERE room_id = ?";
+        String sql = "SELECT r.*, rt.name, rt.base_price, rt.max_occupancy FROM rooms r " +
+                "JOIN room_types rt ON r.room_type_id = rt.room_type_id " +
+                "WHERE r.room_id = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -35,7 +37,6 @@ public class RoomDAO {
                     return null;
                 }
             }
-
         } catch (SQLException e) {
             LoggingManager.logException("Database error while finding room by ID", e);
             throw new DatabaseException("Error finding room: " + e.getMessage(), e);
@@ -317,10 +318,15 @@ public class RoomDAO {
     private Room mapResultSetToRoom(ResultSet rs) throws SQLException {
         Room room = new Room();
         room.setRoomID(rs.getInt("room_id"));
-        room.setRoomType(getRoomTypeById(rs.getInt("room_type_id")));
-        room.setNumberOfBeds(getBedsForRoomType(getRoomTypeById(rs.getInt("room_type_id"))));
+        room.setRoomNumber(rs.getString("room_number"));
+        room.setFloor(rs.getInt("floor"));
         room.setPrice(rs.getDouble("price"));
         room.setAvailable(rs.getBoolean("is_available"));
+
+        // Map room type from type_id
+        int roomTypeId = rs.getInt("room_type_id");
+        room.setRoomType(getRoomTypeById(roomTypeId));
+
         return room;
     }
 
@@ -347,23 +353,11 @@ public class RoomDAO {
      */
     private RoomType getRoomTypeById(int roomTypeId) {
         return switch (roomTypeId) {
+            case 1 -> RoomType.SINGLE;
             case 2 -> RoomType.DOUBLE;
             case 3 -> RoomType.DELUXE;
             case 4 -> RoomType.PENT_HOUSE;
             default -> RoomType.SINGLE;
-        };
-    }
-
-    /**
-     * Get the number of beds for a room type
-     *
-     * @param roomType The room type
-     * @return The number of beds
-     */
-    private int getBedsForRoomType(RoomType roomType) {
-        return switch (roomType) {
-            case SINGLE, DELUXE, PENT_HOUSE -> 1;
-            case DOUBLE -> 2;
         };
     }
 

@@ -5,7 +5,8 @@ import javafx.beans.property.*;
 public class Room {
     private final IntegerProperty roomID = new SimpleIntegerProperty(this, "roomID");
     private final ObjectProperty<RoomType> roomType = new SimpleObjectProperty<>(this, "roomType");
-    private final IntegerProperty numberOfBeds = new SimpleIntegerProperty(this, "numberOfBeds");
+    private final StringProperty roomNumber = new SimpleStringProperty(this, "roomNumber");
+    private final IntegerProperty floor = new SimpleIntegerProperty(this, "floor");
     private final DoubleProperty price = new SimpleDoubleProperty(this, "price");
     private final BooleanProperty available = new SimpleBooleanProperty(this, "available");
 
@@ -13,12 +14,38 @@ public class Room {
         // Default constructor
     }
 
-    public Room(int roomID, RoomType roomType, int numberOfBeds, double price, boolean available) {
+    public Room(int roomID, RoomType roomType, String roomNumber, int floor, double price, boolean available) {
         this.roomID.set(roomID);
         this.roomType.set(roomType);
-        this.numberOfBeds.set(numberOfBeds);
+        this.roomNumber.set(roomNumber);
+        this.floor.set(floor);
         this.price.set(price);
         this.available.set(available);
+    }
+
+    // Add getters and setters for roomNumber and floor
+    public String getRoomNumber() {
+        return roomNumber.get();
+    }
+
+    public void setRoomNumber(String roomNumber) {
+        this.roomNumber.set(roomNumber);
+    }
+
+    public StringProperty roomNumberProperty() {
+        return roomNumber;
+    }
+
+    public int getFloor() {
+        return floor.get();
+    }
+
+    public void setFloor(int floor) {
+        this.floor.set(floor);
+    }
+
+    public IntegerProperty floorProperty() {
+        return floor;
     }
 
     public int getRoomID() {
@@ -35,10 +62,6 @@ public class Room {
 
     public void setRoomType(RoomType roomType) {
         this.roomType.set(roomType);
-    }
-
-    public void setNumberOfBeds(int numberOfBeds) {
-        this.numberOfBeds.set(numberOfBeds);
     }
 
     public double getPrice() {
@@ -59,7 +82,7 @@ public class Room {
 
     @Override
     public String toString() {
-        return "Room " + getRoomID() + " - " + getRoomType().getDisplayName() +
+        return "Room " + getRoomNumber() + " - " + getRoomType().getDisplayName() +
                 " ($" + String.format("%.2f", getPrice()) + ")";
     }
 }

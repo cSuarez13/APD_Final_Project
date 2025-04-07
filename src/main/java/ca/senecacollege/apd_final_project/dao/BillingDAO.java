@@ -52,8 +52,8 @@ public class BillingDAO {
      * @throws DatabaseException If there's an error saving the billing
      */
     public int save(Billing billing) throws DatabaseException {
-        String sql = "INSERT INTO bills (reservation_id, amount, tax, discount, total_amount, billing_date, is_paid) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO bills (reservation_id, amount, tax, discount, total_amount, payment_method, billing_date, is_paid) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -63,8 +63,9 @@ public class BillingDAO {
             stmt.setDouble(3, billing.getTax());
             stmt.setDouble(4, billing.getDiscount());
             stmt.setDouble(5, billing.getTotalAmount());
-            stmt.setTimestamp(6, Timestamp.valueOf(billing.getBillingDateTime()));
-            stmt.setBoolean(7, billing.isPaid());
+            stmt.setString(6, billing.getPaymentMethod());
+            stmt.setTimestamp(7, Timestamp.valueOf(billing.getBillingDateTime()));
+            stmt.setBoolean(8, billing.isPaid());
 
             int affectedRows = stmt.executeUpdate();
 
@@ -167,10 +168,12 @@ public class BillingDAO {
         billing.setBillID(rs.getInt("bill_id"));
         billing.setReservationID(rs.getInt("reservation_id"));
         billing.setAmount(rs.getDouble("amount"));
+        billing.setTax(rs.getDouble("tax"));
         billing.setDiscount(rs.getDouble("discount"));
+        billing.setTotalAmount(rs.getDouble("total_amount"));
+        billing.setPaymentMethod(rs.getString("payment_method"));
         billing.setBillingDateTime(rs.getTimestamp("billing_date").toLocalDateTime());
         billing.setPaid(rs.getBoolean("is_paid"));
-
         return billing;
     }
 }

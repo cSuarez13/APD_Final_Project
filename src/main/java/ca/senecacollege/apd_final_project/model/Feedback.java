@@ -79,6 +79,8 @@ public class Feedback {
 
     @Override
     public String toString() {
-        return "Feedback #" + getFeedbackID() + " - Rating: " + getRating() + "/5";
+        return "Feedback #" + getFeedbackID() + " - Rating: " + getRating() + "/5 - " +
+                (getComments() != null && !getComments().isEmpty()
+                        ? "With comments" : "No comments");
     }
 }

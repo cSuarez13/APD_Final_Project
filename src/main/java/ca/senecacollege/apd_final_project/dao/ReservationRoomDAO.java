@@ -7,7 +7,6 @@ import ca.senecacollege.apd_final_project.model.RoomType;
 import ca.senecacollege.apd_final_project.util.DatabaseConnection;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 
-import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,14 +25,14 @@ public class ReservationRoomDAO {
      * @throws DatabaseException If there's an error saving the relationship
      */
     public int save(ReservationRoom reservationRoom) throws DatabaseException {
-        String sql = "INSERT INTO reservation_rooms (reservation_id, room_id, guests_in_room) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO reservation_rooms (reservation_id, room_id, price_per_night) VALUES (?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setInt(1, reservationRoom.getReservationID());
             stmt.setInt(2, reservationRoom.getRoomID());
-            stmt.setInt(3, reservationRoom.getGuestsInRoom());
+            stmt.setDouble(3, reservationRoom.getPricePerNight());
 
             int affectedRows = stmt.executeUpdate();
 
@@ -246,10 +245,10 @@ public class ReservationRoomDAO {
      */
     private ReservationRoom mapResultSetToReservationRoom(ResultSet rs) throws SQLException {
         ReservationRoom reservationRoom = new ReservationRoom();
-        reservationRoom.setId(rs.getInt("id"));
+        reservationRoom.setId(rs.getInt("reservation_room_id"));
         reservationRoom.setReservationID(rs.getInt("reservation_id"));
         reservationRoom.setRoomID(rs.getInt("room_id"));
-        reservationRoom.setGuestsInRoom(rs.getInt("guests_in_room"));
+        reservationRoom.setPricePerNight(rs.getDouble("price_per_night"));
         return reservationRoom;
     }
 
@@ -266,9 +265,6 @@ public class ReservationRoomDAO {
         // Set room type based on room_type_id
         int roomTypeId = rs.getInt("room_type_id");
         switch (roomTypeId) {
-            case 1:
-                room.setRoomType(RoomType.SINGLE);
-                break;
             case 2:
                 room.setRoomType(RoomType.DOUBLE);
                 break;
@@ -281,7 +277,6 @@ public class ReservationRoomDAO {
             default:
                 room.setRoomType(RoomType.SINGLE);
         }
-        room.setNumberOfBeds(rs.getInt("number_of_beds"));
         room.setPrice(rs.getDouble("price"));
         room.setAvailable(rs.getBoolean("is_available"));
         return room;
