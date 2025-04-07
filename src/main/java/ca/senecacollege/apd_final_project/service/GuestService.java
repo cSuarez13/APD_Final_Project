@@ -36,6 +36,23 @@ public class GuestService {
     }
 
     /**
+     * Update an existing guest
+     *
+     * @param guest The guest to update
+     * @throws DatabaseException If there's an error updating the guest
+     */
+    public void updateGuest(Guest guest) throws DatabaseException {
+        try {
+            validateGuest(guest);
+            guestDAO.update(guest);
+            LoggingManager.logSystemInfo("Updated guest: " + guest.getName() + " with ID: " + guest.getGuestID());
+        } catch (Exception e) {
+            LoggingManager.logException("Error updating guest: " + guest.getName(), e);
+            throw new DatabaseException("Error updating guest: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * Get a guest by ID
      *
      * @param guestId The guest ID
@@ -100,6 +117,26 @@ public class GuestService {
     }
 
     /**
+     * Find a guest by email (returns only the first match)
+     *
+     * @param email The email to search for
+     * @return The first matching guest or null if not found
+     * @throws DatabaseException If there's an error searching for the guest
+     */
+    public Guest findGuestByEmail(String email) throws DatabaseException {
+        try {
+            List<Guest> guests = guestDAO.findByEmail(email);
+            if (guests != null && !guests.isEmpty()) {
+                return guests.get(0);
+            }
+            return null;
+        } catch (Exception e) {
+            LoggingManager.logException("Error finding guest by email: " + email, e);
+            throw new DatabaseException("Error finding guest: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * Validate guest data
      *
      * @param guest The guest to validate
@@ -138,7 +175,7 @@ public class GuestService {
     /**
      * Update a guest's feedback
      *
-     * @param guestId The guest ID
+     * @param guestId  The guest ID
      * @param feedback The feedback text
      * @throws DatabaseException If there's an error updating the feedback
      */

@@ -2,15 +2,19 @@ package ca.senecacollege.apd_final_project.controller.kiosk;
 
 import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
+import ca.senecacollege.apd_final_project.exception.ReservationException;
 import ca.senecacollege.apd_final_project.exception.ValidationException;
 import ca.senecacollege.apd_final_project.model.*;
 import ca.senecacollege.apd_final_project.service.*;
 import ca.senecacollege.apd_final_project.util.*;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -137,38 +141,255 @@ public class GuestDetailsController extends BaseController {
     private void handleNextButton() {
         if (validateFields()) {
             try {
-                // 1. Create and save guest
-                Guest guest = new Guest();
-                guest.setName(txtName.getText().trim());
-                guest.setPhoneNumber(txtPhone.getText().trim());
-                guest.setEmail(txtEmail.getText().trim());
-                guest.setAddress(txtAddress.getText().trim());
-                int guestId = guestService.saveGuest(guest);
+                String email = txtEmail.getText().trim();
+                String name = txtName.getText().trim();
+                String phone = txtPhone.getText().trim();
+                String address = txtAddress.getText().trim();
 
-                // 2. Create reservation
-                Reservation reservation = new Reservation();
-                reservation.setGuestID(guestId);
-                reservation.setCheckInDate(bookingData.getCheckInDate());
-                reservation.setCheckOutDate(bookingData.getCheckOutDate());
-                reservation.setNumberOfGuests(bookingData.getGuestCount());
-                reservation.setStatus(ReservationStatus.CONFIRMED);
+                // Check if email already exists in the database
+                Guest existingGuest = guestService.findGuestByEmail(email);
 
-                // 3. Create a list to hold ReservationRoom objects
-                List<ReservationRoom> reservationRooms = new ArrayList<>();
-
-                // 4. Assign rooms by type using improved method
-                assignRoomsByType(reservationRooms);
-
-                // 5. Save reservation and rooms
-                int reservationId = reservationService.createReservationWithRooms(reservation, reservationRooms);
-
-                navigateToConfirmation(reservationId);
-
+                if (existingGuest != null) {
+                    // Email exists in the database
+                    if (existingGuest.getName().equals(name) &&
+                            existingGuest.getPhoneNumber().equals(phone) &&
+                            existingGuest.getAddress().equals(address)) {
+                        // All details match - proceed with the same guest ID
+                        LoggingManager.logSystemInfo("Using existing guest with matching details, ID: " + existingGuest.getGuestID());
+                        proceedWithReservation(existingGuest.getGuestID());
+                    } else {
+                        // Email matches but other details don't match
+                        // Show dialog to confirm updating the existing record
+                        showUpdateConfirmationDialog(existingGuest);
+                    }
+                } else {
+                    // Email doesn't exist - create new guest
+                    createNewGuestAndProceed();
+                }
+            } catch (DatabaseException e) {
+                ErrorPopupManager.showErrorPopup(getStage(), "Database Error: " + e.getMessage());
+                LoggingManager.logException("Database error processing guest details", e);
+            } catch (IOException e) {
+                ErrorPopupManager.showErrorPopup(getStage(), "Navigation Error: " + e.getMessage());
+                LoggingManager.logException("Error navigating to confirmation screen", e);
+            } catch (ReservationException e) {
+                ErrorPopupManager.showErrorPopup(getStage(), "Reservation Error: " + e.getMessage());
+                LoggingManager.logException("Error creating reservation", e);
             } catch (Exception e) {
-                ErrorPopupManager.showErrorPopup(getStage(), "Error: " + e.getMessage());
-                LoggingManager.logSystemInfo("Error: " + e.getMessage());
+                ErrorPopupManager.showErrorPopup(getStage(), "Unexpected Error: " + e.getMessage());
+                LoggingManager.logException("Unexpected error processing guest details", e);
             }
         }
+    }
+
+    /**
+     * Shows a confirmation dialog when email exists but other details don't match
+     * Displays the differences and allows the user to update or cancel
+     * @param existingGuest The existing guest with matching email
+     */
+    private void showUpdateConfirmationDialog(Guest existingGuest) {
+        try {
+            // Create the custom dialog
+            Dialog<ButtonType> dialog = new Dialog<>();
+            dialog.setTitle("Email Already Registered");
+            dialog.setHeaderText("The email is already registered with different information");
+
+            // Get the dialog pane and apply styling
+            DialogPane dialogPane = dialog.getDialogPane();
+            dialogPane.getStylesheets().add(
+                    Objects.requireNonNull(getClass().getResource(Constants.CSS_KIOSK)).toExternalForm());
+            dialogPane.getStyleClass().add("dialog-pane");
+
+            // Create content
+            VBox content = new VBox(10);
+            content.setPadding(new Insets(20, 10, 10, 10));
+
+            // Create an explanation label that clearly explains what's happening
+            Label explanationLabel = new Label("We found this email in our system, but some details don't match. "
+                    + "Would you like to update the existing guest information?");
+            explanationLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+            explanationLabel.setWrapText(true);
+
+            // Create a grid for comparing current and new values
+            GridPane grid = new GridPane();
+            grid.setHgap(15);
+            grid.setVgap(10);
+            grid.setPadding(new Insets(10));
+
+            // Headers
+            Label fieldHeader = new Label("Field");
+            Label currentHeader = new Label("Current Information");
+            Label newHeader = new Label("New Information");
+
+            fieldHeader.setStyle("-fx-font-weight: bold; -fx-text-fill: white;");
+            currentHeader.setStyle("-fx-font-weight: bold; -fx-text-fill: white;");
+            newHeader.setStyle("-fx-font-weight: bold; -fx-text-fill: white;");
+
+            grid.add(fieldHeader, 0, 0);
+            grid.add(currentHeader, 1, 0);
+            grid.add(newHeader, 2, 0);
+
+            // Track which fields are different
+            StringBuilder mismatchFields = new StringBuilder();
+            int row = 1;
+
+            // Name row
+            String currentName = existingGuest.getName();
+            String newName = txtName.getText().trim();
+            boolean nameChanged = !currentName.equals(newName);
+
+            if (nameChanged) {
+                addFieldRow(grid, "Name", currentName, newName, row++, true);
+                mismatchFields.append("name");
+            }
+
+            // Phone row
+            String currentPhone = existingGuest.getPhoneNumber();
+            String newPhone = txtPhone.getText().trim();
+            boolean phoneChanged = !currentPhone.equals(newPhone);
+
+            if (phoneChanged) {
+                addFieldRow(grid, "Phone", currentPhone, newPhone, row++, true);
+                if (!mismatchFields.isEmpty()) mismatchFields.append(", ");
+                mismatchFields.append("phone");
+            }
+
+            // Address row
+            String currentAddress = existingGuest.getAddress();
+            String newAddress = txtAddress.getText().trim();
+            boolean addressChanged = !currentAddress.equals(newAddress);
+
+            if (addressChanged) {
+                addFieldRow(grid, "Address", currentAddress, newAddress, row++, true);
+                if (!mismatchFields.isEmpty()) mismatchFields.append(", ");
+                mismatchFields.append("address");
+            }
+
+            // Add explanation about the changes
+            Label changesLabel = new Label("The following field(s) have different values: " + mismatchFields);
+            changesLabel.setStyle("-fx-text-fill: #cf6679; -fx-font-size: 14px;");
+            changesLabel.setWrapText(true);
+
+            // Add all components to the content
+            content.getChildren().addAll(explanationLabel, changesLabel, grid);
+            dialogPane.setContent(content);
+
+            // Add the buttons
+            ButtonType confirmButtonType = new ButtonType("Update Information", ButtonBar.ButtonData.OK_DONE);
+            ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+            dialogPane.getButtonTypes().addAll(confirmButtonType, cancelButtonType);
+
+            // Style the buttons
+            Button confirmButton = (Button) dialogPane.lookupButton(confirmButtonType);
+            if (confirmButton != null) {
+                confirmButton.setStyle("-fx-background-color: #7b1fa2; -fx-text-fill: white;");
+            }
+
+            // Show dialog and handle the result
+            dialog.showAndWait().ifPresent(result -> {
+                if (result == confirmButtonType) {
+                    // User confirmed the update
+                    try {
+                        // Update the guest information
+                        existingGuest.setName(newName);
+                        existingGuest.setPhoneNumber(newPhone);
+                        existingGuest.setAddress(newAddress);
+
+                        // Update in database
+                        guestService.updateGuest(existingGuest);
+                        LoggingManager.logSystemInfo("Updated guest information for ID: " + existingGuest.getGuestID() +
+                                " Fields updated: " + mismatchFields);
+
+                        // Proceed with reservation using the existing guest ID
+                        proceedWithReservation(existingGuest.getGuestID());
+                    } catch (DatabaseException e) {
+                        ErrorPopupManager.showErrorPopup(getStage(), "Database Error: " + e.getMessage());
+                        LoggingManager.logException("Error updating guest", e);
+                    } catch (IOException e) {
+                        ErrorPopupManager.showErrorPopup(getStage(), "Navigation Error: " + e.getMessage());
+                        LoggingManager.logException("Error navigating to confirmation", e);
+                    } catch (ReservationException e) {
+                        ErrorPopupManager.showErrorPopup(getStage(), "Reservation Error: " + e.getMessage());
+                        LoggingManager.logException("Error creating reservation", e);
+                    } catch (Exception e) {
+                        ErrorPopupManager.showErrorPopup(getStage(), "Unexpected Error: " + e.getMessage());
+                        LoggingManager.logException("Unexpected error after updating guest", e);
+                    }
+                }
+                // If canceled, just stay on the current screen
+            });
+
+        } catch (Exception e) {
+            ErrorPopupManager.showErrorPopup(getStage(), "Error showing confirmation dialog: " + e.getMessage());
+            LoggingManager.logException("Error showing confirmation dialog", e);
+        }
+    }
+
+    /**
+     * Helper method to add a field row to the comparison grid
+     */
+    private void addFieldRow(GridPane grid, String fieldName, String currentValue, String newValue, int row, boolean changed) {
+        Label fieldLabel = new Label(fieldName + ":");
+        Label currentValueLabel = new Label(currentValue);
+        Label newValueLabel = new Label(newValue);
+
+        fieldLabel.setStyle("-fx-text-fill: white;");
+        currentValueLabel.setStyle("-fx-text-fill: white;");
+        newValueLabel.setStyle(changed ? "-fx-text-fill: #cf6679; -fx-font-weight: bold;" : "-fx-text-fill: white;");
+
+        grid.add(fieldLabel, 0, row);
+        grid.add(currentValueLabel, 1, row);
+        grid.add(newValueLabel, 2, row);
+    }
+
+    /**
+     * Create a new guest and proceed with reservation
+     * @throws DatabaseException If there's a database error
+     * @throws IOException If there's an error navigating to confirmation
+     * @throws ReservationException If there's an error creating the reservation
+     */
+    private void createNewGuestAndProceed() throws DatabaseException, IOException, ReservationException {
+        // Create and save guest
+        Guest guest = new Guest();
+        guest.setName(txtName.getText().trim());
+        guest.setPhoneNumber(txtPhone.getText().trim());
+        guest.setEmail(txtEmail.getText().trim());
+        guest.setAddress(txtAddress.getText().trim());
+
+        int guestId = guestService.saveGuest(guest);
+        LoggingManager.logSystemInfo("Created new guest with ID: " + guestId);
+
+        // Proceed with reservation
+        proceedWithReservation(guestId);
+    }
+
+    /**
+     * Process the reservation with the provided guest ID
+     * @param guestId The guest ID to use for the reservation
+     * @throws DatabaseException If there's a database error
+     * @throws IOException If there's an error navigating to the confirmation screen
+     * @throws ReservationException If there's an error creating the reservation
+     */
+    private void proceedWithReservation(int guestId) throws DatabaseException, IOException, ReservationException {
+        // Create reservation
+        Reservation reservation = new Reservation();
+        reservation.setGuestID(guestId);
+        reservation.setCheckInDate(bookingData.getCheckInDate());
+        reservation.setCheckOutDate(bookingData.getCheckOutDate());
+        reservation.setNumberOfGuests(bookingData.getGuestCount());
+        reservation.setStatus(ReservationStatus.CONFIRMED);
+
+        // Create a list to hold ReservationRoom objects
+        List<ReservationRoom> reservationRooms = new ArrayList<>();
+
+        // Assign rooms by type
+        assignRoomsByType(reservationRooms);
+
+        // Save reservation and rooms
+        int reservationId = reservationService.createReservationWithRooms(reservation, reservationRooms);
+
+        // Navigate to confirmation
+        navigateToConfirmation(reservationId);
     }
 
     /**
@@ -431,5 +652,4 @@ public class GuestDetailsController extends BaseController {
     protected void hideError() {
         // Nothing to do, we don't have a label to hide
     }
-
 }
