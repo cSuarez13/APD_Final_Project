@@ -86,6 +86,7 @@ public class GuestService {
 
     /**
      * Search for guests by phone number
+     * Improved to handle various phone formats and partial matches
      *
      * @param phoneNumber The phone number to search for
      * @return List of matching guests
@@ -93,7 +94,11 @@ public class GuestService {
      */
     public List<Guest> searchGuestsByPhone(String phoneNumber) throws DatabaseException {
         try {
-            return guestDAO.findByPhone(phoneNumber);
+            // Clean the phone number to make search more flexible
+            String cleanedPhone = phoneNumber.trim();
+
+            // Pass to DAO for searching
+            return guestDAO.findByPhone(cleanedPhone);
         } catch (Exception e) {
             LoggingManager.logException("Error searching for guests by phone: " + phoneNumber, e);
             throw new DatabaseException("Error searching for guests: " + e.getMessage(), e);
@@ -102,6 +107,7 @@ public class GuestService {
 
     /**
      * Search for guests by email
+     * Improved to support partial email matches
      *
      * @param email The email to search for
      * @return List of matching guests

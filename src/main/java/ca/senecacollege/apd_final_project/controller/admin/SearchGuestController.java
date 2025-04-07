@@ -123,13 +123,19 @@ public class SearchGuestController extends BaseController {
             List<Guest> results;
             String searchBy = cmbSearchBy.getValue();
 
-            // Search based on selected criteria
-            results = switch (searchBy) {
-                case "Name" -> guestService.searchGuestsByName(searchTerm);
-                case "Phone" -> guestService.searchGuestsByPhone(searchTerm);
-                case "Email" -> guestService.searchGuestsByEmail(searchTerm);
-                default -> null;
-            };
+            // Search based on selected criteria with improved handling for partial matching
+            if ("Name".equals(searchBy)) {
+                results = guestService.searchGuestsByName(searchTerm);
+            } else if ("Phone".equals(searchBy)) {
+                // Clean phone number for more flexible search
+                String cleanedPhone = searchTerm.replaceAll("[^0-9]", "");
+                results = guestService.searchGuestsByPhone(cleanedPhone);
+            } else if ("Email".equals(searchBy)) {
+                // Use the existing method which should already handle partial matches
+                results = guestService.searchGuestsByEmail(searchTerm);
+            } else {
+                results = null;
+            }
 
             // Update the guest list
             if (results != null && !results.isEmpty()) {
@@ -183,10 +189,18 @@ public class SearchGuestController extends BaseController {
         // Enable/disable buttons based on selections
         btnViewDetails.setDisable(selectedGuest == null);
         btnNewReservation.setDisable(selectedGuest == null);
-        btnCheckIn.setDisable(selectedReservation == null ||
-                !selectedReservation.getStatus().equals(ReservationStatus.CONFIRMED));
-        btnCheckOut.setDisable(selectedReservation == null ||
-                !selectedReservation.getStatus().equals(ReservationStatus.CHECKED_IN));
+
+        // Handle null reservation or null status safely
+        boolean canCheckIn = selectedReservation != null &&
+                selectedReservation.getStatus() != null &&
+                selectedReservation.getStatus().equals(ReservationStatus.CONFIRMED);
+
+        boolean canCheckOut = selectedReservation != null &&
+                selectedReservation.getStatus() != null &&
+                selectedReservation.getStatus().equals(ReservationStatus.CHECKED_IN);
+
+        btnCheckIn.setDisable(!canCheckIn);
+        btnCheckOut.setDisable(!canCheckOut);
     }
 
     @FXML

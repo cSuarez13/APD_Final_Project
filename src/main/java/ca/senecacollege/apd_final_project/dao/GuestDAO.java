@@ -118,7 +118,7 @@ public class GuestDAO {
      * @throws DatabaseException If there's an error searching for guests
      */
     public List<Guest> findByName(String name) throws DatabaseException {
-        String sql = "SELECT * FROM guests WHERE name LIKE ?";
+        String sql = "SELECT * FROM guests WHERE LOWER(name) LIKE LOWER(?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -143,18 +143,29 @@ public class GuestDAO {
 
     /**
      * Find guests by phone number (partial match)
+     * This method has been improved to find phone numbers regardless of formatting
      *
      * @param phoneNumber The phone number to search for
      * @return List of matching guests
      * @throws DatabaseException If there's an error searching for guests
      */
     public List<Guest> findByPhone(String phoneNumber) throws DatabaseException {
-        String sql = "SELECT * FROM guests WHERE phone_number LIKE ?";
+        // Get both original and cleaned queries for better matching
+        String cleanedPhoneNumber = phoneNumber.replaceAll("[^0-9]", "");
+
+        // If phone number is empty after cleaning, use a default query
+        if (cleanedPhoneNumber.isEmpty() && phoneNumber.isEmpty()) {
+            throw new DatabaseException("Phone number search term cannot be empty");
+        }
+
+        // SQL query that removes non-numeric characters for comparison
+        String sql = "SELECT * FROM guests WHERE " +
+                "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(phone_number, '(', ''), ')', ''), '-', ''), ' ', ''), '+', '') LIKE ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, "%" + phoneNumber + "%");
+            stmt.setString(1, "%" + cleanedPhoneNumber + "%");
 
             try (ResultSet rs = stmt.executeQuery()) {
                 List<Guest> guests = new ArrayList<>();
@@ -173,19 +184,20 @@ public class GuestDAO {
     }
 
     /**
-     * Find guests by email (exact match)
+     * Find guests by email (partial match)
+     * Updated to support partial email searches
      *
      * @param email The email to search for
      * @return List of matching guests
      * @throws DatabaseException If there's an error searching for guests
      */
     public List<Guest> findByEmail(String email) throws DatabaseException {
-        String sql = "SELECT * FROM guests WHERE email = ?";
+        String sql = "SELECT * FROM guests WHERE LOWER(email) LIKE LOWER(?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, email);
+            stmt.setString(1, "%" + email + "%");
 
             try (ResultSet rs = stmt.executeQuery()) {
                 List<Guest> guests = new ArrayList<>();
