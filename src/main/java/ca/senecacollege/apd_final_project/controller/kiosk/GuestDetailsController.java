@@ -36,9 +36,6 @@ public class GuestDetailsController extends BaseController {
     private TextField txtAddress;
 
     @FXML
-    private Label lblError;
-
-    @FXML
     private Button btnNext;
 
     @FXML
@@ -59,9 +56,6 @@ public class GuestDetailsController extends BaseController {
         // Get services from ServiceLocator
         guestService = ServiceLocator.getService(GuestService.class);
         reservationService = ServiceLocator.getService(ReservationService.class);
-
-        // Hide error label initially
-        hideError();
 
         // Apply proper text styling to ensure visibility
         applyStyles();
@@ -94,12 +88,10 @@ public class GuestDetailsController extends BaseController {
         txtEmail.setStyle(textFieldStyle);
         txtAddress.setStyle(textFieldStyle);
 
-        lblError.setStyle("-fx-text-fill: #cf6679; -fx-font-size: 14px;");
-
         txtName.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
                 txtName.getParent().getParent().lookupAll(".label").forEach(node -> {
-                    if (node instanceof Label && !(node.equals(lblError))) {
+                    if (node instanceof Label) {
                         node.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
                     }
                 });
@@ -172,12 +164,12 @@ public class GuestDetailsController extends BaseController {
                     navigateToConfirmation(reservationIds.get(0));
                 } else {
                     // This should not happen if validation is correct
-                    showError("Failed to create any reservations.");
+                    ErrorPopupManager.showErrorPopup(getStage(), "Failed to create any reservations.");
                 }
 
             } catch (Exception e) {
                 LoggingManager.logException("Error processing guest details", e);
-                DialogService.showError(getStage(), "Processing Error", "Error processing guest details: " + e.getMessage(), e);
+                ErrorPopupManager.showErrorPopup(getStage(), "Error processing guest details: " + e.getMessage());
             }
         }
     }
@@ -296,8 +288,7 @@ public class GuestDetailsController extends BaseController {
 
         } catch (IOException e) {
             LoggingManager.logException("Error navigating back to room selection screen", e);
-            DialogService.showError(getStage(), "Navigation Error",
-                    "Error returning to room selection screen: " + e.getMessage(), e);
+            ErrorPopupManager.showErrorPopup(getStage(), "Error returning to room selection screen: " + e.getMessage());
         }
     }
 
@@ -335,11 +326,11 @@ public class GuestDetailsController extends BaseController {
                 throw new ValidationException("Please enter your address");
             }
 
-            return false; // All validations passed
+            return true; // All validations passed
 
         } catch (ValidationException e) {
-            DialogService.showWarning(getStage(), "Validation Error", e.getMessage());
-            return true; // Validation failed
+            ErrorPopupManager.showErrorPopup(getStage(), e.getMessage());
+            return false; // Validation failed
         }
     }
 
@@ -357,5 +348,18 @@ public class GuestDetailsController extends BaseController {
         txtPhone.clear();
         txtEmail.clear();
         txtAddress.clear();
+    }
+
+    // Override methods that reference lblError to do nothing,
+    // since we no longer have the error label
+    @Override
+    protected void showError(String message) {
+        // Use ErrorPopupManager instead of label
+        ErrorPopupManager.showErrorPopup(getStage(), message);
+    }
+
+    @Override
+    protected void hideError() {
+        // Nothing to do, we don't have a label to hide
     }
 }

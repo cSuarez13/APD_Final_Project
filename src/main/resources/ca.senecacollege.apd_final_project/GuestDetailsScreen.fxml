@@ -9,8 +9,11 @@
             fx:controller="ca.senecacollege.apd_final_project.controller.kiosk.GuestDetailsController">
     <center>
         <VBox alignment="CENTER" spacing="20.0" styleClass="content-container" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="40.0" left="40.0" right="40.0" top="40.0"/>
+            </padding>
             <BorderPane.margin>
-                <Insets bottom="20.0" left="40.0" right="40.0" top="20.0"/>
+                <Insets bottom="40.0" left="40.0" right="40.0" top="40.0"/>
             </BorderPane.margin>
             <Label styleClass="label-header" text="Guest Information">
                 <font>
@@ -22,12 +25,7 @@
                     <Font size="18.0"/>
                 </font>
             </Label>
-            <Label fx:id="lblError" styleClass="label-error" text="Error message goes here" textFill="#cf6679"
-                   visible="false">
-                <font>
-                    <Font size="14.0"/>
-                </font>
-            </Label>
+            <!-- Error label has been removed completely -->
             <GridPane hgap="20.0" vgap="25.0">
                 <columnConstraints>
                     <ColumnConstraints minWidth="150.0" prefWidth="200.0"/>
