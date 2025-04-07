@@ -6,6 +6,7 @@ import ca.senecacollege.apd_final_project.model.Billing;
 import ca.senecacollege.apd_final_project.model.Reservation;
 import ca.senecacollege.apd_final_project.model.ReservationRoom;
 import ca.senecacollege.apd_final_project.model.Room;
+import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 
 import java.time.LocalDate;
@@ -186,21 +187,39 @@ public class BillingService {
             // Calculate nights
             int nights = reservation.calculateNumberOfNights();
 
+            // Calculate subtotal
+            double subtotal = 0.0;
+
             // Add billing items for each room
             for (ReservationRoom reservationRoom : reservationRooms) {
                 Room room = roomService.getRoomById(reservationRoom.getRoomID());
+                double roomPrice = room.getPrice();
 
                 // Create a billing item
                 Billing.BillingItem item = new Billing.BillingItem(
                         room.getRoomID(),
                         room.getRoomType().getDisplayName(),
                         nights,
-                        room.getPrice()
+                        roomPrice
                 );
 
                 // Add to the bill
                 bill.addBillingItem(item);
+
+                // Add to subtotal
+                subtotal += item.getSubtotal();
             }
+
+            // Set amount (subtotal)
+            bill.setAmount(subtotal);
+
+            // Calculate tax (13%)
+            double tax = subtotal * Constants.TAX_RATE;
+            bill.setTax(tax);
+
+            // Calculate total
+            double total = subtotal + tax - bill.getDiscount();
+            bill.setTotalAmount(total);
 
             return bill;
         } catch (Exception e) {

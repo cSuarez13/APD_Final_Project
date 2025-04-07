@@ -62,6 +62,10 @@ public class ReservationService {
             reservation.setStatus(ReservationStatus.CONFIRMED);
 
             // Save the reservation first (with a placeholder room ID)
+            if (roomsWithGuests.size() > 0) {
+                // Set the first room as the "primary" room for backward compatibility
+                reservation.setRoomID(roomsWithGuests.keySet().iterator().next());
+            }
             int reservationId = reservationDAO.save(reservation);
 
             // Now save each room assignment
@@ -69,7 +73,17 @@ public class ReservationService {
                 int roomId = entry.getKey();
                 int guestsInRoom = entry.getValue();
 
-                ReservationRoom reservationRoom = new ReservationRoom(reservationId, roomId, guestsInRoom);
+                // Get the room to access its price
+                Room room = roomService.getRoomById(roomId);
+                double pricePerNight = room.getPrice();
+
+                // Create and save reservation-room relationship
+                ReservationRoom reservationRoom = new ReservationRoom();
+                reservationRoom.setReservationID(reservationId);
+                reservationRoom.setRoomID(roomId);
+                reservationRoom.setGuestsInRoom(guestsInRoom);
+                reservationRoom.setPricePerNight(pricePerNight);
+
                 reservationRoomDAO.save(reservationRoom);
 
                 // Mark the room as unavailable
@@ -113,8 +127,12 @@ public class ReservationService {
             int reservationId = reservationDAO.save(reservation);
 
             // Create a reservation-room relationship
-            ReservationRoom reservationRoom = new ReservationRoom(reservationId, room.getRoomID(),
-                    reservation.getNumberOfGuests());
+            ReservationRoom reservationRoom = new ReservationRoom();
+            reservationRoom.setReservationID(reservationId);
+            reservationRoom.setRoomID(room.getRoomID());
+            reservationRoom.setGuestsInRoom(reservation.getNumberOfGuests());
+            reservationRoom.setPricePerNight(room.getPrice());
+
             reservationRoomDAO.save(reservationRoom);
 
             // Mark the room as unavailable for the reservation dates
@@ -127,28 +145,6 @@ public class ReservationService {
             LoggingManager.logException("Error creating reservation", e);
             throw new ReservationException("Error creating reservation: " + e.getMessage(), e);
         }
-    }
-
-    /**
-     * Get all rooms for a reservation
-     *
-     * @param reservationId The reservation ID
-     * @return List of rooms associated with the reservation
-     * @throws DatabaseException If there's an error retrieving the rooms
-     */
-    public List<Room> getRoomsForReservation(int reservationId) throws DatabaseException {
-        return reservationRoomDAO.findRoomsByReservationId(reservationId);
-    }
-
-    /**
-     * Get all reservation-room relationships for a reservation
-     *
-     * @param reservationId The reservation ID
-     * @return List of reservation-room relationships
-     * @throws DatabaseException If there's an error retrieving the relationships
-     */
-    public List<ReservationRoom> getReservationRooms(int reservationId) throws DatabaseException {
-        return reservationRoomDAO.findByReservationId(reservationId);
     }
 
     /**
@@ -197,7 +193,12 @@ public class ReservationService {
             }
 
             // Create the reservation-room relationship
-            ReservationRoom reservationRoom = new ReservationRoom(reservationId, roomId, guestsInRoom);
+            ReservationRoom reservationRoom = new ReservationRoom();
+            reservationRoom.setReservationID(reservationId);
+            reservationRoom.setRoomID(roomId);
+            reservationRoom.setGuestsInRoom(guestsInRoom);
+            reservationRoom.setPricePerNight(room.getPrice());
+
             reservationRoomDAO.save(reservationRoom);
 
             // Mark the room as unavailable
@@ -291,6 +292,28 @@ public class ReservationService {
             LoggingManager.logException("Error updating total guest count", e);
             throw new DatabaseException("Error updating total guest count: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Get all rooms for a reservation
+     *
+     * @param reservationId The reservation ID
+     * @return List of rooms associated with the reservation
+     * @throws DatabaseException If there's an error retrieving the rooms
+     */
+    public List<Room> getRoomsForReservation(int reservationId) throws DatabaseException {
+        return reservationRoomDAO.findRoomsByReservationId(reservationId);
+    }
+
+    /**
+     * Get all reservation-room relationships for a reservation
+     *
+     * @param reservationId The reservation ID
+     * @return List of reservation-room relationships
+     * @throws DatabaseException If there's an error retrieving the relationships
+     */
+    public List<ReservationRoom> getReservationRooms(int reservationId) throws DatabaseException {
+        return reservationRoomDAO.findByReservationId(reservationId);
     }
 
     /**

@@ -50,6 +50,7 @@ public class GuestDetailsController extends BaseController {
     private GuestService guestService;
     private ReservationService reservationService;
     private RoomService roomService;
+    private ReservationRoomDAO reservationRoomDAO;
 
     // Booking data
     private BookingData bookingData;
@@ -60,6 +61,7 @@ public class GuestDetailsController extends BaseController {
         guestService = ServiceLocator.getService(GuestService.class);
         reservationService = ServiceLocator.getService(ReservationService.class);
         roomService = ServiceLocator.getService(RoomService.class);
+        reservationRoomDAO = new ReservationRoomDAO(); // Create instance of DAO
 
         // Apply proper text styling to ensure visibility
         applyStyles();
@@ -147,22 +149,13 @@ public class GuestDetailsController extends BaseController {
                 guest.setEmail(txtEmail.getText().trim());
                 guest.setAddress(txtAddress.getText().trim());
 
+                // Save guest and get ID
                 int guestId = guestService.saveGuest(guest);
 
-                // Create reservation
-                Reservation reservation = new Reservation();
-                reservation.setGuestID(guestId);
-                reservation.setCheckInDate(bookingData.getCheckInDate());
-                reservation.setCheckOutDate(bookingData.getCheckOutDate());
-                reservation.setNumberOfGuests(bookingData.getGuestCount());
-                reservation.setStatus(ReservationStatus.CONFIRMED); // assuming enum exists
-
-                // Save reservation and get ID
-                int reservationId = reservationService.save(reservation);
-                reservation.setReservationID(reservationId);
-
-                // Assign rooms and guests per room
+                // Create a map to store room ID to guest count assignments
                 Map<Integer, Integer> roomsWithGuests = new HashMap<>();
+
+                // Assign rooms by type and add to the map
                 assignRoomsByType(RoomType.SINGLE, bookingData.getSingleRoomCount(),
                         bookingData.getGuestsForRoomType(RoomType.SINGLE), roomsWithGuests);
                 assignRoomsByType(RoomType.DOUBLE, bookingData.getDoubleRoomCount(),
@@ -172,19 +165,15 @@ public class GuestDetailsController extends BaseController {
                 assignRoomsByType(RoomType.PENT_HOUSE, bookingData.getPentHouseCount(),
                         bookingData.getGuestsForRoomType(RoomType.PENT_HOUSE), roomsWithGuests);
 
-                // Save room-reservation mappings
-                for (Map.Entry<Integer, Integer> entry : roomsWithGuests.entrySet()) {
-                    int roomId = entry.getKey();
-                    int guestsInRoom = entry.getValue();
+                // Create a basic reservation object
+                Reservation reservation = new Reservation();
+                reservation.setGuestID(guestId);
+                reservation.setCheckInDate(bookingData.getCheckInDate());
+                reservation.setCheckOutDate(bookingData.getCheckOutDate());
+                reservation.setNumberOfGuests(bookingData.getGuestCount());
 
-                    ReservationRoom reservationRoom = new ReservationRoom();
-                    reservationRoom.setReservationID(reservationId);
-                    reservationRoom.setRoomID(roomId);
-                    reservationRoom.setGuestsInRoom(guestsInRoom);
-
-                    // Save reservation-room relationship to the database
-                    ReservationRoomDAO.save(reservationRoom);
-                }
+                // Use the reservationService to create the reservation with multiple rooms
+                int reservationId = reservationService.createReservation(reservation, roomsWithGuests);
 
                 LoggingManager.logSystemInfo("Created reservation #" + reservationId +
                         " with " + roomsWithGuests.size() + " rooms for guest: " + guest.getName());
@@ -208,7 +197,8 @@ public class GuestDetailsController extends BaseController {
      * @param roomAssignments Map to store room ID to guest count assignments
      * @throws DatabaseException If there's an error finding available rooms
      */
-    private void assignRoomsByType(RoomType roomType, int count, int totalGuests, Map<Integer, Integer> roomAssignments) throws DatabaseException, DatabaseException {
+    private void assignRoomsByType(RoomType roomType, int count, int totalGuests,
+                                   Map<Integer, Integer> roomAssignments) throws DatabaseException {
         if (count <= 0 || totalGuests <= 0) {
             return; // No rooms or guests to assign
         }

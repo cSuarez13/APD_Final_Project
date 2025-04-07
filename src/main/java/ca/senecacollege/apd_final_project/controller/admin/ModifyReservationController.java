@@ -698,7 +698,12 @@ public class ModifyReservationController extends BaseController {
             int guestsInRoom = roomAssignments.getOrDefault(roomId, 0);
 
             // Create reservation-room relationship
-            ReservationRoom rr = new ReservationRoom(reservationId, roomId, guestsInRoom);
+            ReservationRoom rr = new ReservationRoom();
+            rr.setReservationID(reservationId);
+            rr.setRoomID(roomId);
+            rr.setGuestsInRoom(guestsInRoom);
+            rr.setPricePerNight(room.getPrice());
+
             reservationService.reservationRoomDAO.save(rr);
 
             // Make the room unavailable

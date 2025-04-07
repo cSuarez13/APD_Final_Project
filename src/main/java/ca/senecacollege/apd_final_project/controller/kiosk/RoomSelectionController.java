@@ -531,19 +531,6 @@ public class RoomSelectionController extends BaseController {
             if (deluxeRoomCount > 0) roomTypeMap.put(RoomType.DELUXE, deluxeRoomCount);
             if (pentHouseCount > 0) roomTypeMap.put(RoomType.PENT_HOUSE, pentHouseCount);
 
-            // Calculate total price per night
-            BigDecimal totalPricePerNight = BigDecimal.ZERO;
-            for (Map.Entry<RoomType, Integer> entry : roomTypeMap.entrySet()) {
-                RoomType roomType = entry.getKey();
-                int roomCount = entry.getValue();
-                BigDecimal roomPrice = BigDecimal.valueOf(roomType.getBasePrice());
-                totalPricePerNight = totalPricePerNight.add(roomPrice.multiply(BigDecimal.valueOf(roomCount)));
-            }
-
-            // Create an instance of ReservationRoom and set the price per night
-            ReservationRoom reservationRoom = new ReservationRoom();
-            reservationRoom.setPricePerNight(totalPricePerNight);
-
             // Prepare booking data
             BookingData bookingData = new BookingData();
             bookingData.setGuestCount(guestCount);

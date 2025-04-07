@@ -50,8 +50,24 @@ public class Billing {
         return tax;
     }
 
+    /**
+     * Calculate the total amount (amount + tax - discount)
+     *
+     * @return The total amount
+     */
     public double getTotalAmount() {
-        return totalAmount.get();
+        // If totalAmount is already set, return it
+        if (totalAmount.get() > 0) {
+            return totalAmount.get();
+        }
+
+        // Otherwise calculate it
+        double total = getAmount() + getTax() - getDiscount();
+
+        // Update the property
+        setTotalAmount(total);
+
+        return total;
     }
 
     public void setTotalAmount(double totalAmount) {

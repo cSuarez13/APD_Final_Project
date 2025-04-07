@@ -198,26 +198,7 @@ public class ConfirmationController extends BaseController {
         lblGuests.setText(String.valueOf(reservation.getNumberOfGuests()));
 
         // Calculate and show pricing
-        try {
-            // Use the BillingService to calculate the bill
-            var bill = billingService.calculateBill(reservationId);
-
-            lblSubtotal.setText(String.format("$%.2f", bill.getAmount()));
-            lblTax.setText(String.format("$%.2f", bill.getTax()));
-            lblTotal.setText(String.format("$%.2f", bill.getTotalAmount()));
-
-        } catch (Exception e) {
-            LoggingManager.logException("Error calculating bill", e);
-
-            // Fallback calculation if billing service fails
-            double subtotal = calculateSubtotal();
-            double tax = subtotal * Constants.TAX_RATE;
-            double total = subtotal + tax;
-
-            lblSubtotal.setText(String.format("$%.2f", subtotal));
-            lblTax.setText(String.format("$%.2f", tax));
-            lblTotal.setText(String.format("$%.2f", total));
-        }
+        calculateBill();
     }
 
     /**
@@ -421,6 +402,40 @@ public class ConfirmationController extends BaseController {
             return (Stage) btnDone.getScene().getWindow();
         }
         return null;
+    }
+
+    /**
+     * Calculate the bill and update the UI
+     */
+    private void calculateBill() {
+        if (reservation == null || rooms.isEmpty()) {
+            return;
+        }
+
+        try {
+            // Use the BillingService to calculate the bill
+            var bill = billingService.calculateBill(reservationId);
+
+            // Update UI with calculated values
+            double subtotal = bill.getAmount();
+            double tax = bill.getTax();
+            double total = bill.getTotalAmount();
+
+            lblSubtotal.setText(String.format("$%.2f", subtotal));
+            lblTax.setText(String.format("$%.2f", tax));
+            lblTotal.setText(String.format("$%.2f", total));
+        } catch (Exception e) {
+            LoggingManager.logException("Error calculating bill", e);
+
+            // Fallback calculation if billing service fails
+            double subtotal = calculateSubtotal();
+            double tax = subtotal * Constants.TAX_RATE;
+            double total = subtotal + tax;
+
+            lblSubtotal.setText(String.format("$%.2f", subtotal));
+            lblTax.setText(String.format("$%.2f", tax));
+            lblTotal.setText(String.format("$%.2f", total));
+        }
     }
 
     /**
