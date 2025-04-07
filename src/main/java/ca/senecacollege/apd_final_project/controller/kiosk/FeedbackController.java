@@ -3,6 +3,7 @@ package ca.senecacollege.apd_final_project.controller.kiosk;
 import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
 import ca.senecacollege.apd_final_project.exception.ValidationException;
+import ca.senecacollege.apd_final_project.model.Billing;
 import ca.senecacollege.apd_final_project.model.Feedback;
 import ca.senecacollege.apd_final_project.model.Guest;
 import ca.senecacollege.apd_final_project.model.Reservation;
@@ -23,7 +24,6 @@ import javafx.stage.Stage;
 import javafx.scene.Node;
 
 import java.io.IOException;
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -33,7 +33,7 @@ public class FeedbackController extends BaseController {
     public Button btnVerify;
     public Button btnCancel;
     @FXML
-    private TextField txtReservationId;
+    private TextField txtBillId; // Changed from txtReservationId to txtBillId
 
     @FXML
     private Label lblGuestName;
@@ -59,18 +59,21 @@ public class FeedbackController extends BaseController {
     private FeedbackService feedbackService;
     private GuestService guestService;
     private ReservationService reservationService;
+    private BillingService billingService;
     private ValidationService validationService;
 
     private Reservation currentReservation;
     private Guest currentGuest;
+    private Billing currentBill;
     private int selectedRating = 0;
 
     @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
+    public void initialize(java.net.URL url, ResourceBundle resourceBundle) {
         // Get services from ServiceLocator
         feedbackService = ServiceLocator.getService(FeedbackService.class);
         guestService = ServiceLocator.getService(GuestService.class);
         reservationService = ServiceLocator.getService(ReservationService.class);
+        billingService = ServiceLocator.getService(BillingService.class);
         validationService = ServiceLocator.getService(ValidationService.class);
 
         setupRatingStars();
@@ -170,7 +173,8 @@ public class FeedbackController extends BaseController {
     }
 
     /**
-     * Handle verify reservation button action
+     * Handle verify bill button action
+     * This validates the bill ID and loads reservation details
      */
     @FXML
     private void handleVerifyButton() {
@@ -178,52 +182,75 @@ public class FeedbackController extends BaseController {
         clearFields();
         hideError();
 
-        String reservationIdText = txtReservationId.getText().trim();
+        String billIdText = txtBillId.getText().trim();
 
         try {
             // Validate ID format
-            validationService.validateId(reservationIdText, "Reservation ID");
-
-            int reservationId = Integer.parseInt(reservationIdText);
-
-            // Fetch reservation
-            currentReservation = reservationService.getReservationById(reservationId);
-
-            if (currentReservation == null) {
-                throw new ValidationException("Reservation not found");
+            if (billIdText.isEmpty()) {
+                throw new ValidationException("Please enter a Bill ID");
             }
 
-            // Only checked-out reservations can leave feedback
-            if (currentReservation.getStatus() != ReservationStatus.CHECKED_OUT) {
-                throw new ValidationException("Feedback can only be provided for completed stays");
+            int billId;
+            try {
+                billId = Integer.parseInt(billIdText);
+            } catch (NumberFormatException e) {
+                throw new ValidationException("Bill ID must be a number");
             }
 
-            // Fetch guest information
-            currentGuest = guestService.getGuestById(currentReservation.getGuestID());
-
-            // Check if feedback already exists
-            boolean feedbackExists = feedbackService.checkFeedbackExists(reservationId);
-            if (feedbackExists) {
-                throw new ValidationException("Feedback has already been submitted for this reservation");
+            if (billId <= 0) {
+                throw new ValidationException("Bill ID must be a positive number");
             }
 
-            // Display reservation information
-            displayReservationInfo();
+            // Fetch the bill
+            try {
+                currentBill = billingService.getBillById(billId);
 
-            // Enable submit button if rating is selected
-            updateSubmitButtonState();
+                if (currentBill == null) {
+                    throw new ValidationException("Bill not found");
+                }
 
-            logSystemActivity("Reservation verified for feedback: #" + reservationId);
+                if (!currentBill.isPaid()) {
+                    throw new ValidationException("This bill has not been paid yet. Feedback can only be provided after checkout.");
+                }
+
+                // Fetch the associated reservation
+                currentReservation = reservationService.getReservationById(currentBill.getReservationID());
+
+                // Verify reservation status is CHECKED_OUT
+                if (currentReservation == null) {
+                    throw new ValidationException("Associated reservation not found");
+                }
+
+                if (currentReservation.getStatus() != ReservationStatus.CHECKED_OUT) {
+                    throw new ValidationException("Feedback can only be provided for completed stays");
+                }
+
+                // Fetch guest information
+                currentGuest = guestService.getGuestById(currentReservation.getGuestID());
+
+                // Check if feedback already exists
+                boolean feedbackExists = feedbackService.checkFeedbackExists(currentReservation.getReservationID());
+                if (feedbackExists) {
+                    throw new ValidationException("Feedback has already been submitted for this stay");
+                }
+
+                // Display reservation information
+                displayReservationInfo();
+
+                // Enable submit button if rating is selected
+                updateSubmitButtonState();
+
+                logSystemActivity("Bill verified for feedback: #" + billId);
+
+            } catch (DatabaseException e) {
+                LoggingManager.logException("Database error verifying bill", e);
+                throw new ValidationException("Database error: " + e.getMessage());
+            }
 
         } catch (ValidationException e) {
             showError(e.getMessage());
-        } catch (NumberFormatException e) {
-            showError("Please enter a valid reservation ID");
-        } catch (DatabaseException e) {
-            LoggingManager.logException("Database error verifying reservation", e);
-            showError("Database error: " + e.getMessage());
         } catch (Exception e) {
-            LoggingManager.logException("Error verifying reservation", e);
+            LoggingManager.logException("Error verifying bill", e);
             showError("An error occurred: " + e.getMessage());
         }
     }
@@ -256,8 +283,9 @@ public class FeedbackController extends BaseController {
             // Show thank you message
             showThankYouMessage();
 
-            logSystemActivity("Feedback submitted for reservation #" +
-                    currentReservation.getReservationID() + " with rating " + selectedRating);
+            logSystemActivity("Feedback submitted for bill #" + currentBill.getBillID() +
+                    " (reservation #" + currentReservation.getReservationID() +
+                    ") with rating " + selectedRating);
 
         } catch (DatabaseException e) {
             LoggingManager.logException("Database error saving feedback", e);
@@ -328,6 +356,7 @@ public class FeedbackController extends BaseController {
         lblRoomInfo.setText("");
         currentReservation = null;
         currentGuest = null;
+        currentBill = null;
         selectedRating = 0;
         resetStars();
         txtComments.clear();
@@ -343,10 +372,10 @@ public class FeedbackController extends BaseController {
         lblRoomInfo.setStyle("-fx-text-fill: white;");
 
         // Style text fields and text area
-        txtReservationId.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+        txtBillId.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
         txtComments.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
 
-        txtReservationId.sceneProperty().addListener((obs, oldScene, newScene) -> {
+        txtBillId.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
                 // Apply style to all labels
                 for (Node node : newScene.getRoot().lookupAll(".label")) {
@@ -359,7 +388,7 @@ public class FeedbackController extends BaseController {
     }
 
     private void adjustStageSize() {
-        txtReservationId.sceneProperty().addListener((obs, oldScene, newScene) -> {
+        txtBillId.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null && newScene.getWindow() != null) {
                 try {
                     Stage stage = (Stage) newScene.getWindow();
@@ -477,4 +506,5 @@ public class FeedbackController extends BaseController {
     private void logSystemActivity(String activity) {
         LoggingManager.logSystemInfo(activity);
     }
+
 }

@@ -180,7 +180,7 @@ public class CheckoutController extends BaseController {
 
             // Show feedback reminder if the checkbox is selected
             if (chkFeedbackReminder.isSelected()) {
-                showFeedbackReminder();
+                showFeedbackReminder(billId);
             }
 
             // Show success message
@@ -267,11 +267,13 @@ public class CheckoutController extends BaseController {
     /**
      * Show a reminder to the admin about guest feedback
      */
-    private void showFeedbackReminder() {
+    private void showFeedbackReminder(int billId) {
         showAlert(Alert.AlertType.INFORMATION,
                 "Feedback Reminder",
-                "Please remind the guest that they can use the kiosk " +
-                        "to provide feedback about their stay.");
+                "Please inform the guest that they can use the kiosk " +
+                        "to provide feedback about their stay.\n\n" +
+                        "Their Bill ID is: " + billId + "\n\n" +
+                        "Please remind them to use this Bill ID when submitting feedback.");
     }
 
     /**

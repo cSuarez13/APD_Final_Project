@@ -16,6 +16,35 @@ import java.util.List;
 public class BillingDAO {
 
     /**
+     * Find a bill by ID
+     *
+     * @param billId The bill ID
+     * @return The bill, or null if not found
+     * @throws DatabaseException If there's an error retrieving the bill
+     */
+    public Billing findById(int billId) throws DatabaseException {
+        String sql = "SELECT * FROM bills WHERE bill_id = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, billId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToBilling(rs);
+                } else {
+                    return null;
+                }
+            }
+
+        } catch (SQLException e) {
+            LoggingManager.logException("Database error while finding bill by ID", e);
+            throw new DatabaseException("Error finding bill: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * Save a new billing record to the database
      *
      * @param billing The billing to save
@@ -97,7 +126,7 @@ public class BillingDAO {
      * Find billings within a date range
      *
      * @param startDateTime Start date/time
-     * @param endDateTime End date/time
+     * @param endDateTime   End date/time
      * @return List of billings within the date range
      * @throws DatabaseException If there's an error retrieving billings
      */

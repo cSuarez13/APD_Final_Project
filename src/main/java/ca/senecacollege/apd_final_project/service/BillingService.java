@@ -26,6 +26,22 @@ public class BillingService {
     }
 
     /**
+     * Get a bill by its ID
+     *
+     * @param billId The bill ID
+     * @return The bill or null if not found
+     * @throws DatabaseException If there's an error retrieving the bill
+     */
+    public Billing getBillById(int billId) throws DatabaseException {
+        try {
+            return billingDAO.findById(billId);
+        } catch (Exception e) {
+            LoggingManager.logException("Error retrieving bill with ID: " + billId, e);
+            throw new DatabaseException("Error retrieving bill: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * Get bills created within a date range
      *
      * @param startDateTime Start date/time
