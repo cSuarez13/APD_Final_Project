@@ -198,7 +198,7 @@ public class DateSelectionController extends BaseController {
             // Get the current stage
             Stage stage = getStage();
 
-            // Create new scene
+            // Create new scene with compact size for room selection
             Scene roomSelectionScene = new Scene(roomSelectionRoot);
             roomSelectionScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
             roomSelectionScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_KIOSK)).toExternalForm());
@@ -206,15 +206,16 @@ public class DateSelectionController extends BaseController {
             // Set the new scene
             stage.setScene(roomSelectionScene);
 
-            // Size the stage properly
-            double stageWidth = ScreenSizeManager.calculateStageWidth(1024);
-            double stageHeight = ScreenSizeManager.calculateStageHeight(768);
+            // Set optimal size for room selection screen
+            double stageWidth = 950;
+            double stageHeight = 768;
             double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
 
             stage.setWidth(stageWidth);
             stage.setHeight(stageHeight);
             stage.setX(centerPos[0]);
             stage.setY(centerPos[1]);
+            stage.setMaximized(false);
 
             LoggingManager.logSystemInfo("Navigated to room selection screen with " + guestCount +
                     " guests, check-in: " + dpCheckIn.getValue() + ", check-out: " + dpCheckOut.getValue());

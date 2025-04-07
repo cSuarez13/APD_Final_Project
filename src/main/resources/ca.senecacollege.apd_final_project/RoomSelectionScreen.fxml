@@ -1,347 +1,414 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.RowConstraints?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
-
-<BorderPane fx:id="mainPane" prefHeight="600.0" prefWidth="750.0" styleClass="root"
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<BorderPane fx:id="mainPane" styleClass="root"
             xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ca.senecacollege.apd_final_project.controller.kiosk.RoomSelectionController">
 
     <center>
-        <VBox alignment="CENTER" styleClass="content-container" maxWidth="750" prefWidth="750">
-            <VBox alignment="CENTER" spacing="15.0">
-                <padding>
-                    <Insets bottom="15.0" left="20.0" right="20.0" top="15.0" />
-                </padding>
+        <VBox alignment="CENTER" spacing="10.0" styleClass="content-container">
+            <padding>
+                <Insets top="5.0" right="5.0" bottom="5.0" left="5.0" />
+            </padding>
 
-                <!-- Header -->
-                <Label styleClass="label-header" text="Select Your Rooms">
-                    <font>
-                        <Font name="System Bold" size="28.0" />
-                    </font>
-                    <VBox.margin>
-                        <Insets/>
-                    </VBox.margin>
-                </Label>
+            <!-- Header with minimal spacing -->
+            <Label styleClass="label-header" text="Select Your Rooms">
+                <font>
+                    <Font name="System Bold" size="24.0" />
+                </font>
+                <VBox.margin>
+                    <Insets top="0" />
+                </VBox.margin>
+            </Label>
 
-                <Label styleClass="label-secondary" text="Please select the number of rooms you need">
-                    <font>
-                        <Font size="18.0" />
-                    </font>
-                    <VBox.margin>
-                        <Insets bottom="5.0" />
-                    </VBox.margin>
-                </Label>
+            <Label styleClass="label-secondary" text="Please select the number of rooms you need">
+                <font>
+                    <Font size="16.0" />
+                </font>
+                <VBox.margin>
+                    <Insets bottom="5.0" />
+                </VBox.margin>
+            </Label>
 
-                <!-- Guest count summary -->
-                <Label fx:id="lblGuestSummary" styleClass="guest-summary"
-                       text="Total guests: 4">
-                    <font>
-                        <Font size="18.0" />
-                    </font>
-                    <VBox.margin>
-                        <Insets bottom="10.0" />
-                    </VBox.margin>
-                </Label>
+            <!-- Guest count summary -->
+            <Label fx:id="lblGuestSummary" styleClass="guest-summary"
+                   text="Total guests: 4">
+                <font>
+                    <Font size="16.0" />
+                </font>
+                <VBox.margin>
+                    <Insets bottom="5.0" />
+                </VBox.margin>
+            </Label>
 
-                <!-- Room Selection Grid -->
-                <GridPane hgap="15.0" vgap="15.0" alignment="CENTER">
-                    <columnConstraints>
-                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="350.0" />
-                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="350.0" />
-                    </columnConstraints>
-                    <rowConstraints>
-                        <RowConstraints minHeight="90.0" prefHeight="90.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="90.0" prefHeight="90.0" vgrow="SOMETIMES" />
-                    </rowConstraints>
+            <!-- Room Selection Grid - Tighter spacing -->
+            <GridPane hgap="20.0" vgap="20.0" alignment="CENTER" maxWidth="650.0">
+                <columnConstraints>
+                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="300.0" />
+                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="300.0" />
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints minHeight="70.0" prefHeight="70.0" vgrow="SOMETIMES" />
+                    <RowConstraints minHeight="70.0" prefHeight="70.0" vgrow="SOMETIMES" />
+                </rowConstraints>
 
-                    <!-- Single Room -->
-                    <HBox alignment="CENTER_LEFT" spacing="15.0" styleClass="room-selection-box"
-                          GridPane.columnIndex="0" GridPane.rowIndex="0">
-                        <padding>
-                            <Insets top="10.0" right="10.0" bottom="10.0" left="10.0" />
-                        </padding>
+                <!-- Single Room -->
+                <HBox alignment="CENTER_LEFT" spacing="5.0" styleClass="room-selection-box"
+                      GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <padding>
+                        <Insets top="5.0" right="5.0" bottom="5.0" left="5.0" />
+                    </padding>
 
-                        <!-- Room details (on the left) -->
-                        <VBox alignment="CENTER_LEFT" spacing="5.0" HBox.hgrow="ALWAYS">
-                            <Label text="Single Room" styleClass="room-type-label">
-                                <font>
-                                    <Font size="18.0" />
-                                </font>
-                            </Label>
+                    <!-- Room details (on the left) -->
+                    <VBox alignment="CENTER_LEFT" spacing="2.0" HBox.hgrow="ALWAYS">
+                        <Label text="Single Room" styleClass="room-type-label">
+                            <font>
+                                <Font size="16.0" />
+                            </font>
+                        </Label>
 
-                            <Label text="100.00/night" styleClass="room-price-label">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Label>
+                        <Label text="100.00/night" styleClass="room-price-label">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Label>
 
-                            <Label text="Max 2 Guests" styleClass="room-capacity-label">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Label>
-                        </VBox>
+                        <Label text="Max 2 Guests" styleClass="room-capacity-label">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Label>
+                    </VBox>
 
-                        <!-- Counter controls (on the right) -->
-                        <HBox alignment="CENTER" spacing="10.0" minWidth="100">
-                            <Button fx:id="btnSingleMinus" mnemonicParsing="false" onAction="#handleSingleMinus"
-                                    prefHeight="30.0" prefWidth="30.0" styleClass="room-counter-button" text="-">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Button>
+                    <!-- Counter controls (on the right) -->
+                    <HBox alignment="CENTER" spacing="5.0" minWidth="90">
+                        <Button fx:id="btnSingleMinus" mnemonicParsing="false" onAction="#handleSingleMinus"
+                                prefHeight="26.0" prefWidth="26.0" styleClass="room-counter-button">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="-" styleClass="counter-label" alignment="CENTER">
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                            <padding>
+                                <Insets top="0" right="0" bottom="0" left="0" />
+                            </padding>
+                        </Button>
 
-                            <Label fx:id="lblSingleCount" text="0" styleClass="room-count-label">
-                                <font>
-                                    <Font size="22.0" />
-                                </font>
-                                <HBox.margin>
-                                    <Insets left="5.0" right="5.0" />
-                                </HBox.margin>
-                            </Label>
+                        <Label fx:id="lblSingleCount" text="0" styleClass="room-count-label">
+                            <font>
+                                <Font size="18.0" />
+                            </font>
+                            <HBox.margin>
+                                <Insets left="3.0" right="3.0" />
+                            </HBox.margin>
+                        </Label>
 
-                            <Button fx:id="btnSinglePlus" mnemonicParsing="false" onAction="#handleSinglePlus"
-                                    prefHeight="30.0" prefWidth="30.0" styleClass="room-counter-button" text="+">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Button>
-                        </HBox>
+                        <Button fx:id="btnSinglePlus" mnemonicParsing="false" onAction="#handleSinglePlus"
+                                prefHeight="26.0" prefWidth="26.0" styleClass="room-counter-button">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="+" styleClass="counter-label" alignment="CENTER">
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                            <padding>
+                                <Insets top="0" right="0" bottom="0" left="0" />
+                            </padding>
+                        </Button>
                     </HBox>
-
-                    <!-- Double Room -->
-                    <HBox alignment="CENTER_LEFT" spacing="15.0" styleClass="room-selection-box"
-                          GridPane.columnIndex="1" GridPane.rowIndex="0">
-                        <padding>
-                            <Insets top="10.0" right="10.0" bottom="10.0" left="10.0" />
-                        </padding>
-
-                        <!-- Room details (on the left) -->
-                        <VBox alignment="CENTER_LEFT" spacing="5.0" HBox.hgrow="ALWAYS">
-                            <Label text="Double Room" styleClass="room-type-label">
-                                <font>
-                                    <Font size="18.0" />
-                                </font>
-                            </Label>
-
-                            <Label text="180.00/night" styleClass="room-price-label">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Label>
-
-                            <Label text="Max 4 Guests" styleClass="room-capacity-label">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Label>
-                        </VBox>
-
-                        <!-- Counter controls (on the right) -->
-                        <HBox alignment="CENTER" spacing="10.0" minWidth="100">
-                            <Button fx:id="btnDoubleMinus" mnemonicParsing="false" onAction="#handleDoubleMinus"
-                                    prefHeight="30.0" prefWidth="30.0" styleClass="room-counter-button" text="-">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Button>
-
-                            <Label fx:id="lblDoubleCount" text="0" styleClass="room-count-label">
-                                <font>
-                                    <Font size="22.0" />
-                                </font>
-                                <HBox.margin>
-                                    <Insets left="5.0" right="5.0" />
-                                </HBox.margin>
-                            </Label>
-
-                            <Button fx:id="btnDoublePlus" mnemonicParsing="false" onAction="#handleDoublePlus"
-                                    prefHeight="30.0" prefWidth="30.0" styleClass="room-counter-button" text="+">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Button>
-                        </HBox>
-                    </HBox>
-
-                    <!-- Deluxe Room -->
-                    <HBox alignment="CENTER_LEFT" spacing="15.0" styleClass="room-selection-box"
-                          GridPane.columnIndex="0" GridPane.rowIndex="1">
-                        <padding>
-                            <Insets top="10.0" right="10.0" bottom="10.0" left="10.0" />
-                        </padding>
-
-                        <!-- Room details (on the left) -->
-                        <VBox alignment="CENTER_LEFT" spacing="5.0" HBox.hgrow="ALWAYS">
-                            <Label text="Deluxe Room" styleClass="room-type-label">
-                                <font>
-                                    <Font size="18.0" />
-                                </font>
-                            </Label>
-
-                            <Label text="250.00/night" styleClass="room-price-label">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Label>
-
-                            <Label text="Max 2 Guests" styleClass="room-capacity-label">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Label>
-                        </VBox>
-
-                        <!-- Counter controls (on the right) -->
-                        <HBox alignment="CENTER" spacing="10.0" minWidth="100">
-                            <Button fx:id="btnDeluxeMinus" mnemonicParsing="false" onAction="#handleDeluxeMinus"
-                                    prefHeight="30.0" prefWidth="30.0" styleClass="room-counter-button" text="-">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Button>
-
-                            <Label fx:id="lblDeluxeCount" text="0" styleClass="room-count-label">
-                                <font>
-                                    <Font size="22.0" />
-                                </font>
-                                <HBox.margin>
-                                    <Insets left="5.0" right="5.0" />
-                                </HBox.margin>
-                            </Label>
-
-                            <Button fx:id="btnDeluxePlus" mnemonicParsing="false" onAction="#handleDeluxePlus"
-                                    prefHeight="30.0" prefWidth="30.0" styleClass="room-counter-button" text="+">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Button>
-                        </HBox>
-                    </HBox>
-
-                    <!-- Pent House -->
-                    <HBox alignment="CENTER_LEFT" spacing="15.0" styleClass="room-selection-box"
-                          GridPane.columnIndex="1" GridPane.rowIndex="1">
-                        <padding>
-                            <Insets top="10.0" right="10.0" bottom="10.0" left="10.0" />
-                        </padding>
-
-                        <!-- Room details (on the left) -->
-                        <VBox alignment="CENTER_LEFT" spacing="5.0" HBox.hgrow="ALWAYS">
-                            <Label text="Pent House" styleClass="room-type-label">
-                                <font>
-                                    <Font size="18.0" />
-                                </font>
-                            </Label>
-
-                            <Label text="400.00/night" styleClass="room-price-label">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Label>
-
-                            <Label text="Max 2 Guests" styleClass="room-capacity-label">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Label>
-                        </VBox>
-
-                        <!-- Counter controls (on the right) -->
-                        <HBox alignment="CENTER" spacing="10.0" minWidth="100">
-                            <Button fx:id="btnPentHouseMinus" mnemonicParsing="false" onAction="#handlePentHouseMinus"
-                                    prefHeight="30.0" prefWidth="30.0" styleClass="room-counter-button" text="-">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Button>
-
-                            <Label fx:id="lblPentHouseCount" text="0" styleClass="room-count-label">
-                                <font>
-                                    <Font size="22.0" />
-                                </font>
-                                <HBox.margin>
-                                    <Insets left="5.0" right="5.0" />
-                                </HBox.margin>
-                            </Label>
-
-                            <Button fx:id="btnPentHousePlus" mnemonicParsing="false" onAction="#handlePentHousePlus"
-                                    prefHeight="30.0" prefWidth="30.0" styleClass="room-counter-button" text="+">
-                                <font>
-                                    <Font size="14.0" />
-                                </font>
-                            </Button>
-                        </HBox>
-                    </HBox>
-                </GridPane>
-
-                <!-- Validation message -->
-                <Label fx:id="lblValidationMessage" styleClass="validation-message" visible="false"
-                       text="More rooms are needed to accommodate all guests">
-                    <font>
-                        <Font size="16.0" />
-                    </font>
-                    <VBox.margin>
-                        <Insets top="5.0" bottom="5.0" />
-                    </VBox.margin>
-                </Label>
-
-                <!-- Summary -->
-                <Label fx:id="lblRoomSummary" styleClass="room-summary"
-                       text="Selected: 0 rooms for 0 guests">
-                    <font>
-                        <Font size="18.0" />
-                    </font>
-                    <VBox.margin>
-                        <Insets top="5.0" bottom="10.0" />
-                    </VBox.margin>
-                </Label>
-
-                <!-- Navigation buttons -->
-                <HBox alignment="CENTER" spacing="20.0">
-                    <VBox.margin>
-                        <Insets top="5.0"/>
-                    </VBox.margin>
-
-                    <Button fx:id="btnBack" cancelButton="true" mnemonicParsing="false" onAction="#handleBackButton"
-                            prefHeight="50.0" prefWidth="150.0" styleClass="button-secondary" text="Back">
-                        <font>
-                            <Font size="16.0" />
-                        </font>
-                    </Button>
-
-                    <Button fx:id="btnRules" mnemonicParsing="false" onAction="#handleRulesButton"
-                            prefHeight="50.0" prefWidth="200.0" styleClass="button-secondary"
-                            text="Rules &amp; Regulations">
-                        <font>
-                            <Font size="16.0" />
-                        </font>
-                    </Button>
-
-                    <Button fx:id="btnNext" defaultButton="true" mnemonicParsing="false" onAction="#handleNextButton"
-                            prefHeight="50.0" prefWidth="150.0" styleClass="button" text="Next">
-                        <font>
-                            <Font size="16.0" />
-                        </font>
-                    </Button>
                 </HBox>
-            </VBox>
+
+                <!-- Double Room -->
+                <HBox alignment="CENTER_LEFT" spacing="5.0" styleClass="room-selection-box"
+                      GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <padding>
+                        <Insets top="5.0" right="5.0" bottom="5.0" left="5.0" />
+                    </padding>
+
+                    <!-- Room details (on the left) -->
+                    <VBox alignment="CENTER_LEFT" spacing="2.0" HBox.hgrow="ALWAYS">
+                        <Label text="Double Room" styleClass="room-type-label">
+                            <font>
+                                <Font size="16.0" />
+                            </font>
+                        </Label>
+
+                        <Label text="180.00/night" styleClass="room-price-label">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Label>
+
+                        <Label text="Max 4 Guests" styleClass="room-capacity-label">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Label>
+                    </VBox>
+
+                    <!-- Counter controls (on the right) -->
+                    <HBox alignment="CENTER" spacing="5.0" minWidth="90">
+                        <Button fx:id="btnDoubleMinus" mnemonicParsing="false" onAction="#handleDoubleMinus"
+                                prefHeight="26.0" prefWidth="26.0" styleClass="room-counter-button">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="-" styleClass="counter-label" alignment="CENTER">
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                            <padding>
+                                <Insets top="0" right="0" bottom="0" left="0" />
+                            </padding>
+                        </Button>
+
+                        <Label fx:id="lblDoubleCount" text="0" styleClass="room-count-label">
+                            <font>
+                                <Font size="18.0" />
+                            </font>
+                            <HBox.margin>
+                                <Insets left="3.0" right="3.0" />
+                            </HBox.margin>
+                        </Label>
+
+                        <Button fx:id="btnDoublePlus" mnemonicParsing="false" onAction="#handleDoublePlus"
+                                prefHeight="26.0" prefWidth="26.0" styleClass="room-counter-button">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="+" styleClass="counter-label" alignment="CENTER">
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                            <padding>
+                                <Insets top="0" right="0" bottom="0" left="0" />
+                            </padding>
+                        </Button>
+                    </HBox>
+                </HBox>
+
+                <!-- Deluxe Room -->
+                <HBox alignment="CENTER_LEFT" spacing="5.0" styleClass="room-selection-box"
+                      GridPane.columnIndex="0" GridPane.rowIndex="1">
+                    <padding>
+                        <Insets top="5.0" right="5.0" bottom="5.0" left="5.0" />
+                    </padding>
+
+                    <!-- Room details (on the left) -->
+                    <VBox alignment="CENTER_LEFT" spacing="2.0" HBox.hgrow="ALWAYS">
+                        <Label text="Deluxe Room" styleClass="room-type-label">
+                            <font>
+                                <Font size="16.0" />
+                            </font>
+                        </Label>
+
+                        <Label text="250.00/night" styleClass="room-price-label">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Label>
+
+                        <Label text="Max 2 Guests" styleClass="room-capacity-label">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Label>
+                    </VBox>
+
+                    <!-- Counter controls (on the right) -->
+                    <HBox alignment="CENTER" spacing="5.0" minWidth="90">
+                        <Button fx:id="btnDeluxeMinus" mnemonicParsing="false" onAction="#handleDeluxeMinus"
+                                prefHeight="26.0" prefWidth="26.0" styleClass="room-counter-button">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="-" styleClass="counter-label" alignment="CENTER">
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                            <padding>
+                                <Insets top="0" right="0" bottom="0" left="0" />
+                            </padding>
+                        </Button>
+
+                        <Label fx:id="lblDeluxeCount" text="0" styleClass="room-count-label">
+                            <font>
+                                <Font size="18.0" />
+                            </font>
+                            <HBox.margin>
+                                <Insets left="3.0" right="3.0" />
+                            </HBox.margin>
+                        </Label>
+
+                        <Button fx:id="btnDeluxePlus" mnemonicParsing="false" onAction="#handleDeluxePlus"
+                                prefHeight="26.0" prefWidth="26.0" styleClass="room-counter-button">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="+" styleClass="counter-label" alignment="CENTER">
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                            <padding>
+                                <Insets top="0" right="0" bottom="0" left="0" />
+                            </padding>
+                        </Button>
+                    </HBox>
+                </HBox>
+
+                <!-- Pent House -->
+                <HBox alignment="CENTER_LEFT" spacing="5.0" styleClass="room-selection-box"
+                      GridPane.columnIndex="1" GridPane.rowIndex="1">
+                    <padding>
+                        <Insets top="5.0" right="5.0" bottom="5.0" left="5.0" />
+                    </padding>
+
+                    <!-- Room details (on the left) -->
+                    <VBox alignment="CENTER_LEFT" spacing="2.0" HBox.hgrow="ALWAYS">
+                        <Label text="Pent House" styleClass="room-type-label">
+                            <font>
+                                <Font size="16.0" />
+                            </font>
+                        </Label>
+
+                        <Label text="400.00/night" styleClass="room-price-label">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Label>
+
+                        <Label text="Max 2 Guests" styleClass="room-capacity-label">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Label>
+                    </VBox>
+
+                    <!-- Counter controls (on the right) -->
+                    <HBox alignment="CENTER" spacing="5.0" minWidth="90">
+                        <Button fx:id="btnPentHouseMinus" mnemonicParsing="false" onAction="#handlePentHouseMinus"
+                                prefHeight="26.0" prefWidth="26.0" styleClass="room-counter-button">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="-" styleClass="counter-label" alignment="CENTER">
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                            <padding>
+                                <Insets top="0" right="0" bottom="0" left="0" />
+                            </padding>
+                        </Button>
+
+                        <Label fx:id="lblPentHouseCount" text="0" styleClass="room-count-label">
+                            <font>
+                                <Font size="18.0" />
+                            </font>
+                            <HBox.margin>
+                                <Insets left="3.0" right="3.0" />
+                            </HBox.margin>
+                        </Label>
+
+                        <Button fx:id="btnPentHousePlus" mnemonicParsing="false" onAction="#handlePentHousePlus"
+                                prefHeight="26.0" prefWidth="26.0" styleClass="room-counter-button">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="+" styleClass="counter-label" alignment="CENTER">
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                            <padding>
+                                <Insets top="0" right="0" bottom="0" left="0" />
+                            </padding>
+                        </Button>
+                    </HBox>
+                </HBox>
+            </GridPane>
+
+            <!-- Validation message - tighter spacing -->
+            <Label fx:id="lblValidationMessage" styleClass="validation-message" visible="false"
+                   text="More rooms are needed to accommodate all guests">
+                <font>
+                    <Font size="14.0" />
+                </font>
+                <VBox.margin>
+                    <Insets top="5.0" />
+                </VBox.margin>
+            </Label>
+
+            <!-- Summary - tighter spacing -->
+            <Label fx:id="lblRoomSummary" styleClass="room-summary"
+                   text="Selected: 0 rooms for 0 guests">
+                <font>
+                    <Font size="16.0" />
+                </font>
+                <VBox.margin>
+                    <Insets bottom="5.0" />
+                </VBox.margin>
+            </Label>
+
+            <!-- Navigation buttons -->
+            <HBox alignment="CENTER" spacing="40.0">
+                <Button fx:id="btnBack" cancelButton="true" mnemonicParsing="false" onAction="#handleBackButton"
+                        prefHeight="60.0" prefWidth="200.0" styleClass="button-secondary" text="Back">
+                    <font>
+                        <Font size="20.0" />
+                    </font>
+                </Button>
+
+                <Button fx:id="btnRules" mnemonicParsing="false" onAction="#handleRulesButton"
+                        prefHeight="60.0" prefWidth="250.0" styleClass="button-secondary"
+                        text="Rules &amp; Regulations">
+                    <font>
+                        <Font size="20.0" />
+                    </font>
+                </Button>
+
+                <Button fx:id="btnNext" defaultButton="true" mnemonicParsing="false" onAction="#handleNextButton"
+                        prefHeight="60.0" prefWidth="200.0" styleClass="button" text="Next">
+                    <font>
+                        <Font size="20.0" />
+                    </font>
+                </Button>
+            </HBox>
         </VBox>
     </center>
 
     <bottom>
         <HBox alignment="CENTER" styleClass="bg-dark">
             <padding>
-                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
             </padding>
             <Label styleClass="label-secondary" text="Touch the screen to interact. Need assistance? Please contact the front desk." />
         </HBox>

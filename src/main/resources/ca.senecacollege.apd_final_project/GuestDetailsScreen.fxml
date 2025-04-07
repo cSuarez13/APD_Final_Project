@@ -9,11 +9,8 @@
             fx:controller="ca.senecacollege.apd_final_project.controller.kiosk.GuestDetailsController">
     <center>
         <VBox alignment="CENTER" spacing="20.0" styleClass="content-container" BorderPane.alignment="CENTER">
-            <padding>
-                <Insets bottom="40.0" left="40.0" right="40.0" top="40.0"/>
-            </padding>
             <BorderPane.margin>
-                <Insets bottom="40.0" left="40.0" right="40.0" top="40.0"/>
+                <Insets bottom="20.0" left="40.0" right="40.0" top="20.0"/>
             </BorderPane.margin>
             <Label styleClass="label-header" text="Guest Information">
                 <font>

@@ -110,7 +110,7 @@ public class RoomSelectionController extends BaseController {
         // Apply styles
         applyStyles();
 
-        // Adjust window size
+        // Adjust window size immediately
         adjustStageSize();
 
         // Initialize room counts to zero
@@ -213,12 +213,12 @@ public class RoomSelectionController extends BaseController {
      * Adjust the stage size to ensure it fits properly on screen
      */
     private void adjustStageSize() {
-        lblGuestSummary.sceneProperty().addListener((obs, oldScene, newScene) -> {
-            if (newScene != null && newScene.getWindow() != null) {
-                Stage stage = (Stage) newScene.getWindow();
+        Platform.runLater(() -> {
+            if (lblGuestSummary.getScene() != null && lblGuestSummary.getScene().getWindow() != null) {
+                Stage stage = (Stage) lblGuestSummary.getScene().getWindow();
 
-                // Calculate dimensions
-                double stageWidth = ScreenSizeManager.calculateStageWidth(1024);
+                // Match dimensions with GuestCount screen
+                double stageWidth = ScreenSizeManager.calculateStageWidth(950);
                 double stageHeight = ScreenSizeManager.calculateStageHeight(768);
 
                 // Get center position
@@ -233,7 +233,32 @@ public class RoomSelectionController extends BaseController {
                 // Make sure it's not maximized
                 stage.setMaximized(false);
 
-                LoggingManager.logSystemInfo("RoomSelectionScreen size adjusted to " + stageWidth + "x" + stageHeight);
+                LoggingManager.logSystemInfo("RoomSelectionScreen size matched to GuestCountScreen: " + stageWidth + "x" + stageHeight);
+            }
+        });
+
+        // Also add a listener for when the scene becomes available
+        lblGuestSummary.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null && newScene.getWindow() != null) {
+                Platform.runLater(() -> {
+                    Stage stage = (Stage) newScene.getWindow();
+
+                    // Match dimensions with GuestCount screen
+                    double stageWidth = ScreenSizeManager.calculateStageWidth(1024);
+                    double stageHeight = ScreenSizeManager.calculateStageHeight(768);
+
+                    // Get center position
+                    double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
+
+                    // Set the stage's size and position
+                    stage.setWidth(stageWidth);
+                    stage.setHeight(stageHeight);
+                    stage.setX(centerPos[0]);
+                    stage.setY(centerPos[1]);
+
+                    // Make sure it's not maximized
+                    stage.setMaximized(false);
+                });
             }
         });
     }
@@ -400,18 +425,21 @@ public class RoomSelectionController extends BaseController {
             guestDetailsScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
             guestDetailsScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_KIOSK)).toExternalForm());
 
-            // Set the new scene
+            // Set the scene
             stage.setScene(guestDetailsScene);
 
-            // Size the stage properly
+            // Size the stage properly using ScreenSizeManager
             double stageWidth = ScreenSizeManager.calculateStageWidth(1024);
             double stageHeight = ScreenSizeManager.calculateStageHeight(768);
-            double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
 
+            // Calculate center position
+            double[] stagePosition = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
+
+            // Apply dimensions and position
             stage.setWidth(stageWidth);
             stage.setHeight(stageHeight);
-            stage.setX(centerPos[0]);
-            stage.setY(centerPos[1]);
+            stage.setX(stagePosition[0]);
+            stage.setY(stagePosition[1]);
 
             LoggingManager.logSystemInfo("Navigated to guest details screen with " +
                     singleRoomCount + " single rooms, " + doubleRoomCount + " double rooms, " +
@@ -494,7 +522,7 @@ public class RoomSelectionController extends BaseController {
             DateSelectionController dateSelectionController = loader.getController();
             dateSelectionController.initGuestCount(guestCount);
 
-            // Get the current stage
+            /// Get the current stage
             Stage stage = getStage();
 
             // Create new scene
@@ -502,7 +530,7 @@ public class RoomSelectionController extends BaseController {
             dateSelectionScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
             dateSelectionScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_KIOSK)).toExternalForm());
 
-            // Set the scene
+            // Set the new scene
             stage.setScene(dateSelectionScene);
 
             // Size the stage properly
