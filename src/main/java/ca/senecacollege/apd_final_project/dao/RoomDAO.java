@@ -70,84 +70,64 @@ public class RoomDAO {
     }
 
     /**
-     * Check if a room type is available for the specified date range
+     * Count the number of available rooms of a specific type for the given date range
      *
      * @param roomType The room type
-     * @param checkInDate Check-in date
-     * @param checkOutDate Check-out date
-     * @return true if at least one room of the specified type is available, false otherwise
+     * @param checkInDate The check-in date
+     * @param checkOutDate The check-out date
+     * @return The number of available rooms
+     * @throws DatabaseException If there's an error counting available rooms
      */
-    public boolean isRoomTypeAvailable(RoomType roomType, LocalDate checkInDate, LocalDate checkOutDate) {
-        // For debugging
-        LoggingManager.logSystemInfo("Checking availability for " + roomType +
-                " from " + checkInDate + " to " + checkOutDate);
-
-        // First check if rooms of this type exist at all
-        String countRoomsSQL = "SELECT COUNT(*) FROM rooms WHERE room_type_id = ?";
+    public int countAvailableRooms(RoomType roomType, LocalDate checkInDate, LocalDate checkOutDate) throws DatabaseException {
+        String sql = "SELECT COUNT(*) FROM rooms r WHERE r.room_type_id = ? " +
+                "AND r.is_available = TRUE " +
+                "AND r.room_id NOT IN (" +
+                "SELECT res.room_id FROM reservations res " +
+                "WHERE res.status IN ('Pending', 'Confirmed', 'Checked In') " +
+                "AND ((res.check_in_date BETWEEN ? AND ?) " +
+                "OR (res.check_out_date BETWEEN ? AND ?) " +
+                "OR (res.check_in_date <= ? AND res.check_out_date >= ?)))";
 
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(countRoomsSQL)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, getRoomTypeId(roomType));
+            stmt.setDate(2, java.sql.Date.valueOf(checkInDate));
+            stmt.setDate(3, java.sql.Date.valueOf(checkOutDate));
+            stmt.setDate(4, java.sql.Date.valueOf(checkInDate));
+            stmt.setDate(5, java.sql.Date.valueOf(checkOutDate));
+            stmt.setDate(6, java.sql.Date.valueOf(checkInDate));
+            stmt.setDate(7, java.sql.Date.valueOf(checkOutDate));
 
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next() && rs.getInt(1) == 0) {
-                    // No rooms of this type exist at all
-                    LoggingManager.logSystemInfo("No rooms of type " + roomType + " exist in the database");
-
-                    createDefaultRooms(roomType);
-
-                    return true;
+                if (rs.next()) {
+                    return rs.getInt(1);
+                } else {
+                    return 0;
                 }
             }
+
         } catch (SQLException e) {
-            LoggingManager.logException("Error checking if rooms exist", e);
-        }
-
-        return true;
-    }
-
-    /**
-     * Helper method to create default rooms if none exist
-     */
-    private void createDefaultRooms(RoomType roomType) {
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            // Create room insertion SQL based on room type
-            String insertSQL = "INSERT INTO rooms (room_type_id, room_number, floor, price, is_available) VALUES (?, ?, ?, ?, TRUE)";
-
-            try (PreparedStatement stmt = conn.prepareStatement(insertSQL)) {
-                int roomTypeId = getRoomTypeId(roomType);
-                // Floor corresponds to room type
-                String roomNumber = roomTypeId + "01"; // e.g., 101, 201, etc.
-                double price = roomType.getBasePrice();
-
-                stmt.setInt(1, roomTypeId);
-                stmt.setString(2, roomNumber);
-                stmt.setInt(3, roomTypeId);
-                stmt.setDouble(4, price);
-
-                int result = stmt.executeUpdate();
-                LoggingManager.logSystemInfo("Created " + result + " default room(s) of type " + roomType);
-            }
-        } catch (SQLException e) {
-            LoggingManager.logException("Error creating default room", e);
+            LoggingManager.logException("Database error while counting available rooms", e);
+            throw new DatabaseException("Error counting available rooms: " + e.getMessage(), e);
         }
     }
 
     /**
-     * Find an available room of the specified type for the date range
+     * Find an available room of the specified type for the given date range
      *
      * @param roomType The room type
-     * @param checkInDate Check-in date
-     * @param checkOutDate Check-out date
+     * @param checkInDate The check-in date
+     * @param checkOutDate The check-out date
      * @return An available room, or null if none is available
      * @throws DatabaseException If there's an error finding an available room
      */
     public Room findAvailableRoom(RoomType roomType, LocalDate checkInDate, LocalDate checkOutDate) throws DatabaseException {
         String sql = "SELECT * FROM rooms r WHERE r.room_type_id = ? " +
+                "AND r.is_available = TRUE " +
                 "AND r.room_id NOT IN (" +
                 "SELECT res.room_id FROM reservations res " +
-                "WHERE res.status IN ('PENDING', 'CONFIRMED', 'CHECKED_IN') " +
+                "WHERE res.status IN ('Pending', 'Confirmed', 'Checked In') " +
                 "AND ((res.check_in_date BETWEEN ? AND ?) " +
                 "OR (res.check_out_date BETWEEN ? AND ?) " +
                 "OR (res.check_in_date <= ? AND res.check_out_date >= ?))) " +
@@ -168,6 +148,13 @@ public class RoomDAO {
                 if (rs.next()) {
                     return mapResultSetToRoom(rs);
                 } else {
+                    // If no rooms are available, check if rooms of this type exist at all
+                    if (countRoomsByType(roomType) == 0) {
+                        // Create default rooms if none exist
+                        createDefaultRooms(roomType);
+                        // Try again to find an available room
+                        return findAvailableRoom(roomType, checkInDate, checkOutDate);
+                    }
                     return null;
                 }
             }
@@ -175,6 +162,74 @@ public class RoomDAO {
         } catch (SQLException e) {
             LoggingManager.logException("Database error while finding available room", e);
             throw new DatabaseException("Error finding available room: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Count how many rooms of a specific type exist in the database
+     *
+     * @param roomType The room type
+     * @return The number of rooms of the specified type
+     * @throws SQLException If there's a database error
+     */
+    private int countRoomsByType(RoomType roomType) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM rooms WHERE room_type_id = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, getRoomTypeId(roomType));
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                } else {
+                    return 0;
+                }
+            }
+        }
+    }
+
+    /**
+     * Create default rooms of a specific type
+     *
+     * @param roomType The room type
+     * @throws SQLException If there's a database error
+     */
+    private void createDefaultRooms(RoomType roomType) throws SQLException {
+        LoggingManager.logSystemInfo("Creating default rooms for type: " + roomType);
+
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            // Create room insertion SQL based on room type
+            String insertSQL = "INSERT INTO rooms (room_type_id, room_number, floor, price, is_available) VALUES (?, ?, ?, ?, TRUE)";
+
+            try (PreparedStatement stmt = conn.prepareStatement(insertSQL)) {
+                int roomTypeId = getRoomTypeId(roomType);
+                int roomCount = switch (roomType) {
+                    case SINGLE -> 40;  // Create 40 single rooms
+                    case DOUBLE -> 30;  // Create 30 double rooms
+                    case DELUXE -> 20;  // Create 20 deluxe rooms
+                    case PENT_HOUSE -> 10;  // Create 10 pent houses
+                };
+
+                // Number of rooms to create for each type
+
+                // Use batch processing for efficiency
+                for (int i = 1; i <= roomCount; i++) {
+                    // Floor corresponds to room type
+                    int roomNumber = roomTypeId * 100 + i;  // e.g., 101, 102, 201, 202, etc.
+                    double price = roomType.getBasePrice();
+
+                    stmt.setInt(1, roomTypeId);
+                    stmt.setString(2, String.valueOf(roomNumber));
+                    stmt.setInt(3, roomTypeId);
+                    stmt.setDouble(4, price);
+                    stmt.addBatch();
+                }
+
+                int[] results = stmt.executeBatch();
+                LoggingManager.logSystemInfo("Created " + results.length + " default room(s) of type " + roomType);
+            }
         }
     }
 

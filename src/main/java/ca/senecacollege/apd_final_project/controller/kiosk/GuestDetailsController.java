@@ -16,13 +16,13 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
-import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class GuestDetailsController extends BaseController {
 
-    public Button btnBack;
     @FXML
     private TextField txtName;
 
@@ -42,17 +42,17 @@ public class GuestDetailsController extends BaseController {
     private Button btnNext;
 
     @FXML
-    private Button btnRules;
+    private Button btnBack;
 
-    // Booking data from previous screen
-    private int numberOfGuests;
-    private LocalDate checkInDate;
-    private LocalDate checkOutDate;
-    private RoomType roomType;
+    @FXML
+    private Button btnRules;
 
     // Services
     private GuestService guestService;
     private ReservationService reservationService;
+
+    // Booking data
+    private BookingData bookingData;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -66,8 +66,22 @@ public class GuestDetailsController extends BaseController {
         // Apply proper text styling to ensure visibility
         applyStyles();
 
+        // Adjust window size
+        adjustStageSize();
+
         // Call parent initialize
         super.initialize(url, resourceBundle);
+
+        LoggingManager.logSystemInfo("GuestDetailsController initialized");
+    }
+
+    /**
+     * Initialize with booking data from previous screens
+     * @param bookingData The booking data object
+     */
+    public void initBookingData(BookingData bookingData) {
+        this.bookingData = bookingData;
+        LoggingManager.logSystemInfo("Guest details screen initialized with booking data: " + bookingData);
     }
 
     /**
@@ -89,8 +103,6 @@ public class GuestDetailsController extends BaseController {
                         node.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
                     }
                 });
-
-                adjustStageSize();
             }
         });
     }
@@ -100,135 +112,179 @@ public class GuestDetailsController extends BaseController {
      */
     private void adjustStageSize() {
         try {
-            // Get stage
-            Stage stage = getStage();
-            if (stage != null) {
-                // Use ScreenSizeManager to set appropriate dimensions
-                double stageWidth = ScreenSizeManager.calculateStageWidth(900);
-                double stageHeight = ScreenSizeManager.calculateStageHeight(750);
+            txtName.sceneProperty().addListener((obs, oldScene, newScene) -> {
+                if (newScene != null && newScene.getWindow() != null) {
+                    Stage stage = (Stage) newScene.getWindow();
 
-                // Get center position
-                double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
+                    // Use ScreenSizeManager to set appropriate dimensions
+                    double stageWidth = ScreenSizeManager.calculateStageWidth(900);
+                    double stageHeight = ScreenSizeManager.calculateStageHeight(750);
 
-                // Set the stage's size and position
-                stage.setWidth(stageWidth);
-                stage.setHeight(stageHeight);
-                stage.setX(centerPos[0]);
-                stage.setY(centerPos[1]);
+                    // Get center position
+                    double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
 
-                // Make sure it's not maximized
-                stage.setMaximized(false);
+                    // Set the stage's size and position
+                    stage.setWidth(stageWidth);
+                    stage.setHeight(stageHeight);
+                    stage.setX(centerPos[0]);
+                    stage.setY(centerPos[1]);
 
-                LoggingManager.logSystemInfo("GuestDetailsScreen size adjusted to fit screen");
-            }
+                    // Make sure it's not maximized
+                    stage.setMaximized(false);
+
+                    LoggingManager.logSystemInfo("GuestDetailsScreen size adjusted to fit screen");
+                }
+            });
         } catch (Exception e) {
             LoggingManager.logException("Error adjusting stage size", e);
         }
-    }
-
-    public void initBookingData(int numberOfGuests, LocalDate checkInDate, LocalDate checkOutDate, RoomType roomType) {
-        this.numberOfGuests = numberOfGuests;
-        this.checkInDate = checkInDate;
-        this.checkOutDate = checkOutDate;
-        this.roomType = roomType;
-
-        LoggingManager.logSystemInfo("Guest details screen initialized with booking data");
     }
 
     @FXML
     private void handleNextButton() {
         // Validate inputs
         if (validateFields()) {
-            return;
+            try {
+                // Create guest object
+                Guest guest = new Guest();
+                guest.setName(txtName.getText().trim());
+                guest.setPhoneNumber(txtPhone.getText().trim());
+                guest.setEmail(txtEmail.getText().trim());
+                guest.setAddress(txtAddress.getText().trim());
+
+                // Save guest to database and get guest ID
+                int guestId = guestService.saveGuest(guest);
+
+                // Track the IDs of created reservations
+                List<Integer> reservationIds = new ArrayList<>();
+
+                // Create reservations for each room type
+                createReservationsForRoomType(guestId, RoomType.SINGLE, bookingData.getSingleRoomCount(), reservationIds);
+                createReservationsForRoomType(guestId, RoomType.DOUBLE, bookingData.getDoubleRoomCount(), reservationIds);
+                createReservationsForRoomType(guestId, RoomType.DELUXE, bookingData.getDeluxeRoomCount(), reservationIds);
+                createReservationsForRoomType(guestId, RoomType.PENT_HOUSE, bookingData.getPentHouseCount(), reservationIds);
+
+                // Log the successful reservations
+                LoggingManager.logSystemInfo("Created " + reservationIds.size() + " reservations for guest: " + guest.getName());
+
+                // Load the confirmation screen with the first reservation ID
+                if (!reservationIds.isEmpty()) {
+                    navigateToConfirmation(reservationIds.get(0));
+                } else {
+                    // This should not happen if validation is correct
+                    showError("Failed to create any reservations.");
+                }
+
+            } catch (Exception e) {
+                LoggingManager.logException("Error processing guest details", e);
+                DialogService.showError(getStage(), "Processing Error", "Error processing guest details: " + e.getMessage(), e);
+            }
         }
+    }
 
-        try {
-            // Create guest object
-            Guest guest = new Guest();
-            guest.setName(txtName.getText().trim());
-            guest.setPhoneNumber(txtPhone.getText().trim());
-            guest.setEmail(txtEmail.getText().trim());
-            guest.setAddress(txtAddress.getText().trim());
-
-            // Save guest to database and get guest ID
-            int guestId = guestService.saveGuest(guest);
-
+    /**
+     * Create reservations for a specific room type
+     *
+     * @param guestId The guest ID
+     * @param roomType The room type
+     * @param count Number of rooms to create
+     * @param reservationIds List to collect created reservation IDs
+     * @throws Exception If there's an error creating reservations
+     */
+    private void createReservationsForRoomType(int guestId, RoomType roomType, int count, List<Integer> reservationIds) throws Exception {
+        for (int i = 0; i < count; i++) {
             // Create reservation
             Reservation reservation = new Reservation();
             reservation.setGuestID(guestId);
-            reservation.setCheckInDate(checkInDate);
-            reservation.setCheckOutDate(checkOutDate);
-            reservation.setNumberOfGuests(numberOfGuests);
+            reservation.setCheckInDate(bookingData.getCheckInDate());
+            reservation.setCheckOutDate(bookingData.getCheckOutDate());
 
-            reservation.createReservation(
-                    guestId,
-                    0, // roomID will be assigned in the service
-                    checkInDate,
-                    checkOutDate,
-                    numberOfGuests
-            );
+            // Set guest count based on room type and available space
+            int roomCapacity = roomType.getMaxOccupancy();
+            int remainingGuests = Math.max(0, bookingData.getGuestCount() -
+                    reservationIds.size() * roomCapacity);
+            int guestsToAssign = Math.min(remainingGuests, roomCapacity);
 
-            // Save reservation and get reservation ID
+            // If this is the last room and no guests would be assigned, assign at least one
+            if (i == count - 1 && guestsToAssign == 0 && remainingGuests == 0) {
+                guestsToAssign = 1;
+            }
+
+            reservation.setNumberOfGuests(guestsToAssign);
+
+            // Create the reservation
             int reservationId = reservationService.createReservation(reservation, roomType);
-
-            // Load the confirmation screen
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_CONFIRMATION));
-            Parent confirmationRoot = loader.load();
-
-            // Get the controller and pass the reservation data
-            ConfirmationController confirmationController = loader.getController();
-            confirmationController.initReservationData(reservationId);
-
-            // Get the current stage
-            Stage stage = getStage();
-
-            // Create new scene
-            Scene confirmationScene = new Scene(confirmationRoot);
-            confirmationScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
-            confirmationScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_KIOSK)).toExternalForm());
-
-            // Set the new scene
-            stage.setScene(confirmationScene);
-
-            // Use ScreenSizeManager to set proper size and position
-            double stageWidth = ScreenSizeManager.calculateStageWidth(900);
-            double stageHeight = ScreenSizeManager.calculateStageHeight(700);
-            double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
-
-            stage.setWidth(stageWidth);
-            stage.setHeight(stageHeight);
-            stage.setX(centerPos[0]);
-            stage.setY(centerPos[1]);
-
-            LoggingManager.logSystemInfo("Navigated to confirmation screen with reservation ID: " + reservationId);
-
-        } catch (Exception e) {
-            LoggingManager.logException("Error processing guest details", e);
-            DialogService.showError(getStage(), "Processing Error", "Error processing guest details: " + e.getMessage(), e);
+            reservationIds.add(reservationId);
         }
+    }
+
+    /**
+     * Navigate to the confirmation screen
+     *
+     * @param reservationId The primary reservation ID to show
+     */
+    private void navigateToConfirmation(int reservationId) throws IOException {
+        // Load the confirmation screen
+        FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_CONFIRMATION));
+        Parent confirmationRoot = loader.load();
+
+        // Get the controller and pass the reservation data
+        ConfirmationController confirmationController = loader.getController();
+        confirmationController.initReservationData(reservationId);
+
+        // Get the current stage
+        Stage stage = getStage();
+
+        // Create new scene
+        Scene confirmationScene = new Scene(confirmationRoot);
+        confirmationScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
+        confirmationScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_KIOSK)).toExternalForm());
+
+        // Set the new scene
+        stage.setScene(confirmationScene);
+
+        // Use ScreenSizeManager to set proper size and position
+        double stageWidth = ScreenSizeManager.calculateStageWidth(900);
+        double stageHeight = ScreenSizeManager.calculateStageHeight(700);
+        double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
+
+        stage.setWidth(stageWidth);
+        stage.setHeight(stageHeight);
+        stage.setX(centerPos[0]);
+        stage.setY(centerPos[1]);
+
+        LoggingManager.logSystemInfo("Navigated to confirmation screen with reservation ID: " + reservationId);
     }
 
     @FXML
     private void handleBackButton() {
         try {
-            // Load the booking screen again
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_BOOKING));
-            Parent bookingRoot = loader.load();
+            // Load the room selection screen
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_ROOM_SELECTION));
+            Parent roomSelectionRoot = loader.load();
+
+            // Get the controller and pass the booking data
+            RoomSelectionController roomSelectionController = loader.getController();
+            roomSelectionController.initBookingData(
+                    bookingData.getGuestCount(),
+                    bookingData.getCheckInDate(),
+                    bookingData.getCheckOutDate()
+            );
 
             // Get the current stage
             Stage stage = getStage();
 
             // Create new scene
-            Scene bookingScene = new Scene(bookingRoot);
-            bookingScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
-            bookingScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_KIOSK)).toExternalForm());
+            Scene roomSelectionScene = new Scene(roomSelectionRoot);
+            roomSelectionScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
+            roomSelectionScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_KIOSK)).toExternalForm());
 
             // Set the new scene
-            stage.setScene(bookingScene);
+            stage.setScene(roomSelectionScene);
 
-            // Use ScreenSizeManager for proper sizing and positioning
-            double stageWidth = ScreenSizeManager.calculateStageWidth(900);
-            double stageHeight = ScreenSizeManager.calculateStageHeight(700);
+            // Size the stage properly
+            double stageWidth = ScreenSizeManager.calculateStageWidth(1024);
+            double stageHeight = ScreenSizeManager.calculateStageHeight(768);
             double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
 
             stage.setWidth(stageWidth);
@@ -236,11 +292,12 @@ public class GuestDetailsController extends BaseController {
             stage.setX(centerPos[0]);
             stage.setY(centerPos[1]);
 
-            LoggingManager.logSystemInfo("Navigated back to booking screen");
+            LoggingManager.logSystemInfo("Returned to room selection screen from guest details screen");
 
         } catch (IOException e) {
-            LoggingManager.logException("Error navigating back to booking screen", e);
-            DialogService.showError(getStage(), "Navigation Error", "Error returning to booking screen: " + e.getMessage(), e);
+            LoggingManager.logException("Error navigating back to room selection screen", e);
+            DialogService.showError(getStage(), "Navigation Error",
+                    "Error returning to room selection screen: " + e.getMessage(), e);
         }
     }
 
@@ -278,12 +335,11 @@ public class GuestDetailsController extends BaseController {
                 throw new ValidationException("Please enter your address");
             }
 
-            // All validations passed
-            return false;
+            return false; // All validations passed
 
         } catch (ValidationException e) {
             DialogService.showWarning(getStage(), "Validation Error", e.getMessage());
-            return true;
+            return true; // Validation failed
         }
     }
 

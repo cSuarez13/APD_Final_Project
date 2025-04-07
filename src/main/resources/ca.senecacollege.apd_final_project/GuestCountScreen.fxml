@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<BorderPane fx:id="mainPane" prefHeight="768.0" prefWidth="1024.0" styleClass="root"
+            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ca.senecacollege.apd_final_project.controller.kiosk.GuestCountController">
+
+    <center>
+        <VBox alignment="CENTER" spacing="30.0" styleClass="content-container">
+            <padding>
+                <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+            </padding>
+
+            <!-- Header -->
+            <Label styleClass="label-header" text="Welcome to Hotel ABC">
+                <font>
+                    <Font name="System Bold" size="36.0" />
+                </font>
+            </Label>
+
+            <Label styleClass="label-secondary" text="How many guests will be staying with us?">
+                <font>
+                    <Font size="24.0" />
+                </font>
+                <VBox.margin>
+                    <Insets bottom="30.0" />
+                </VBox.margin>
+            </Label>
+
+            <!-- Guest Counter with large, easy-to-use controls -->
+            <HBox alignment="CENTER" spacing="40.0">
+                <Button fx:id="btnDecrease" mnemonicParsing="false" onAction="#handleDecrease"
+                        prefHeight="80.0" prefWidth="80.0" styleClass="button-counter" text="-">
+                    <font>
+                        <Font size="36.0" />
+                    </font>
+                </Button>
+
+                <Label fx:id="lblGuestCount" alignment="CENTER" prefHeight="100.0" prefWidth="150.0"
+                       styleClass="guest-count" text="1">
+                    <font>
+                        <Font size="64.0" />
+                    </font>
+                </Label>
+
+                <Button fx:id="btnIncrease" mnemonicParsing="false" onAction="#handleIncrease"
+                        prefHeight="80.0" prefWidth="80.0" styleClass="button-counter" text="+">
+                    <font>
+                        <Font size="36.0" />
+                    </font>
+                </Button>
+            </HBox>
+
+            <!-- Description text -->
+            <Label styleClass="label-secondary" text="Please select the total number of guests that will be staying.">
+                <font>
+                    <Font size="18.0" />
+                </font>
+                <VBox.margin>
+                    <Insets top="30.0" bottom="50.0" />
+                </VBox.margin>
+            </Label>
+
+            <!-- Navigation buttons -->
+            <HBox alignment="CENTER" spacing="40.0">
+                <Button fx:id="btnBack" cancelButton="true" mnemonicParsing="false" onAction="#handleBackButton"
+                        prefHeight="60.0" prefWidth="200.0" styleClass="button-secondary" text="Back">
+                    <font>
+                        <Font size="20.0" />
+                    </font>
+                </Button>
+
+                <Button fx:id="btnRules" mnemonicParsing="false" onAction="#handleRulesButton"
+                        prefHeight="60.0" prefWidth="250.0" styleClass="button-secondary"
+                        text="Rules &amp; Regulations">
+                    <font>
+                        <Font size="20.0" />
+                    </font>
+                </Button>
+
+                <Button fx:id="btnNext" defaultButton="true" mnemonicParsing="false" onAction="#handleNextButton"
+                        prefHeight="60.0" prefWidth="200.0" styleClass="button" text="Next">
+                    <font>
+                        <Font size="20.0" />
+                    </font>
+                </Button>
+            </HBox>
+        </VBox>
+    </center>
+
+    <bottom>
+        <HBox alignment="CENTER" styleClass="bg-dark">
+            <padding>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            </padding>
+            <Label styleClass="label-secondary" text="Touch the screen to interact. Need assistance? Please contact the front desk." />
+        </HBox>
+    </bottom>
+</BorderPane>

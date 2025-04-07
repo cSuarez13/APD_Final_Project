@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 public class ReportController extends BaseController {
 
     public Button btnGenerateReport;
+    public TabPane tabPaneReports;
     @FXML
     private ComboBox<String> cmbReportType;
 

@@ -51,11 +51,11 @@ public class WelcomeScreenController extends BaseController {
     @FXML
     private void handleStartButton() {
         try {
-            LoggingManager.logSystemInfo("Opening booking interface");
+            LoggingManager.logSystemInfo("Starting booking process");
 
-            // Load the booking screen
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_BOOKING));
-            Parent bookingRoot = loader.load();
+            // Load the guest count screen (first screen in the new multi-step flow)
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_GUEST_COUNT));
+            Parent guestCountRoot = loader.load();
 
             // Get the current stage
             Stage stage = getStage();
@@ -67,10 +67,10 @@ public class WelcomeScreenController extends BaseController {
             double targetWidth = targetHeight * aspectRatio;
 
             // Create new scene with calculated dimensions
-            Scene bookingScene = new Scene(bookingRoot, targetWidth, targetHeight);
+            Scene guestCountScene = new Scene(guestCountRoot, targetWidth, targetHeight);
 
-            bookingScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
-            bookingScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_KIOSK)).toExternalForm());
+            guestCountScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
+            guestCountScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_KIOSK)).toExternalForm());
 
             double[] centerPos = ScreenSizeManager.centerStageOnScreen(targetWidth, targetHeight);
 
@@ -79,19 +79,19 @@ public class WelcomeScreenController extends BaseController {
             stage.setY(centerPos[1]);
             stage.setWidth(targetWidth);
             stage.setHeight(targetHeight);
-            stage.setScene(bookingScene);
+            stage.setScene(guestCountScene);
             stage.setMaximized(false);
             stage.show();
 
-            LoggingManager.logSystemInfo("Navigated to booking screen with dimensions: " +
+            LoggingManager.logSystemInfo("Navigated to guest count screen with dimensions: " +
                     targetWidth + "x" + targetHeight);
 
         } catch (IOException e) {
-            LoggingManager.logException("Error navigating to booking screen", e);
+            LoggingManager.logException("Error navigating to guest count screen", e);
 
             // Use DialogService to show error
             DialogService.showError(getStage(), "Navigation Error",
-                    "Error loading booking screen", e);
+                    "Error loading guest count screen", e);
         }
     }
 

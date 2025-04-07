@@ -12,6 +12,11 @@ public class Constants {
     public static final String FXML_CHECKOUT = "/ca.senecacollege.apd_final_project/CheckoutScreen.fxml";
     public static final String FXML_REPORT = "/ca.senecacollege.apd_final_project/ReportScreen.fxml";
     public static final String FXML_WELCOME = "/ca.senecacollege.apd_final_project/WelcomeScreen.fxml";
+    // New booking flow screens
+    public static final String FXML_GUEST_COUNT = "/ca.senecacollege.apd_final_project/GuestCountScreen.fxml";
+    public static final String FXML_DATE_SELECTION = "/ca.senecacollege.apd_final_project/DateSelectionScreen.fxml";
+    public static final String FXML_ROOM_SELECTION = "/ca.senecacollege.apd_final_project/RoomSelectionScreen.fxml";
+    // Original screens still used in the flow
     public static final String FXML_BOOKING = "/ca.senecacollege.apd_final_project/BookingScreen.fxml";
     public static final String FXML_GUEST_DETAILS = "/ca.senecacollege.apd_final_project/GuestDetailsScreen.fxml";
     public static final String FXML_CONFIRMATION = "/ca.senecacollege.apd_final_project/ConfirmationScreen.fxml";
@@ -32,7 +37,6 @@ public class Constants {
     // Room related constants
     public static final int MAX_GUESTS_SINGLE_ROOM = 2;
     public static final int MAX_GUESTS_DOUBLE_ROOM = 4;
-    public static final int MAX_GUESTS_DELUXE_ROOM = 2;
 
     // Tax rate
     public static final double TAX_RATE = 0.13; // 13% tax

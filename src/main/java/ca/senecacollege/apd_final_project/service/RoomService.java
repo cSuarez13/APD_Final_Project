@@ -34,19 +34,20 @@ public class RoomService {
     }
 
     /**
-     * Check if a room of specified type is available for the given date range
+     * Count how many rooms of a specific type are available for the given date range
      *
      * @param roomType The room type
      * @param checkInDate The check-in date
      * @param checkOutDate The check-out date
-     * @return true if a room is available, false otherwise
+     * @return The number of available rooms
+     * @throws DatabaseException If there's an error counting available rooms
      */
-    public boolean checkRoomAvailability(RoomType roomType, LocalDate checkInDate, LocalDate checkOutDate) {
+    public int countAvailableRooms(RoomType roomType, LocalDate checkInDate, LocalDate checkOutDate) throws DatabaseException {
         try {
-            return roomDAO.isRoomTypeAvailable(roomType, checkInDate, checkOutDate);
+            return roomDAO.countAvailableRooms(roomType, checkInDate, checkOutDate);
         } catch (Exception e) {
-            LoggingManager.logException("Error checking room availability", e);
-            return false;
+            LoggingManager.logException("Error counting available rooms", e);
+            throw new DatabaseException("Error counting available rooms: " + e.getMessage(), e);
         }
     }
 
