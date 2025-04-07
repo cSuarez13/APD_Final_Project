@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<BorderPane prefHeight="600.0" prefWidth="800.0" styleClass="root"
+            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ca.senecacollege.apd_final_project.controller.admin.ModifyReservationController">
+    <center>
+        <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="NEVER">
+            <VBox alignment="CENTER" spacing="20.0" styleClass="card" maxWidth="Infinity">
+                <padding>
+                    <Insets bottom="30.0" left="40.0" right="40.0" top="30.0"/>
+                </padding>
+                <BorderPane.margin>
+                    <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+                </BorderPane.margin>
+                <Label styleClass="label-header" text="Modify Reservation">
+                    <font>
+                        <Font name="System Bold" size="24.0"/>
+                    </font>
+                </Label>
+
+                <!-- Reservation Info Display -->
+                <VBox spacing="5">
+                    <HBox alignment="CENTER">
+                        <Label text="Reservation #" styleClass="label-secondary"/>
+                        <Label fx:id="lblReservationId" styleClass="label-secondary" style="-fx-font-weight: bold;"/>
+                        <Separator orientation="VERTICAL" visible="false" prefWidth="20"/>
+                        <Label text="Status:" styleClass="label-secondary"/>
+                        <Label fx:id="lblStatus" styleClass="label-secondary" style="-fx-font-weight: bold;"/>
+                    </HBox>
+                </VBox>
+
+                <!-- Guest Information (non-editable) -->
+                <HBox spacing="15">
+                    <Label text="Guest ID:" styleClass="label-secondary" minWidth="80"/>
+                    <Label fx:id="lblGuestId" styleClass="label-secondary"/>
+                    <Separator orientation="VERTICAL" visible="false" prefWidth="20"/>
+                    <Label text="Guest Name:" styleClass="label-secondary" minWidth="100"/>
+                    <Label fx:id="lblGuestName" styleClass="label-secondary"/>
+                </HBox>
+
+                <Separator prefWidth="200.0"/>
+
+                <!-- Editable Fields -->
+                <GridPane hgap="20.0" vgap="10.0">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="200.0" minWidth="150.0" prefWidth="180.0"/>
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="400.0"/>
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                        <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                        <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                        <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                    </rowConstraints>
+
+                    <!-- Room Assignment -->
+                    <Label text="Room:" GridPane.rowIndex="0">
+                        <font>
+                            <Font size="14.0"/>
+                        </font>
+                    </Label>
+                    <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="0" alignment="CENTER_LEFT">
+                        <Label fx:id="lblCurrentRoom" styleClass="label-secondary"/>
+                        <ComboBox fx:id="cmbNewRoom" promptText="Select new room"/>
+                    </HBox>
+
+                    <!-- Check-in Date -->
+                    <Label text="Check-in Date:" GridPane.rowIndex="1">
+                        <font>
+                            <Font size="14.0"/>
+                        </font>
+                    </Label>
+                    <DatePicker fx:id="dpCheckInDate" promptText="Select check-in date"
+                                prefWidth="250" prefHeight="35"
+                                GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                    <!-- Check-out Date -->
+                    <Label text="Check-out Date:" GridPane.rowIndex="2">
+                        <font>
+                            <Font size="14.0"/>
+                        </font>
+                    </Label>
+                    <DatePicker fx:id="dpCheckOutDate" promptText="Select check-out date"
+                                prefWidth="250" prefHeight="35"
+                                GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                    <!-- Number of Guests -->
+                    <Label text="Number of Guests:" GridPane.rowIndex="3">
+                        <font>
+                            <Font size="14.0"/>
+                        </font>
+                    </Label>
+                    <Spinner fx:id="spnNumberOfGuests" min="1" max="10" initialValue="1"
+                             editable="true" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                </GridPane>
+
+                <Separator prefWidth="200.0"/>
+
+                <!-- Error Message Label -->
+                <Label fx:id="lblError" styleClass="error-message" textFill="RED" visible="false"
+                       wrapText="true" textAlignment="CENTER">
+                    <font>
+                        <Font size="14.0"/>
+                    </font>
+                </Label>
+
+                <!-- Action Buttons -->
+                <HBox alignment="CENTER" spacing="30.0">
+                    <VBox.margin>
+                        <Insets top="20.0"/>
+                    </VBox.margin>
+                    <Button fx:id="btnCancel" cancelButton="true" mnemonicParsing="false"
+                            onAction="#handleCancelButton"
+                            prefHeight="50.0" prefWidth="150.0" styleClass="button-secondary" text="Cancel">
+                        <font>
+                            <Font size="16.0"/>
+                        </font>
+                    </Button>
+                    <Button fx:id="btnSave" defaultButton="true" mnemonicParsing="false"
+                            onAction="#handleSaveButton"
+                            prefHeight="50.0" prefWidth="200.0" styleClass="button" text="Save Changes">
+                        <font>
+                            <Font size="16.0"/>
+                        </font>
+                    </Button>
+                </HBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

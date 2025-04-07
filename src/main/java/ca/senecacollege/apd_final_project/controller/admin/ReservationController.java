@@ -8,20 +8,27 @@ import ca.senecacollege.apd_final_project.model.ReservationStatus;
 import ca.senecacollege.apd_final_project.service.DialogService;
 import ca.senecacollege.apd_final_project.service.ReservationService;
 import ca.senecacollege.apd_final_project.service.ServiceLocator;
+import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class ReservationController extends BaseController {
@@ -31,6 +38,9 @@ public class ReservationController extends BaseController {
 
     @FXML
     private Button btnCancelReservation;
+
+    @FXML
+    private Button btnModifyReservation;
 
     @FXML
     private TableView<Reservation> tblAllReservations;
@@ -64,12 +74,13 @@ public class ReservationController extends BaseController {
         cmbReservationFilter.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> refreshReservations());
 
-        // Initially disable cancel button until a reservation is selected
+        // Initially disable action buttons until a reservation is selected
         btnCancelReservation.setDisable(true);
+        btnModifyReservation.setDisable(true);
 
-        // Add listener to table selection for enabling/disabling cancel button
+        // Add listener to table selection for enabling/disabling buttons
         tblAllReservations.getSelectionModel().selectedItemProperty().addListener(
-                (obs, oldSelection, newSelection) -> updateCancelButtonState());
+                (obs, oldSelection, newSelection) -> updateButtonStates());
 
         LoggingManager.logSystemInfo("ReservationController initialization complete");
     }
@@ -78,7 +89,7 @@ public class ReservationController extends BaseController {
      * Setup table columns manually instead of using TableUtils
      */
     private void setupTableColumns() {
-        // Clear any existing columns
+        // Clear existing columns
         tblAllReservations.getColumns().clear();
 
         // Set the column resize policy to fill the entire width
@@ -124,13 +135,14 @@ public class ReservationController extends BaseController {
     }
 
     /**
-     * Update the cancel button state based on the selected reservation
+     * Update button states based on the selected reservation
      */
-    private void updateCancelButtonState() {
+    private void updateButtonStates() {
         Reservation selectedReservation = tblAllReservations.getSelectionModel().getSelectedItem();
 
         if (selectedReservation == null) {
             btnCancelReservation.setDisable(true);
+            btnModifyReservation.setDisable(true);
             return;
         }
 
@@ -138,7 +150,12 @@ public class ReservationController extends BaseController {
         boolean canCancel = selectedReservation.getStatus() == ReservationStatus.PENDING ||
                 selectedReservation.getStatus() == ReservationStatus.CONFIRMED;
 
+        // Only enable modify for reservations in PENDING or CONFIRMED status
+        boolean canModify = selectedReservation.getStatus() == ReservationStatus.PENDING ||
+                selectedReservation.getStatus() == ReservationStatus.CONFIRMED;
+
         btnCancelReservation.setDisable(!canCancel);
+        btnModifyReservation.setDisable(!canModify);
     }
 
     @Override
@@ -199,7 +216,7 @@ public class ReservationController extends BaseController {
             LoggingManager.logSystemInfo("Added " + allReservations.size() + " reservations to the table");
 
             // Update button states after refresh
-            updateCancelButtonState();
+            updateButtonStates();
 
         } catch (DatabaseException e) {
             LoggingManager.logException("Database error refreshing reservations", e);
@@ -207,6 +224,65 @@ public class ReservationController extends BaseController {
         } catch (Exception e) {
             LoggingManager.logException("Unexpected error refreshing reservations", e);
             showError("Unexpected error: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Handle modify reservation button click
+     */
+    @FXML
+    private void handleModifyReservation() {
+        Reservation selectedReservation = tblAllReservations.getSelectionModel().getSelectedItem();
+
+        if (selectedReservation == null) {
+            showError("Please select a reservation to modify.");
+            return;
+        }
+
+        // Double-check the status to ensure it can be modified
+        if (selectedReservation.getStatus() != ReservationStatus.PENDING &&
+                selectedReservation.getStatus() != ReservationStatus.CONFIRMED) {
+            showError("This reservation cannot be modified. Current status: " +
+                    selectedReservation.getStatusDisplayName());
+            return;
+        }
+
+        try {
+            // Open the reservation modification dialog
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_MODIFY_RESERVATION));
+            Parent root = loader.load();
+
+            // Get the controller and pass the reservation data
+            ModifyReservationController controller = loader.getController();
+            controller.initData(currentAdmin);
+            controller.initReservation(selectedReservation);
+
+            // Create and configure the stage
+            Stage modifyStage = new Stage();
+            modifyStage.initModality(Modality.APPLICATION_MODAL);
+            modifyStage.setTitle("Modify Reservation #" + selectedReservation.getReservationID());
+
+            // Set up the scene
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_MAIN)).toExternalForm());
+            scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_ADMIN)).toExternalForm());
+            modifyStage.setScene(scene);
+
+            // Show the dialog and wait for it to close
+            modifyStage.showAndWait();
+
+            // Refresh the table to reflect any changes
+            refreshReservations();
+
+            // Log the action
+            logAdminActivity("Modified reservation #" + selectedReservation.getReservationID());
+
+        } catch (IOException e) {
+            LoggingManager.logException("Error opening modification screen", e);
+            showError("Error opening modification screen: " + e.getMessage());
+        } catch (Exception e) {
+            LoggingManager.logException("Unexpected error during modification", e);
+            showError("An unexpected error occurred: " + e.getMessage());
         }
     }
 

@@ -16,6 +16,8 @@
         <Label text="Filter:"/>
         <ComboBox fx:id="cmbReservationFilter" prefWidth="150.0"/>
         <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="btnModifyReservation" mnemonicParsing="false" onAction="#handleModifyReservation"
+                styleClass="button-secondary" text="Modify Reservation"/>
         <Button fx:id="btnCancelReservation" mnemonicParsing="false" onAction="#handleCancelReservation"
                 styleClass="button-danger" text="Cancel Selected Reservation"/>
     </HBox>

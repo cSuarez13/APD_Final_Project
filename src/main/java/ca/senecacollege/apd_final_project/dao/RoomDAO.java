@@ -363,4 +363,46 @@ public class RoomDAO {
             case DOUBLE -> 2;
         };
     }
+
+    /**
+     * Check if a specific room is available for the given date range,
+     * excluding a specific reservation (for modification purposes)
+     *
+     * @param roomId The room ID
+     * @param checkInDate The check-in date
+     * @param checkOutDate The check-out date
+     * @param excludeReservationId Reservation ID to exclude from availability check
+     * @return true if the room is available, false otherwise
+     * @throws SQLException If there's a database error
+     */
+    public boolean isRoomAvailable(int roomId, LocalDate checkInDate, LocalDate checkOutDate, int excludeReservationId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM reservations " +
+                "WHERE room_id = ? " +
+                "AND reservation_id != ? " +
+                "AND status IN ('Pending', 'Confirmed', 'Checked In') " +
+                "AND ((check_in_date BETWEEN ? AND ?) " +
+                "OR (check_out_date BETWEEN ? AND ?) " +
+                "OR (check_in_date <= ? AND check_out_date >= ?))";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, roomId);
+            stmt.setInt(2, excludeReservationId);
+            stmt.setDate(3, java.sql.Date.valueOf(checkInDate));
+            stmt.setDate(4, java.sql.Date.valueOf(checkOutDate));
+            stmt.setDate(5, java.sql.Date.valueOf(checkInDate));
+            stmt.setDate(6, java.sql.Date.valueOf(checkOutDate));
+            stmt.setDate(7, java.sql.Date.valueOf(checkInDate));
+            stmt.setDate(8, java.sql.Date.valueOf(checkOutDate));
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    int overlappingReservations = rs.getInt(1);
+                    return overlappingReservations == 0;
+                }
+                return false;
+            }
+        }
+    }
 }
