@@ -5,42 +5,65 @@ import ca.senecacollege.apd_final_project.model.*;
 import ca.senecacollege.apd_final_project.service.*;
 import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class CheckoutController extends BaseController {
 
-    public Button btnSearch;
-    // FXML Fields
+    // FXML Fields - Updated to use contact info instead of reservation ID
     @FXML
-    private TextField txtReservationId;
+    private TextField txtContactInfo;
+
+    @FXML
+    private ComboBox<String> cmbSearchType;
+
+    @FXML
+    private Button btnSearch;
+
+    @FXML
+    private ComboBox<Reservation> cmbReservations;
+
     @FXML
     private Label lblGuestName;
+
     @FXML
     private Label lblRoomInfo;
+
     @FXML
     private Label lblCheckInDate;
+
     @FXML
     private Label lblCheckOutDate;
+
     @FXML
     private Label lblNights;
+
     @FXML
     private Label lblSubtotal;
+
     @FXML
     private Label lblTax;
+
     @FXML
     private TextField txtDiscount;
+
     @FXML
     private Label lblTotal;
+
     @FXML
     private Button btnCheckout;
+
     @FXML
     private Button btnCancel;
+
     @FXML
     private CheckBox chkFeedbackReminder;
 
@@ -57,6 +80,9 @@ public class CheckoutController extends BaseController {
     private Room currentRoom;
     private Billing currentBill;
 
+    // List to hold matching reservations
+    private ObservableList<Reservation> matchingReservations = FXCollections.observableArrayList();
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         // Initialize services using ServiceLocator
@@ -69,10 +95,17 @@ public class CheckoutController extends BaseController {
         // Set feedback reminder checkbox to checked by default
         chkFeedbackReminder.setSelected(true);
 
+        // Initialize search type combo box
+        cmbSearchType.setItems(FXCollections.observableArrayList("Email", "Phone Number"));
+        cmbSearchType.getSelectionModel().selectFirst();
+
+        // Setup reservations combo box
+        setupReservationsComboBox();
+
         // Hide error message initially
         hideError();
 
-        // Disable checkout button until reservation is found
+        // Disable checkout button until reservation is selected
         btnCheckout.setDisable(true);
 
         // Add listener to discount field to recalculate total when changed
@@ -86,8 +119,56 @@ public class CheckoutController extends BaseController {
             }
         });
 
+        // Add listener to reservation selection to update details
+        cmbReservations.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldValue, newValue) -> {
+                    if (newValue != null) {
+                        loadReservationDetails(newValue);
+                    } else {
+                        clearFields();
+                        btnCheckout.setDisable(true);
+                    }
+                });
+
         // Call parent initialize
         super.initialize(url, resourceBundle);
+    }
+
+    /**
+     * Setup the reservations combo box with custom cell factory
+     */
+    private void setupReservationsComboBox() {
+        cmbReservations.setConverter(new javafx.util.StringConverter<Reservation>() {
+            @Override
+            public String toString(Reservation reservation) {
+                if (reservation == null) return null;
+                return "Reservation #" + reservation.getReservationID() +
+                        " - Check-in: " + reservation.getCheckInDate();
+            }
+
+            @Override
+            public Reservation fromString(String string) {
+                // Not needed for our use case
+                return null;
+            }
+        });
+
+        cmbReservations.setCellFactory(param -> new ListCell<Reservation>() {
+            @Override
+            protected void updateItem(Reservation reservation, boolean empty) {
+                super.updateItem(reservation, empty);
+
+                if (empty || reservation == null) {
+                    setText(null);
+                } else {
+                    setText("Reservation #" + reservation.getReservationID() +
+                            " - Check-in: " + reservation.getCheckInDate() +
+                            " - Room: " + reservation.getRoomID());
+                }
+            }
+        });
+
+        cmbReservations.setItems(matchingReservations);
     }
 
     @FXML
@@ -95,33 +176,71 @@ public class CheckoutController extends BaseController {
         // Clear previous data
         clearFields();
         hideError();
+        matchingReservations.clear();
 
-        String reservationIdText = txtReservationId.getText().trim();
+        String contactInfo = txtContactInfo.getText().trim();
+        String searchType = cmbSearchType.getValue();
+
+        if (contactInfo.isEmpty()) {
+            showError("Please enter " + searchType.toLowerCase());
+            return;
+        }
 
         try {
-            // Validate reservation ID
-            validationService.validateId(reservationIdText, "Reservation ID");
+            // Find the guest based on contact info
+            List<Guest> guests;
+            if ("Email".equals(searchType)) {
+                guests = guestService.searchGuestsByEmail(contactInfo);
+            } else {
+                guests = guestService.searchGuestsByPhone(contactInfo);
+            }
 
-            int reservationId = Integer.parseInt(reservationIdText);
-
-            // Fetch reservation information
-            currentReservation = reservationService.getReservationById(reservationId);
-
-            if (currentReservation == null) {
-                showError("Reservation not found");
+            if (guests == null || guests.isEmpty()) {
+                showError("No guest found with the provided " + searchType.toLowerCase());
                 return;
             }
 
-            // Check if the reservation status allows checkout
-            if (!currentReservation.getStatus().equals(ReservationStatus.CHECKED_IN)) {
-                showError("This reservation cannot be checked out. Current status: " +
-                        currentReservation.getStatus().getDisplayName());
-                return;
+            // For each guest, get their active reservations
+            for (Guest guest : guests) {
+                List<Reservation> reservations = reservationService.getReservationsByGuest(guest.getGuestID());
+
+                // Filter only checked-in reservations
+                for (Reservation reservation : reservations) {
+                    if (reservation.getStatus() == ReservationStatus.CHECKED_IN) {
+                        matchingReservations.add(reservation);
+                    }
+                }
             }
+
+            if (matchingReservations.isEmpty()) {
+                showError("No active check-ins found for the provided " + searchType.toLowerCase());
+            } else {
+                // Automatically select first reservation if there's only one match
+                if (matchingReservations.size() == 1) {
+                    cmbReservations.getSelectionModel().selectFirst();
+                }
+
+                logAdminActivity("Found " + matchingReservations.size() + " active reservations for checkout");
+            }
+
+        } catch (Exception e) {
+            showError(e.getMessage());
+            logAdminActivity("Error searching by " + searchType + ": " + e.getMessage());
+        }
+    }
+
+    /**
+     * Loads the details of the selected reservation
+     *
+     * @param reservation The reservation to load details for
+     */
+    private void loadReservationDetails(Reservation reservation) {
+        try {
+            currentReservation = reservation;
 
             // Fetch guest and room information
-            currentGuest = guestService.getGuestById(currentReservation.getGuestID());
-            currentRoom = roomService.getRoomById(currentReservation.getRoomID());
+            currentGuest = guestService.getGuestById(reservation.getGuestID());
+            currentRoom = roomService.getRoomById(reservation.getRoomID());
 
             // Display information
             displayReservationInfo();
@@ -132,10 +251,11 @@ public class CheckoutController extends BaseController {
             // Enable checkout button
             btnCheckout.setDisable(false);
 
-            logAdminActivity("Found reservation #" + reservationId + " for checkout");
+            logAdminActivity("Selected reservation #" + reservation.getReservationID() + " for checkout");
 
         } catch (Exception e) {
-            showError(e.getMessage());
+            showError("Error loading reservation details: " + e.getMessage());
+            logAdminActivity("Error loading reservation details: " + e.getMessage());
         }
     }
 
@@ -280,7 +400,8 @@ public class CheckoutController extends BaseController {
      * Clear all fields and reset the form
      */
     private void clearAll() {
-        txtReservationId.clear();
+        txtContactInfo.clear();
+        matchingReservations.clear();
         clearFields();
         currentReservation = null;
         currentGuest = null;
@@ -329,8 +450,17 @@ public class CheckoutController extends BaseController {
     }
 
     public void setReservationId(int reservationId) {
-        txtReservationId.setText(String.valueOf(reservationId));
-        // Trigger the search action programmatically
-        handleSearchButton();
+        // This method is kept for backward compatibility
+        // It will load the reservation directly by ID
+        try {
+            Reservation reservation = reservationService.getReservationById(reservationId);
+            if (reservation != null) {
+                matchingReservations.clear();
+                matchingReservations.add(reservation);
+                cmbReservations.getSelectionModel().selectFirst();
+            }
+        } catch (Exception e) {
+            showError("Error loading reservation: " + e.getMessage());
+        }
     }
 }
