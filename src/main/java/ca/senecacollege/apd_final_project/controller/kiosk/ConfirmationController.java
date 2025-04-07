@@ -3,22 +3,28 @@ package ca.senecacollege.apd_final_project.controller.kiosk;
 import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.model.Guest;
 import ca.senecacollege.apd_final_project.model.Reservation;
+import ca.senecacollege.apd_final_project.model.ReservationRoom;
 import ca.senecacollege.apd_final_project.model.Room;
 import ca.senecacollege.apd_final_project.service.*;
 import ca.senecacollege.apd_final_project.util.Constants;
+import ca.senecacollege.apd_final_project.util.LoggingManager;
 import ca.senecacollege.apd_final_project.util.ScreenSizeManager;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
@@ -48,14 +54,22 @@ public class ConfirmationController extends BaseController {
     @FXML
     private Button btnDone;
 
+    // Container for room details
+    @FXML
+    private VBox roomDetailsContainer;
+    @FXML
+    private GridPane roomGrid;
+
     private int reservationId;
     private Reservation reservation;
     private Guest guest;
-    private Room room;
+    private List<Room> rooms;
+    private List<ReservationRoom> reservationRooms;
 
     private ReservationService reservationService;
     private GuestService guestService;
     private RoomService roomService;
+    private BillingService billingService;
 
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
 
@@ -65,6 +79,7 @@ public class ConfirmationController extends BaseController {
         reservationService = ServiceLocator.getService(ReservationService.class);
         guestService = ServiceLocator.getService(GuestService.class);
         roomService = ServiceLocator.getService(RoomService.class);
+        billingService = ServiceLocator.getService(BillingService.class);
 
         applyStyles();
 
@@ -111,13 +126,13 @@ public class ConfirmationController extends BaseController {
             if (newScene != null) {
                 Stage stage = (Stage) newScene.getWindow();
 
-                // Calculate dimensions - use at most 90% of screen height
+                // Calculate dimensions based on screen dimensions
                 double stageWidth = ScreenSizeManager.calculateStageWidth(1024);
-                double stageHeight = ScreenSizeManager.calculateStageHeight(750); // Increased height
+                double stageHeight = ScreenSizeManager.calculateStageHeight(800); // Increased height for multiple rooms
 
                 // Ensure minimum size for content
                 stageWidth = Math.max(stageWidth, 800);
-                stageHeight = Math.max(stageHeight, 600);
+                stageHeight = Math.max(stageHeight, 700);
 
                 // Get center position
                 double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
@@ -146,8 +161,11 @@ public class ConfirmationController extends BaseController {
             // Load guest details
             guest = guestService.getGuestById(reservation.getGuestID());
 
-            // Load room details
-            room = roomService.getRoomById(reservation.getRoomID());
+            // Load all rooms for this reservation
+            rooms = reservationService.getRoomsForReservation(reservationId);
+
+            // Load reservation-room relationships for guest assignments
+            reservationRooms = reservationService.getReservationRooms(reservationId);
 
             // Update UI with reservation details
             updateConfirmationDetails();
@@ -165,7 +183,10 @@ public class ConfirmationController extends BaseController {
         // Format the reservation details for display
         lblReservationId.setText("Reservation #" + reservationId);
         lblGuestName.setText(guest.getName());
-        lblRoomInfo.setText(room.getRoomType().getDisplayName() + " (Room #" + room.getRoomID() + ")");
+
+        // Room info is now handled in displayRoomDetails()
+        displayRoomDetails();
+
         lblCheckIn.setText(reservation.getCheckInDate().format(dateFormatter));
         lblCheckOut.setText(reservation.getCheckOutDate().format(dateFormatter));
 
@@ -177,13 +198,164 @@ public class ConfirmationController extends BaseController {
         lblGuests.setText(String.valueOf(reservation.getNumberOfGuests()));
 
         // Calculate and show pricing
-        double subtotal = room.getPrice() * nights;
-        double tax = subtotal * Constants.TAX_RATE;
-        double total = subtotal + tax;
+        try {
+            // Use the BillingService to calculate the bill
+            var bill = billingService.calculateBill(reservationId);
 
-        lblSubtotal.setText(String.format("$%.2f", subtotal));
-        lblTax.setText(String.format("$%.2f", tax));
-        lblTotal.setText(String.format("$%.2f", total));
+            lblSubtotal.setText(String.format("$%.2f", bill.getAmount()));
+            lblTax.setText(String.format("$%.2f", bill.getTax()));
+            lblTotal.setText(String.format("$%.2f", bill.getTotalAmount()));
+
+        } catch (Exception e) {
+            LoggingManager.logException("Error calculating bill", e);
+
+            // Fallback calculation if billing service fails
+            double subtotal = calculateSubtotal();
+            double tax = subtotal * Constants.TAX_RATE;
+            double total = subtotal + tax;
+
+            lblSubtotal.setText(String.format("$%.2f", subtotal));
+            lblTax.setText(String.format("$%.2f", tax));
+            lblTotal.setText(String.format("$%.2f", total));
+        }
+    }
+
+    /**
+     * Display details for all rooms in the reservation
+     */
+    private void displayRoomDetails() {
+        if (rooms.isEmpty()) {
+            lblRoomInfo.setText("No rooms assigned");
+            return;
+        }
+
+        // If single room, keep backward compatibility
+        if (rooms.size() == 1) {
+            Room room = rooms.get(0);
+            lblRoomInfo.setText(room.getRoomType().getDisplayName() + " (Room #" + room.getRoomID() + ")");
+            return;
+        }
+
+        // For multiple rooms, create a summary in lblRoomInfo
+        StringBuilder roomSummary = new StringBuilder();
+        roomSummary.append(rooms.size()).append(" rooms: ");
+
+        int singleCount = 0, doubleCount = 0, deluxeCount = 0, pentCount = 0;
+
+        for (Room room : rooms) {
+            switch (room.getRoomType()) {
+                case SINGLE -> singleCount++;
+                case DOUBLE -> doubleCount++;
+                case DELUXE -> deluxeCount++;
+                case PENT_HOUSE -> pentCount++;
+            }
+        }
+
+        // Add counts to summary
+        boolean firstType = true;
+        if (singleCount > 0) {
+            roomSummary.append(singleCount).append(" Single");
+            firstType = false;
+        }
+        if (doubleCount > 0) {
+            if (!firstType) roomSummary.append(", ");
+            roomSummary.append(doubleCount).append(" Double");
+            firstType = false;
+        }
+        if (deluxeCount > 0) {
+            if (!firstType) roomSummary.append(", ");
+            roomSummary.append(deluxeCount).append(" Deluxe");
+            firstType = false;
+        }
+        if (pentCount > 0) {
+            if (!firstType) roomSummary.append(", ");
+            roomSummary.append(pentCount).append(" Pent House");
+        }
+
+        lblRoomInfo.setText(roomSummary.toString());
+
+        // Create detailed rows for each room if we have a detailed view container
+        if (roomDetailsContainer != null) {
+            roomDetailsContainer.getChildren().clear();
+
+            Label titleLabel = new Label("Room Details:");
+            titleLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: white; -fx-font-size: 16px;");
+            titleLabel.setPadding(new Insets(10, 0, 5, 0));
+            roomDetailsContainer.getChildren().add(titleLabel);
+
+            // Create a grid for room details
+            GridPane grid = new GridPane();
+            grid.setHgap(15);
+            grid.setVgap(5);
+            grid.setPadding(new Insets(5, 0, 0, 15));
+
+            // Headers
+            Label roomHeader = new Label("Room #");
+            Label typeHeader = new Label("Type");
+            Label guestsHeader = new Label("Guests");
+            Label priceHeader = new Label("Price/Night");
+
+            roomHeader.setStyle("-fx-font-weight: bold; -fx-text-fill: white;");
+            typeHeader.setStyle("-fx-font-weight: bold; -fx-text-fill: white;");
+            guestsHeader.setStyle("-fx-font-weight: bold; -fx-text-fill: white;");
+            priceHeader.setStyle("-fx-font-weight: bold; -fx-text-fill: white;");
+
+            grid.add(roomHeader, 0, 0);
+            grid.add(typeHeader, 1, 0);
+            grid.add(guestsHeader, 2, 0);
+            grid.add(priceHeader, 3, 0);
+
+            // Add each room
+            int row = 1;
+            for (Room room : rooms) {
+                Label roomNumber = new Label(String.valueOf(room.getRoomID()));
+                Label roomType = new Label(room.getRoomType().getDisplayName());
+
+                // Find guest count for this room
+                int guestCount = 0;
+                for (ReservationRoom rr : reservationRooms) {
+                    if (rr.getRoomID() == room.getRoomID()) {
+                        guestCount = rr.getGuestsInRoom();
+                        break;
+                    }
+                }
+
+                Label guests = new Label(String.valueOf(guestCount));
+                Label price = new Label(String.format("$%.2f", room.getPrice()));
+
+                roomNumber.setStyle("-fx-text-fill: white;");
+                roomType.setStyle("-fx-text-fill: white;");
+                guests.setStyle("-fx-text-fill: white;");
+                price.setStyle("-fx-text-fill: white;");
+
+                grid.add(roomNumber, 0, row);
+                grid.add(roomType, 1, row);
+                grid.add(guests, 2, row);
+                grid.add(price, 3, row);
+
+                row++;
+            }
+
+            roomDetailsContainer.getChildren().add(grid);
+        }
+    }
+
+    /**
+     * Calculate the subtotal manually based on room prices
+     */
+    private double calculateSubtotal() {
+        if (rooms.isEmpty()) {
+            return 0;
+        }
+
+        long nights = ChronoUnit.DAYS.between(reservation.getCheckInDate(), reservation.getCheckOutDate());
+
+        double subtotal = 0;
+        for (Room room : rooms) {
+            subtotal += room.getPrice() * nights;
+        }
+
+        return subtotal;
     }
 
     @FXML

@@ -3,6 +3,8 @@ package ca.senecacollege.apd_final_project.model;
 import javafx.beans.property.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Billing {
     private final IntegerProperty billID = new SimpleIntegerProperty(this, "billID");
@@ -13,6 +15,9 @@ public class Billing {
     private final DoubleProperty discount = new SimpleDoubleProperty(this, "discount");
     private final ObjectProperty<LocalDateTime> billingDateTime = new SimpleObjectProperty<>(this, "billingDateTime");
     private final BooleanProperty paid = new SimpleBooleanProperty(this, "paid");
+
+    // List to store the itemized room charges (not stored in database, calculated on-the-fly)
+    private final List<BillingItem> billingItems = new ArrayList<>();
 
     // Tax rate constant
     public static final double TAX_RATE = 0.13; // 13% tax
@@ -93,9 +98,82 @@ public class Billing {
         this.paid.set(paid);
     }
 
+    public List<BillingItem> getBillingItems() {
+        return billingItems;
+    }
+
+    public void addBillingItem(BillingItem item) {
+        billingItems.add(item);
+        updateTotalAmount();
+    }
+
+    public void removeBillingItem(BillingItem item) {
+        billingItems.remove(item);
+        updateTotalAmount();
+    }
+
+    public void clearBillingItems() {
+        billingItems.clear();
+        updateTotalAmount();
+    }
+
+    private void updateTotalAmount() {
+        double total = 0;
+        for (BillingItem item : billingItems) {
+            total += item.getSubtotal();
+        }
+        setAmount(total);
+    }
+
     @Override
     public String toString() {
         return "Bill #" + getBillID() + " - $" + String.format("%.2f", getTotalAmount()) +
                 " - " + (isPaid() ? "Paid" : "Unpaid");
+    }
+
+    /**
+     * Represents an individual line item in a bill, typically a room charge
+     */
+    public static class BillingItem {
+        private final int roomId;
+        private final String roomType;
+        private final int nights;
+        private final double pricePerNight;
+        private final double subtotal;
+
+        public BillingItem(int roomId, String roomType, int nights, double pricePerNight) {
+            this.roomId = roomId;
+            this.roomType = roomType;
+            this.nights = nights;
+            this.pricePerNight = pricePerNight;
+            this.subtotal = nights * pricePerNight;
+        }
+
+        public int getRoomId() {
+            return roomId;
+        }
+
+        public String getRoomType() {
+            return roomType;
+        }
+
+        public int getNights() {
+            return nights;
+        }
+
+        public double getPricePerNight() {
+            return pricePerNight;
+        }
+
+        public double getSubtotal() {
+            return subtotal;
+        }
+
+        @Override
+        public String toString() {
+            return "Room #" + roomId + " (" + roomType + "): " +
+                    nights + " nights × $" + String.format("%.2f", pricePerNight) +
+                    " = $" + String.format("%.2f", subtotal);
+        }
     }
 }

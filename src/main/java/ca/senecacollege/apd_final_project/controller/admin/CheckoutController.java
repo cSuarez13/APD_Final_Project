@@ -81,7 +81,7 @@ public class CheckoutController extends BaseController {
     private Billing currentBill;
 
     // List to hold matching reservations
-    private ObservableList<Reservation> matchingReservations = FXCollections.observableArrayList();
+    private final ObservableList<Reservation> matchingReservations = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -138,7 +138,7 @@ public class CheckoutController extends BaseController {
      * Setup the reservations combo box with custom cell factory
      */
     private void setupReservationsComboBox() {
-        cmbReservations.setConverter(new javafx.util.StringConverter<Reservation>() {
+        cmbReservations.setConverter(new javafx.util.StringConverter<>() {
             @Override
             public String toString(Reservation reservation) {
                 if (reservation == null) return null;
@@ -153,7 +153,7 @@ public class CheckoutController extends BaseController {
             }
         });
 
-        cmbReservations.setCellFactory(param -> new ListCell<Reservation>() {
+        cmbReservations.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(Reservation reservation, boolean empty) {
                 super.updateItem(reservation, empty);

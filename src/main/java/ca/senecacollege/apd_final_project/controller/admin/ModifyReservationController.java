@@ -4,28 +4,24 @@ import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
 import ca.senecacollege.apd_final_project.exception.ReservationException;
 import ca.senecacollege.apd_final_project.exception.ValidationException;
-import ca.senecacollege.apd_final_project.model.Admin;
-import ca.senecacollege.apd_final_project.model.Guest;
-import ca.senecacollege.apd_final_project.model.Reservation;
-import ca.senecacollege.apd_final_project.model.Room;
-import ca.senecacollege.apd_final_project.model.RoomType;
-import ca.senecacollege.apd_final_project.service.DialogService;
-import ca.senecacollege.apd_final_project.service.GuestService;
-import ca.senecacollege.apd_final_project.service.ReservationService;
-import ca.senecacollege.apd_final_project.service.RoomService;
-import ca.senecacollege.apd_final_project.service.ServiceLocator;
+import ca.senecacollege.apd_final_project.model.*;
+import ca.senecacollege.apd_final_project.service.*;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 import ca.senecacollege.apd_final_project.util.ValidationUtils;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import javafx.util.StringConverter;
 
 import java.net.URL;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ModifyReservationController extends BaseController {
@@ -46,7 +42,19 @@ public class ModifyReservationController extends BaseController {
     private Label lblCurrentRoom;
 
     @FXML
-    private ComboBox<Room> cmbNewRoom;
+    private TableView<Room> tblRooms;
+
+    @FXML
+    private Button btnAddRoom;
+
+    @FXML
+    private Button btnRemoveRoom;
+
+    @FXML
+    private ComboBox<Room> cmbAvailableRooms;
+
+    @FXML
+    private Spinner<Integer> spnGuestsInRoom;
 
     @FXML
     private DatePicker dpCheckInDate;
@@ -66,6 +74,9 @@ public class ModifyReservationController extends BaseController {
     @FXML
     private Button btnCancel;
 
+    @FXML
+    private VBox roomDetailsContainer;
+
     // Services
     private ReservationService reservationService;
     private GuestService guestService;
@@ -73,8 +84,15 @@ public class ModifyReservationController extends BaseController {
 
     // Current data
     private Reservation originalReservation;
-    private Room currentRoom;
+    private List<Room> originalRooms;
+    private List<ReservationRoom> originalReservationRooms;
     private Guest currentGuest;
+
+    // New room assignments for the modified reservation
+    private final Map<Integer, Integer> roomAssignments = new HashMap<>();
+
+    // ObservableList for the table
+    private final ObservableList<Room> selectedRooms = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -89,12 +107,34 @@ public class ModifyReservationController extends BaseController {
         setupDatePickers();
 
         // Set up number of guests spinner
-        SpinnerValueFactory<Integer> valueFactory =
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10, 1);
-        spnNumberOfGuests.setValueFactory(valueFactory);
+        SpinnerValueFactory<Integer> guestValueFactory =
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 20, 1);
+        spnNumberOfGuests.setValueFactory(guestValueFactory);
+
+        // Set up guests in room spinner
+        SpinnerValueFactory<Integer> roomGuestsValueFactory =
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 4, 1);
+        spnGuestsInRoom.setValueFactory(roomGuestsValueFactory);
 
         // Set up room combo box
         setupRoomComboBox();
+
+        // Setup room table
+        setupRoomTable();
+
+        // Disable add/remove room buttons initially
+        btnAddRoom.setDisable(true);
+        btnRemoveRoom.setDisable(true);
+
+        // Add listener to enable/disable add room button based on combo box selection
+        cmbAvailableRooms.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            btnAddRoom.setDisable(newVal == null);
+        });
+
+        // Add listener to enable/disable remove room button based on table selection
+        tblRooms.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            btnRemoveRoom.setDisable(newVal == null);
+        });
 
         // Hide error message initially
         hideError();
@@ -133,11 +173,26 @@ public class ModifyReservationController extends BaseController {
                 lblGuestName.setText(currentGuest.getName());
             }
 
-            // Load and display room information
-            currentRoom = roomService.getRoomById(reservation.getRoomID());
-            if (currentRoom != null) {
-                lblCurrentRoom.setText(currentRoom.getRoomType().getDisplayName() +
-                        " (Room #" + currentRoom.getRoomID() + ")");
+            // Load all rooms for this reservation
+            originalRooms = reservationService.getRoomsForReservation(reservation.getReservationID());
+            originalReservationRooms = reservationService.getReservationRooms(reservation.getReservationID());
+
+            // Set the room assignments based on current reservation
+            for (ReservationRoom rr : originalReservationRooms) {
+                roomAssignments.put(rr.getRoomID(), rr.getGuestsInRoom());
+            }
+
+            // Update the room table
+            selectedRooms.clear();
+            selectedRooms.addAll(originalRooms);
+
+            // If there's a primary room, display it in the original room field
+            if (!originalRooms.isEmpty()) {
+                Room primaryRoom = originalRooms.get(0);
+                lblCurrentRoom.setText(primaryRoom.getRoomType().getDisplayName() +
+                        " (Room #" + primaryRoom.getRoomID() + ")");
+            } else {
+                lblCurrentRoom.setText("No rooms assigned");
             }
 
             // Set values for editable fields
@@ -148,7 +203,8 @@ public class ModifyReservationController extends BaseController {
             // Load available rooms
             loadAvailableRooms();
 
-            LoggingManager.logSystemInfo("Loaded reservation #" + reservation.getReservationID() + " for modification");
+            LoggingManager.logSystemInfo("Loaded reservation #" + reservation.getReservationID() +
+                    " with " + originalRooms.size() + " rooms for modification");
 
         } catch (DatabaseException e) {
             LoggingManager.logException("Error loading reservation details", e);
@@ -205,7 +261,7 @@ public class ModifyReservationController extends BaseController {
      */
     private void setupRoomComboBox() {
         // Set up string converter to display room information
-        cmbNewRoom.setConverter(new StringConverter<Room>() {
+        cmbAvailableRooms.setConverter(new StringConverter<Room>() {
             @Override
             public String toString(Room room) {
                 if (room == null) {
@@ -223,7 +279,7 @@ public class ModifyReservationController extends BaseController {
         });
 
         // Set up cell factory for dropdown items
-        cmbNewRoom.setCellFactory(param -> new ListCell<Room>() {
+        cmbAvailableRooms.setCellFactory(param -> new ListCell<Room>() {
             @Override
             protected void updateItem(Room room, boolean empty) {
                 super.updateItem(room, empty);
@@ -236,6 +292,41 @@ public class ModifyReservationController extends BaseController {
                 }
             }
         });
+    }
+
+    /**
+     * Set up the room table
+     */
+    private void setupRoomTable() {
+        // Create columns
+        TableColumn<Room, String> roomIdCol = new TableColumn<>("Room #");
+        roomIdCol.setCellValueFactory(data ->
+                new SimpleStringProperty(String.valueOf(data.getValue().getRoomID())));
+
+        TableColumn<Room, String> roomTypeCol = new TableColumn<>("Type");
+        roomTypeCol.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getRoomType().getDisplayName()));
+
+        TableColumn<Room, String> capacityCol = new TableColumn<>("Capacity");
+        capacityCol.setCellValueFactory(data ->
+                new SimpleStringProperty(String.valueOf(data.getValue().getRoomType().getMaxOccupancy())));
+
+        TableColumn<Room, String> priceCol = new TableColumn<>("Price/Night");
+        priceCol.setCellValueFactory(data ->
+                new SimpleStringProperty(String.format("$%.2f", data.getValue().getPrice())));
+
+        TableColumn<Room, String> guestsCol = new TableColumn<>("Guests");
+        guestsCol.setCellValueFactory(data -> {
+            int roomId = data.getValue().getRoomID();
+            int guests = roomAssignments.getOrDefault(roomId, 0);
+            return new SimpleStringProperty(String.valueOf(guests));
+        });
+
+        // Add columns to the table
+        tblRooms.getColumns().addAll(roomIdCol, roomTypeCol, capacityCol, priceCol, guestsCol);
+
+        // Set the items
+        tblRooms.setItems(selectedRooms);
     }
 
     /**
@@ -254,15 +345,15 @@ public class ModifyReservationController extends BaseController {
             // Filter available rooms
             List<Room> availableRooms = allRooms.stream()
                     .filter(room -> {
-                        // Skip if room is not available
-                        if (!room.isAvailable() && room.getRoomID() != originalReservation.getRoomID()) {
+                        // Skip if room is not available and not already in the reservation
+                        if (!room.isAvailable() && !isRoomInReservation(room.getRoomID())) {
                             return false;
                         }
 
                         try {
                             // For other rooms, check availability for the selected dates
-                            if (room.getRoomID() == originalReservation.getRoomID()) {
-                                // Current room is always available
+                            if (isRoomInReservation(room.getRoomID())) {
+                                // Current room is always available for this reservation
                                 return true;
                             } else {
                                 // Check if the room is available for the selected dates
@@ -286,19 +377,110 @@ public class ModifyReservationController extends BaseController {
                     })
                     .collect(Collectors.toList());
 
-            // Update the combo box
-            cmbNewRoom.setItems(FXCollections.observableArrayList(availableRooms));
+            // Filter out rooms that are already selected
+            availableRooms = availableRooms.stream()
+                    .filter(room -> !isRoomAlreadySelected(room.getRoomID()))
+                    .collect(Collectors.toList());
 
-            // Select the current room
-            cmbNewRoom.getItems().stream()
-                    .filter(room -> room.getRoomID() == originalReservation.getRoomID())
-                    .findFirst()
-                    .ifPresent(room -> cmbNewRoom.setValue(room));
+            // Update the combo box
+            cmbAvailableRooms.setItems(FXCollections.observableArrayList(availableRooms));
 
         } catch (Exception e) {
             LoggingManager.logException("Error loading available rooms", e);
             showError("Error loading available rooms: " + e.getMessage());
         }
+    }
+
+    /**
+     * Check if a room is already part of the original reservation
+     */
+    private boolean isRoomInReservation(int roomId) {
+        return originalRooms.stream().anyMatch(r -> r.getRoomID() == roomId);
+    }
+
+    /**
+     * Check if a room is already in the selected rooms list
+     */
+    private boolean isRoomAlreadySelected(int roomId) {
+        return selectedRooms.stream().anyMatch(r -> r.getRoomID() == roomId);
+    }
+
+    @FXML
+    private void handleAddRoom() {
+        Room selectedRoom = cmbAvailableRooms.getValue();
+        if (selectedRoom == null) {
+            return;
+        }
+
+        try {
+            // Check if the selected room can accommodate the number of guests
+            int guestsInRoom = spnGuestsInRoom.getValue();
+            int maxCapacity = selectedRoom.getRoomType().getMaxOccupancy();
+
+            if (guestsInRoom > maxCapacity) {
+                showError("This room can only accommodate " + maxCapacity + " guests");
+                return;
+            }
+
+            // Add the room to the selected rooms list
+            selectedRooms.add(selectedRoom);
+
+            // Add the guest assignment
+            roomAssignments.put(selectedRoom.getRoomID(), guestsInRoom);
+
+            // Update total guest count
+            updateTotalGuestCount();
+
+            // Refresh the available rooms list
+            loadAvailableRooms();
+
+            // Clear the selection
+            cmbAvailableRooms.getSelectionModel().clearSelection();
+
+        } catch (Exception e) {
+            LoggingManager.logException("Error adding room", e);
+            showError("Error adding room: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleRemoveRoom() {
+        Room selectedRoom = tblRooms.getSelectionModel().getSelectedItem();
+        if (selectedRoom == null) {
+            return;
+        }
+
+        try {
+            // Check if this is the only room (can't remove all rooms)
+            if (selectedRooms.size() <= 1) {
+                showError("Cannot remove the only room from a reservation");
+                return;
+            }
+
+            // Remove the room from the list
+            selectedRooms.remove(selectedRoom);
+
+            // Remove the guest assignment
+            roomAssignments.remove(selectedRoom.getRoomID());
+
+            // Update total guest count
+            updateTotalGuestCount();
+
+            // Refresh the available rooms list
+            loadAvailableRooms();
+
+        } catch (Exception e) {
+            LoggingManager.logException("Error removing room", e);
+            showError("Error removing room: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Update the total guest count based on room assignments
+     */
+    private void updateTotalGuestCount() {
+        int totalGuests = roomAssignments.values().stream().mapToInt(Integer::intValue).sum();
+        spnNumberOfGuests.getValueFactory().setValue(totalGuests);
     }
 
     /**
@@ -330,7 +512,7 @@ public class ModifyReservationController extends BaseController {
             reservationService.updateReservation(modifiedReservation);
 
             // Handle room changes
-            handleRoomChange(modifiedReservation);
+            handleRoomChanges();
 
             // Show success message
             DialogService.showInformation(
@@ -384,21 +566,32 @@ public class ModifyReservationController extends BaseController {
             throw new ValidationException("Check-in date must be today or a future date.");
         }
 
-        // Check if a room is selected
-        if (cmbNewRoom.getValue() == null) {
-            throw new ValidationException("Please select a room.");
+        // Check if there are selected rooms
+        if (selectedRooms.isEmpty()) {
+            throw new ValidationException("Please select at least one room.");
         }
 
-        // Validate number of guests against room capacity
-        RoomType roomType = cmbNewRoom.getValue().getRoomType();
-        int maxOccupancy = roomType.getMaxOccupancy();
-        int numberOfGuests = spnNumberOfGuests.getValue();
-
-        if (numberOfGuests > maxOccupancy) {
+        // Validate room assignments
+        int totalAssignedGuests = roomAssignments.values().stream().mapToInt(Integer::intValue).sum();
+        if (totalAssignedGuests != spnNumberOfGuests.getValue()) {
             throw new ValidationException(
-                    "The selected room can accommodate a maximum of " + maxOccupancy + " guests. " +
-                            "Please select a different room or reduce the number of guests."
+                    "Total guests in rooms (" + totalAssignedGuests +
+                            ") must match the number of guests in the reservation (" +
+                            spnNumberOfGuests.getValue() + ")."
             );
+        }
+
+        // Check if any room is over capacity
+        for (Room room : selectedRooms) {
+            int guestsInRoom = roomAssignments.getOrDefault(room.getRoomID(), 0);
+            int maxCapacity = room.getRoomType().getMaxOccupancy();
+
+            if (guestsInRoom > maxCapacity) {
+                throw new ValidationException(
+                        "Room #" + room.getRoomID() + " can only accommodate " +
+                                maxCapacity + " guests but has " + guestsInRoom + " assigned."
+                );
+            }
         }
     }
 
@@ -423,9 +616,32 @@ public class ModifyReservationController extends BaseController {
             return true;
         }
 
-        // Check if room has changed
-        if (cmbNewRoom.getValue().getRoomID() != originalReservation.getRoomID()) {
+        // Check if rooms have changed
+        if (selectedRooms.size() != originalRooms.size()) {
             return true;
+        }
+
+        // Check if the same rooms are used
+        Set<Integer> originalRoomIds = originalRooms.stream()
+                .map(Room::getRoomID)
+                .collect(Collectors.toSet());
+
+        Set<Integer> selectedRoomIds = selectedRooms.stream()
+                .map(Room::getRoomID)
+                .collect(Collectors.toSet());
+
+        if (!originalRoomIds.equals(selectedRoomIds)) {
+            return true;
+        }
+
+        // Check if guest assignments have changed
+        for (ReservationRoom rr : originalReservationRooms) {
+            int originalGuests = rr.getGuestsInRoom();
+            int newGuests = roomAssignments.getOrDefault(rr.getRoomID(), 0);
+
+            if (originalGuests != newGuests) {
+                return true;
+            }
         }
 
         return false;
@@ -443,8 +659,14 @@ public class ModifyReservationController extends BaseController {
         modifiedReservation.setGuestID(originalReservation.getGuestID());
         modifiedReservation.setStatus(originalReservation.getStatus());
 
+        // Set the primary roomID for backward compatibility
+        if (!selectedRooms.isEmpty()) {
+            modifiedReservation.setRoomID(selectedRooms.get(0).getRoomID());
+        } else {
+            modifiedReservation.setRoomID(originalReservation.getRoomID());
+        }
+
         // Set modified values
-        modifiedReservation.setRoomID(cmbNewRoom.getValue().getRoomID());
         modifiedReservation.setCheckInDate(dpCheckInDate.getValue());
         modifiedReservation.setCheckOutDate(dpCheckOutDate.getValue());
         modifiedReservation.setNumberOfGuests(spnNumberOfGuests.getValue());
@@ -455,25 +677,38 @@ public class ModifyReservationController extends BaseController {
     /**
      * Handle room changes
      *
-     * @param modifiedReservation The modified reservation
      * @throws DatabaseException    If there's an error updating room availability
      * @throws ReservationException If there's an error updating the reservation
      */
-    private void handleRoomChange(Reservation modifiedReservation)
-            throws DatabaseException, ReservationException {
-        // Check if room has changed
-        if (modifiedReservation.getRoomID() != originalReservation.getRoomID()) {
-            // Make the old room available again
-            roomService.setRoomAvailability(originalReservation.getRoomID(), true);
+    private void handleRoomChanges() throws DatabaseException, ReservationException {
+        // Get the reservation ID
+        int reservationId = originalReservation.getReservationID();
 
-            // Make the new room unavailable
-            roomService.setRoomAvailability(modifiedReservation.getRoomID(), false);
+        // Delete all existing room assignments
+        reservationService.reservationRoomDAO.deleteByReservationId(reservationId);
 
-            LoggingManager.logSystemInfo(
-                    "Changed room for reservation #" + modifiedReservation.getReservationID() +
-                            " from " + originalReservation.getRoomID() + " to " + modifiedReservation.getRoomID()
-            );
+        // Make all previously assigned rooms available again
+        for (Room room : originalRooms) {
+            roomService.setRoomAvailability(room.getRoomID(), true);
         }
+
+        // Create new room assignments
+        for (Room room : selectedRooms) {
+            int roomId = room.getRoomID();
+            int guestsInRoom = roomAssignments.getOrDefault(roomId, 0);
+
+            // Create reservation-room relationship
+            ReservationRoom rr = new ReservationRoom(reservationId, roomId, guestsInRoom);
+            reservationService.reservationRoomDAO.save(rr);
+
+            // Make the room unavailable
+            roomService.setRoomAvailability(roomId, false);
+        }
+
+        LoggingManager.logSystemInfo(
+                "Updated room assignments for reservation #" + reservationId +
+                        " with " + selectedRooms.size() + " rooms"
+        );
     }
 
     /**

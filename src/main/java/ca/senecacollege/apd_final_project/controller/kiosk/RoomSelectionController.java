@@ -23,6 +23,8 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
@@ -92,6 +94,9 @@ public class RoomSelectionController extends BaseController {
     private int deluxeRoomCount = 0;
     private int pentHouseCount = 0;
 
+    // Guest assignments to rooms
+    private final Map<RoomType, Integer> guestsPerRoomType = new HashMap<>();
+
     // Booking data from previous screens
     private int guestCount = 1;
     private LocalDate checkInDate;
@@ -115,6 +120,12 @@ public class RoomSelectionController extends BaseController {
 
         // Initialize room counts to zero
         updateRoomCounts();
+
+        // Initialize guest assignments
+        guestsPerRoomType.put(RoomType.SINGLE, 0);
+        guestsPerRoomType.put(RoomType.DOUBLE, 0);
+        guestsPerRoomType.put(RoomType.DELUXE, 0);
+        guestsPerRoomType.put(RoomType.PENT_HOUSE, 0);
 
         LoggingManager.logSystemInfo("RoomSelectionController initialized");
     }
@@ -150,25 +161,28 @@ public class RoomSelectionController extends BaseController {
         deluxeRoomCount = 0;
         pentHouseCount = 0;
 
-        // Simple algorithm for room suggestions
-        if (guestCount <= Constants.MAX_GUESTS_SINGLE_ROOM) {
-            // Single room is sufficient for 1-2 guests
-            singleRoomCount = 1;
-        } else if (guestCount <= Constants.MAX_GUESTS_DOUBLE_ROOM) {
-            // Double room is sufficient for 3-4 guests
-            doubleRoomCount = 1;
-        } else {
-            // For more guests, use a combination of rooms
-            int remainingGuests = guestCount;
+        // Reset guest assignments
+        guestsPerRoomType.put(RoomType.SINGLE, 0);
+        guestsPerRoomType.put(RoomType.DOUBLE, 0);
+        guestsPerRoomType.put(RoomType.DELUXE, 0);
+        guestsPerRoomType.put(RoomType.PENT_HOUSE, 0);
 
-            // First, allocate as many double rooms as needed for groups of 4
-            doubleRoomCount = remainingGuests / Constants.MAX_GUESTS_DOUBLE_ROOM;
-            remainingGuests %= Constants.MAX_GUESTS_DOUBLE_ROOM;
+        // Determine room allocation based on guest count
+        int remainingGuests = guestCount;
 
-            // Then allocate a single room if needed for 1-2 remaining guests
-            if (remainingGuests > 0) {
-                singleRoomCount = 1;
-            }
+        // Try to use double rooms first for larger groups (more efficient)
+        while (remainingGuests >= 3) {
+            doubleRoomCount++;
+            int guestsInRoom = Math.min(remainingGuests, RoomType.DOUBLE.getMaxOccupancy());
+            guestsPerRoomType.put(RoomType.DOUBLE, guestsPerRoomType.get(RoomType.DOUBLE) + guestsInRoom);
+            remainingGuests -= guestsInRoom;
+        }
+
+        // Use single rooms for remaining guests (1-2)
+        if (remainingGuests > 0) {
+            singleRoomCount++;
+            guestsPerRoomType.put(RoomType.SINGLE, remainingGuests);
+            remainingGuests = 0;
         }
 
         // Update the UI
@@ -267,6 +281,8 @@ public class RoomSelectionController extends BaseController {
     @FXML
     private void handleSingleMinus() {
         if (singleRoomCount > 0) {
+            // Adjust guest assignments before changing room count
+            adjustGuestAssignments(RoomType.SINGLE, -1);
             singleRoomCount--;
             updateRoomCounts();
             updateSummary();
@@ -276,15 +292,20 @@ public class RoomSelectionController extends BaseController {
 
     @FXML
     private void handleSinglePlus() {
-        singleRoomCount++;
-        updateRoomCounts();
-        updateSummary();
-        validateRoomCapacity();
+        // Adjust guest assignments before changing room count
+        if (adjustGuestAssignments(RoomType.SINGLE, 1)) {
+            singleRoomCount++;
+            updateRoomCounts();
+            updateSummary();
+            validateRoomCapacity();
+        }
     }
 
     @FXML
     private void handleDoubleMinus() {
         if (doubleRoomCount > 0) {
+            // Adjust guest assignments before changing room count
+            adjustGuestAssignments(RoomType.DOUBLE, -1);
             doubleRoomCount--;
             updateRoomCounts();
             updateSummary();
@@ -294,15 +315,20 @@ public class RoomSelectionController extends BaseController {
 
     @FXML
     private void handleDoublePlus() {
-        doubleRoomCount++;
-        updateRoomCounts();
-        updateSummary();
-        validateRoomCapacity();
+        // Adjust guest assignments before changing room count
+        if (adjustGuestAssignments(RoomType.DOUBLE, 1)) {
+            doubleRoomCount++;
+            updateRoomCounts();
+            updateSummary();
+            validateRoomCapacity();
+        }
     }
 
     @FXML
     private void handleDeluxeMinus() {
         if (deluxeRoomCount > 0) {
+            // Adjust guest assignments before changing room count
+            adjustGuestAssignments(RoomType.DELUXE, -1);
             deluxeRoomCount--;
             updateRoomCounts();
             updateSummary();
@@ -312,15 +338,20 @@ public class RoomSelectionController extends BaseController {
 
     @FXML
     private void handleDeluxePlus() {
-        deluxeRoomCount++;
-        updateRoomCounts();
-        updateSummary();
-        validateRoomCapacity();
+        // Adjust guest assignments before changing room count
+        if (adjustGuestAssignments(RoomType.DELUXE, 1)) {
+            deluxeRoomCount++;
+            updateRoomCounts();
+            updateSummary();
+            validateRoomCapacity();
+        }
     }
 
     @FXML
     private void handlePentHouseMinus() {
         if (pentHouseCount > 0) {
+            // Adjust guest assignments before changing room count
+            adjustGuestAssignments(RoomType.PENT_HOUSE, -1);
             pentHouseCount--;
             updateRoomCounts();
             updateSummary();
@@ -330,10 +361,100 @@ public class RoomSelectionController extends BaseController {
 
     @FXML
     private void handlePentHousePlus() {
-        pentHouseCount++;
-        updateRoomCounts();
-        updateSummary();
-        validateRoomCapacity();
+        // Adjust guest assignments before changing room count
+        if (adjustGuestAssignments(RoomType.PENT_HOUSE, 1)) {
+            pentHouseCount++;
+            updateRoomCounts();
+            updateSummary();
+            validateRoomCapacity();
+        }
+    }
+
+    /**
+     * Adjust guest assignments when adding or removing rooms
+     *
+     * @param roomType The room type being adjusted
+     * @param change +1 for adding a room, -1 for removing a room
+     * @return true if adjustment succeeded, false if it failed
+     */
+    private boolean adjustGuestAssignments(RoomType roomType, int change) {
+        if (change > 0) {
+            // Adding a room - assign guests if possible
+            return assignGuestsToNewRoom(roomType);
+        } else {
+            // Removing a room - redistribute guests
+            return redistributeGuests(roomType);
+        }
+    }
+
+    /**
+     * Assign guests to a new room being added
+     *
+     * @param roomType The type of room being added
+     * @return true if guests were assigned, false if there are no unassigned guests
+     */
+    private boolean assignGuestsToNewRoom(RoomType roomType) {
+        // Calculate how many guests are currently assigned
+        int assignedGuests = getTotalAssignedGuests();
+
+        // If all guests are already assigned, no need to add more rooms
+        if (assignedGuests >= guestCount) {
+            return false;
+        }
+
+        // Calculate how many guests to assign to this new room
+        int maxCapacity = roomType.getMaxOccupancy();
+        int guestsToAssign = Math.min(guestCount - assignedGuests, maxCapacity);
+
+        // Update guest assignments
+        guestsPerRoomType.put(roomType, guestsPerRoomType.get(roomType) + guestsToAssign);
+
+        return true;
+    }
+
+    /**
+     * Redistribute guests when removing a room
+     *
+     * @param roomType The type of room being removed
+     * @return true if guests were successfully redistributed
+     */
+    private boolean redistributeGuests(RoomType roomType) {
+        // Get number of guests in this room type
+        int guestsInRoomType = guestsPerRoomType.get(roomType);
+
+        // If this room type has guests, we need to redistribute them
+        if (guestsInRoomType > 0) {
+            // Calculate average guests per room of this type
+            int roomCount = getRoomCount(roomType);
+            int avgGuestsPerRoom = roomCount > 0 ? guestsInRoomType / roomCount : 0;
+
+            // Redistribute guests - for simplicity, just remove them from this room type
+            // and recalculate assignments for all room types
+            guestsPerRoomType.put(roomType, Math.max(0, guestsInRoomType - avgGuestsPerRoom));
+
+            // You could redistribute guests to other room types here if needed
+        }
+
+        return true;
+    }
+
+    /**
+     * Get the count of a specific room type
+     */
+    private int getRoomCount(RoomType roomType) {
+        return switch (roomType) {
+            case SINGLE -> singleRoomCount;
+            case DOUBLE -> doubleRoomCount;
+            case DELUXE -> deluxeRoomCount;
+            case PENT_HOUSE -> pentHouseCount;
+        };
+    }
+
+    /**
+     * Get the total number of guests assigned to rooms
+     */
+    private int getTotalAssignedGuests() {
+        return guestsPerRoomType.values().stream().mapToInt(Integer::intValue).sum();
     }
 
     /**
@@ -360,10 +481,12 @@ public class RoomSelectionController extends BaseController {
     private void updateSummary() {
         int totalRooms = singleRoomCount + doubleRoomCount + deluxeRoomCount + pentHouseCount;
         int capacityCount = calculateTotalCapacity();
+        int assignedGuests = getTotalAssignedGuests();
 
-        lblRoomSummary.setText(String.format("Selected: %d room%s for up to %d guest%s",
+        lblRoomSummary.setText(String.format("Selected: %d room%s for %d/%d guest%s",
                 totalRooms, totalRooms != 1 ? "s" : "",
-                capacityCount, capacityCount != 1 ? "s" : ""));
+                assignedGuests, guestCount,
+                guestCount != 1 ? "s" : ""));
     }
 
     /**
@@ -381,8 +504,8 @@ public class RoomSelectionController extends BaseController {
      * Validate if the selected rooms can accommodate all guests
      */
     private void validateRoomCapacity() {
-        int capacity = calculateTotalCapacity();
-        boolean isValid = capacity >= guestCount;
+        int assignedGuests = getTotalAssignedGuests();
+        boolean isValid = assignedGuests >= guestCount;
 
         lblValidationMessage.setVisible(!isValid);
         btnNext.setDisable(!isValid);
@@ -398,14 +521,14 @@ public class RoomSelectionController extends BaseController {
             // Validate room selection
             validateRoomSelection();
 
-            // Load the guest details screen
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_GUEST_DETAILS));
-            Parent guestDetailsRoot = loader.load();
+            // Create a map of room types to counts and guest assignments
+            Map<RoomType, Integer> roomTypeMap = new HashMap<>();
+            if (singleRoomCount > 0) roomTypeMap.put(RoomType.SINGLE, singleRoomCount);
+            if (doubleRoomCount > 0) roomTypeMap.put(RoomType.DOUBLE, doubleRoomCount);
+            if (deluxeRoomCount > 0) roomTypeMap.put(RoomType.DELUXE, deluxeRoomCount);
+            if (pentHouseCount > 0) roomTypeMap.put(RoomType.PENT_HOUSE, pentHouseCount);
 
-            // Get the controller and pass the booking data
-            GuestDetailsController guestDetailsController = loader.getController();
-
-            // Create a new BookingData object to hold all the information
+            // Prepare booking data
             BookingData bookingData = new BookingData();
             bookingData.setGuestCount(guestCount);
             bookingData.setCheckInDate(checkInDate);
@@ -415,6 +538,15 @@ public class RoomSelectionController extends BaseController {
             bookingData.setDeluxeRoomCount(deluxeRoomCount);
             bookingData.setPentHouseCount(pentHouseCount);
 
+            // Store guest assignments per room type
+            bookingData.setGuestsPerRoomType(new HashMap<>(guestsPerRoomType));
+
+            // Load the guest details screen
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_GUEST_DETAILS));
+            Parent guestDetailsRoot = loader.load();
+
+            // Get the controller and pass the booking data
+            GuestDetailsController guestDetailsController = loader.getController();
             guestDetailsController.initBookingData(bookingData);
 
             // Get the current stage
@@ -465,49 +597,36 @@ public class RoomSelectionController extends BaseController {
             throw new ValidationException("Please select at least one room.");
         }
 
-        // Check if the selected rooms can accommodate all guests
-        int capacity = calculateTotalCapacity();
-        if (capacity < guestCount) {
+        // Check if all guests are assigned to rooms
+        int assignedGuests = getTotalAssignedGuests();
+        if (assignedGuests < guestCount) {
             throw new ValidationException("The selected rooms cannot accommodate all " + guestCount + " guests. Please select more rooms.");
         }
 
-        // Check room availability by attempting to find available rooms of each type
+        // Check room availability
         try {
-            // We need to check if enough rooms of each type are available
-            if (singleRoomCount > 0) {
-                int availableSingleRooms = roomService.countAvailableRooms(RoomType.SINGLE, checkInDate, checkOutDate);
-                if (availableSingleRooms < singleRoomCount) {
-                    throw new ValidationException("Only " + availableSingleRooms + " Single Room(s) available. " +
-                            "You requested " + singleRoomCount + ". Please adjust your selection.");
-                }
-            }
+            // Check if enough rooms of each type are available
+            validateRoomAvailability(RoomType.SINGLE, singleRoomCount);
+            validateRoomAvailability(RoomType.DOUBLE, doubleRoomCount);
+            validateRoomAvailability(RoomType.DELUXE, deluxeRoomCount);
+            validateRoomAvailability(RoomType.PENT_HOUSE, pentHouseCount);
 
-            if (doubleRoomCount > 0) {
-                int availableDoubleRooms = roomService.countAvailableRooms(RoomType.DOUBLE, checkInDate, checkOutDate);
-                if (availableDoubleRooms < doubleRoomCount) {
-                    throw new ValidationException("Only " + availableDoubleRooms + " Double Room(s) available. " +
-                            "You requested " + doubleRoomCount + ". Please adjust your selection.");
-                }
-            }
-
-            if (deluxeRoomCount > 0) {
-                int availableDeluxeRooms = roomService.countAvailableRooms(RoomType.DELUXE, checkInDate, checkOutDate);
-                if (availableDeluxeRooms < deluxeRoomCount) {
-                    throw new ValidationException("Only " + availableDeluxeRooms + " Deluxe Room(s) available. " +
-                            "You requested " + deluxeRoomCount + ". Please adjust your selection.");
-                }
-            }
-
-            if (pentHouseCount > 0) {
-                int availablePentHouses = roomService.countAvailableRooms(RoomType.PENT_HOUSE, checkInDate, checkOutDate);
-                if (availablePentHouses < pentHouseCount) {
-                    throw new ValidationException("Only " + availablePentHouses + " Pent House(s) available. " +
-                            "You requested " + pentHouseCount + ". Please adjust your selection.");
-                }
-            }
         } catch (DatabaseException e) {
             LoggingManager.logException("Error checking room availability", e);
             throw new ValidationException("Unable to verify room availability: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Validate availability for a specific room type
+     */
+    private void validateRoomAvailability(RoomType roomType, int count) throws ValidationException, DatabaseException {
+        if (count > 0) {
+            int availableRooms = roomService.countAvailableRooms(roomType, checkInDate, checkOutDate);
+            if (availableRooms < count) {
+                throw new ValidationException("Only " + availableRooms + " " + roomType.getDisplayName() + "(s) available. " +
+                        "You requested " + count + ". Please adjust your selection.");
+            }
         }
     }
 
