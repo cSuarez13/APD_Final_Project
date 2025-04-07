@@ -21,18 +21,17 @@ public class ReservationDAO {
      * @throws DatabaseException If there's an error saving the reservation
      */
     public int save(Reservation reservation) throws DatabaseException {
-        String sql = "INSERT INTO reservations (guest_id, room_id, check_in_date, check_out_date, " +
-                "number_of_guests, status) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO reservations (guest_id, check_in_date, check_out_date, " +
+                "number_of_guests, status) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setInt(1, reservation.getGuestID());
-            stmt.setInt(2, reservation.getRoomID());
-            stmt.setDate(3, java.sql.Date.valueOf(reservation.getCheckInDate()));
-            stmt.setDate(4, java.sql.Date.valueOf(reservation.getCheckOutDate()));
-            stmt.setInt(5, reservation.getNumberOfGuests());
-            stmt.setString(6, reservation.getStatus().getDisplayName());
+            stmt.setDate(2, java.sql.Date.valueOf(reservation.getCheckInDate()));
+            stmt.setDate(3, java.sql.Date.valueOf(reservation.getCheckOutDate()));
+            stmt.setInt(4, reservation.getNumberOfGuests());
+            stmt.setString(5, reservation.getStatus().getDisplayName());
 
             int affectedRows = stmt.executeUpdate();
 
@@ -269,14 +268,13 @@ public class ReservationDAO {
      * @throws DatabaseException If there's an error updating the reservation
      */
     public void update(Reservation reservation) throws DatabaseException {
-        String sql = "UPDATE reservations SET guest_id = ?, room_id = ?, check_in_date = ?, " +
+        String sql = "UPDATE reservations SET guest_id = ?, check_in_date = ?, " +
                 "check_out_date = ?, number_of_guests = ?, status = ? WHERE reservation_id = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, reservation.getGuestID());
-            stmt.setInt(2, reservation.getRoomID());
             stmt.setDate(3, java.sql.Date.valueOf(reservation.getCheckInDate()));
             stmt.setDate(4, java.sql.Date.valueOf(reservation.getCheckOutDate()));
             stmt.setInt(5, reservation.getNumberOfGuests());
@@ -306,7 +304,6 @@ public class ReservationDAO {
         Reservation reservation = new Reservation();
         reservation.setReservationID(rs.getInt("reservation_id"));
         reservation.setGuestID(rs.getInt("guest_id"));
-        reservation.setRoomID(rs.getInt("room_id"));
         reservation.setCheckInDate(rs.getDate("check_in_date").toLocalDate());
         reservation.setCheckOutDate(rs.getDate("check_out_date").toLocalDate());
         reservation.setNumberOfGuests(rs.getInt("number_of_guests"));

@@ -3,11 +3,8 @@ package ca.senecacollege.apd_final_project.controller.kiosk;
 import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
 import ca.senecacollege.apd_final_project.exception.ValidationException;
-import ca.senecacollege.apd_final_project.model.Guest;
-import ca.senecacollege.apd_final_project.model.Reservation;
-import ca.senecacollege.apd_final_project.model.ReservationRoom;
-import ca.senecacollege.apd_final_project.model.Room;
-import ca.senecacollege.apd_final_project.model.RoomType;
+import ca.senecacollege.apd_final_project.dao.ReservationRoomDAO;
+import ca.senecacollege.apd_final_project.model.*;
 import ca.senecacollege.apd_final_project.service.*;
 import ca.senecacollege.apd_final_project.util.*;
 import javafx.fxml.FXML;
@@ -141,7 +138,6 @@ public class GuestDetailsController extends BaseController {
 
     @FXML
     private void handleNextButton() {
-        // Validate inputs
         if (validateFields()) {
             try {
                 // Create guest object
@@ -151,43 +147,48 @@ public class GuestDetailsController extends BaseController {
                 guest.setEmail(txtEmail.getText().trim());
                 guest.setAddress(txtAddress.getText().trim());
 
-                // Save guest to database and get guest ID
                 int guestId = guestService.saveGuest(guest);
 
-                // Create the reservation
+                // Create reservation
                 Reservation reservation = new Reservation();
                 reservation.setGuestID(guestId);
                 reservation.setCheckInDate(bookingData.getCheckInDate());
                 reservation.setCheckOutDate(bookingData.getCheckOutDate());
                 reservation.setNumberOfGuests(bookingData.getGuestCount());
+                reservation.setStatus(ReservationStatus.CONFIRMED); // assuming enum exists
 
-                // For backward compatibility, set a dummy roomID (will be overwritten by first room)
-                reservation.setRoomID(0);
+                // Save reservation and get ID
+                int reservationId = reservationService.save(reservation);
+                reservation.setReservationID(reservationId);
 
-                // Track the rooms selected
+                // Assign rooms and guests per room
                 Map<Integer, Integer> roomsWithGuests = new HashMap<>();
-
-                // Get room IDs for each type and their guest assignments
                 assignRoomsByType(RoomType.SINGLE, bookingData.getSingleRoomCount(),
                         bookingData.getGuestsForRoomType(RoomType.SINGLE), roomsWithGuests);
-
                 assignRoomsByType(RoomType.DOUBLE, bookingData.getDoubleRoomCount(),
                         bookingData.getGuestsForRoomType(RoomType.DOUBLE), roomsWithGuests);
-
                 assignRoomsByType(RoomType.DELUXE, bookingData.getDeluxeRoomCount(),
                         bookingData.getGuestsForRoomType(RoomType.DELUXE), roomsWithGuests);
-
                 assignRoomsByType(RoomType.PENT_HOUSE, bookingData.getPentHouseCount(),
                         bookingData.getGuestsForRoomType(RoomType.PENT_HOUSE), roomsWithGuests);
 
-                // Create the reservation with multiple rooms
-                int reservationId = reservationService.createReservation(reservation, roomsWithGuests);
+                // Save room-reservation mappings
+                for (Map.Entry<Integer, Integer> entry : roomsWithGuests.entrySet()) {
+                    int roomId = entry.getKey();
+                    int guestsInRoom = entry.getValue();
 
-                // Log the successful reservation
+                    ReservationRoom reservationRoom = new ReservationRoom();
+                    reservationRoom.setReservationID(reservationId);
+                    reservationRoom.setRoomID(roomId);
+                    reservationRoom.setGuestsInRoom(guestsInRoom);
+
+                    // Save reservation-room relationship to the database
+                    ReservationRoomDAO.save(reservationRoom);
+                }
+
                 LoggingManager.logSystemInfo("Created reservation #" + reservationId +
                         " with " + roomsWithGuests.size() + " rooms for guest: " + guest.getName());
 
-                // Navigate to the confirmation screen
                 navigateToConfirmation(reservationId);
 
             } catch (Exception e) {
@@ -196,6 +197,7 @@ public class GuestDetailsController extends BaseController {
             }
         }
     }
+
 
     /**
      * Assign rooms by type to the reservation

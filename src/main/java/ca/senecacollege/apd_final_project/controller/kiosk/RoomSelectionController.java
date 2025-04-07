@@ -3,6 +3,8 @@ package ca.senecacollege.apd_final_project.controller.kiosk;
 import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
 import ca.senecacollege.apd_final_project.exception.ValidationException;
+import ca.senecacollege.apd_final_project.dao.ReservationRoomDAO;
+import ca.senecacollege.apd_final_project.model.ReservationRoom;
 import ca.senecacollege.apd_final_project.model.RoomType;
 import ca.senecacollege.apd_final_project.service.DialogService;
 import ca.senecacollege.apd_final_project.service.RoomService;
@@ -21,6 +23,7 @@ import javafx.scene.control.Label;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -528,6 +531,19 @@ public class RoomSelectionController extends BaseController {
             if (deluxeRoomCount > 0) roomTypeMap.put(RoomType.DELUXE, deluxeRoomCount);
             if (pentHouseCount > 0) roomTypeMap.put(RoomType.PENT_HOUSE, pentHouseCount);
 
+            // Calculate total price per night
+            BigDecimal totalPricePerNight = BigDecimal.ZERO;
+            for (Map.Entry<RoomType, Integer> entry : roomTypeMap.entrySet()) {
+                RoomType roomType = entry.getKey();
+                int roomCount = entry.getValue();
+                BigDecimal roomPrice = BigDecimal.valueOf(roomType.getBasePrice());
+                totalPricePerNight = totalPricePerNight.add(roomPrice.multiply(BigDecimal.valueOf(roomCount)));
+            }
+
+            // Create an instance of ReservationRoom and set the price per night
+            ReservationRoom reservationRoom = new ReservationRoom();
+            reservationRoom.setPricePerNight(totalPricePerNight);
+
             // Prepare booking data
             BookingData bookingData = new BookingData();
             bookingData.setGuestCount(guestCount);
@@ -585,6 +601,7 @@ public class RoomSelectionController extends BaseController {
                     "Error loading guest details screen: " + e.getMessage(), e);
         }
     }
+
 
     /**
      * Validate the room selection

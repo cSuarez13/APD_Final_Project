@@ -511,4 +511,9 @@ public class ReservationService {
             throw new DatabaseException("Error retrieving reservations: " + e.getMessage(), e);
         }
     }
+
+    public int save(Reservation reservation) throws DatabaseException {
+        return reservationDAO.save(reservation);
+    }
+
 }

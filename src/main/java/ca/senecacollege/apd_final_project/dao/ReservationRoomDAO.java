@@ -7,6 +7,7 @@ import ca.senecacollege.apd_final_project.model.RoomType;
 import ca.senecacollege.apd_final_project.util.DatabaseConnection;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;

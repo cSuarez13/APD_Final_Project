@@ -82,7 +82,8 @@ public class RoomDAO {
         String sql = "SELECT COUNT(*) FROM rooms r WHERE r.room_type_id = ? " +
                 "AND r.is_available = TRUE " +
                 "AND r.room_id NOT IN (" +
-                "SELECT res.room_id FROM reservations res " +
+                "SELECT rr.room_id FROM reservations res " +
+                "JOIN reservation_rooms rr ON res.reservation_id = rr.reservation_id " +
                 "WHERE res.status IN ('Pending', 'Confirmed', 'Checked In') " +
                 "AND ((res.check_in_date BETWEEN ? AND ?) " +
                 "OR (res.check_out_date BETWEEN ? AND ?) " +
@@ -126,12 +127,14 @@ public class RoomDAO {
         String sql = "SELECT * FROM rooms r WHERE r.room_type_id = ? " +
                 "AND r.is_available = TRUE " +
                 "AND r.room_id NOT IN (" +
-                "SELECT res.room_id FROM reservations res " +
+                "SELECT rr.room_id FROM reservations res " +
+                "JOIN reservation_rooms rr ON res.reservation_id = rr.reservation_id " +
                 "WHERE res.status IN ('Pending', 'Confirmed', 'Checked In') " +
                 "AND ((res.check_in_date BETWEEN ? AND ?) " +
                 "OR (res.check_out_date BETWEEN ? AND ?) " +
                 "OR (res.check_in_date <= ? AND res.check_out_date >= ?))) " +
                 "LIMIT 1";
+
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
