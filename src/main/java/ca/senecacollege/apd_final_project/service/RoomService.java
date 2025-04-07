@@ -138,4 +138,24 @@ public class RoomService {
             throw new DatabaseException("Error finding available room: " + e.getMessage(), e);
         }
     }
+
+    /**
+     * Get all available rooms of a specific type for the given date range
+     * This allows the booking system to book multiple different rooms of the same type
+     *
+     * @param roomType The room type
+     * @param checkInDate The check-in date
+     * @param checkOutDate The check-out date
+     * @return List of all available rooms of the specified type
+     * @throws DatabaseException If there's an error retrieving the rooms
+     */
+    public List<Room> getAllAvailableRoomsByType(RoomType roomType, LocalDate checkInDate, LocalDate checkOutDate)
+            throws DatabaseException {
+        try {
+            return roomDAO.findAllAvailableRoomsByType(roomType, checkInDate, checkOutDate);
+        } catch (Exception e) {
+            LoggingManager.logException("Error finding available rooms by type", e);
+            throw new DatabaseException("Error finding available rooms: " + e.getMessage(), e);
+        }
+    }
 }

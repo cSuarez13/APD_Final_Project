@@ -3,7 +3,6 @@ package ca.senecacollege.apd_final_project.controller.kiosk;
 import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
 import ca.senecacollege.apd_final_project.exception.ValidationException;
-import ca.senecacollege.apd_final_project.dao.ReservationRoomDAO;
 import ca.senecacollege.apd_final_project.model.*;
 import ca.senecacollege.apd_final_project.service.*;
 import ca.senecacollege.apd_final_project.util.*;
@@ -17,9 +16,9 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
@@ -41,16 +40,12 @@ public class GuestDetailsController extends BaseController {
     private Button btnNext;
 
     @FXML
-    private Button btnBack;
-
-    @FXML
     private Button btnRules;
 
     // Services
     private GuestService guestService;
     private ReservationService reservationService;
     private RoomService roomService;
-    private ReservationRoomDAO reservationRoomDAO;
 
     // Booking data
     private BookingData bookingData;
@@ -61,7 +56,7 @@ public class GuestDetailsController extends BaseController {
         guestService = ServiceLocator.getService(GuestService.class);
         reservationService = ServiceLocator.getService(ReservationService.class);
         roomService = ServiceLocator.getService(RoomService.class);
-        reservationRoomDAO = new ReservationRoomDAO(); // Create instance of DAO
+        // Create instance of DAO
 
         // Apply proper text styling to ensure visibility
         applyStyles();
@@ -161,11 +156,8 @@ public class GuestDetailsController extends BaseController {
                 // 3. Create a list to hold ReservationRoom objects
                 List<ReservationRoom> reservationRooms = new ArrayList<>();
 
-                // 4. Assign rooms by type (simplified: no guest distribution)
-                addRoomsByType(RoomType.SINGLE, bookingData.getSingleRoomCount(), reservationRooms);
-                addRoomsByType(RoomType.DOUBLE, bookingData.getDoubleRoomCount(), reservationRooms);
-                addRoomsByType(RoomType.DELUXE, bookingData.getDeluxeRoomCount(), reservationRooms);
-                addRoomsByType(RoomType.PENT_HOUSE, bookingData.getPentHouseCount(), reservationRooms);
+                // 4. Assign rooms by type using improved method
+                assignRoomsByType(reservationRooms);
 
                 // 5. Save reservation and rooms
                 int reservationId = reservationService.createReservationWithRooms(reservation, reservationRooms);
@@ -179,37 +171,112 @@ public class GuestDetailsController extends BaseController {
         }
     }
 
-    private void addRoomsByType(RoomType roomType, int count, List<ReservationRoom> reservationRooms)
-            throws DatabaseException {
+    /**
+     * New method to properly assign rooms for all room types at once
+     * This prevents duplicate room assignment issues
+     */
+    private void assignRoomsByType(List<ReservationRoom> reservationRooms) throws DatabaseException {
+        // Track all room IDs to ensure no duplicates
+        Set<Integer> assignedRoomIds = new HashSet<>();
 
+        // Process each room type
+        if (bookingData.getSingleRoomCount() > 0) {
+            addRoomsByType(RoomType.SINGLE, bookingData.getSingleRoomCount(),
+                    reservationRooms, assignedRoomIds);
+        }
+
+        if (bookingData.getDoubleRoomCount() > 0) {
+            addRoomsByType(RoomType.DOUBLE, bookingData.getDoubleRoomCount(),
+                    reservationRooms, assignedRoomIds);
+        }
+
+        if (bookingData.getDeluxeRoomCount() > 0) {
+            addRoomsByType(RoomType.DELUXE, bookingData.getDeluxeRoomCount(),
+                    reservationRooms, assignedRoomIds);
+        }
+
+        if (bookingData.getPentHouseCount() > 0) {
+            addRoomsByType(RoomType.PENT_HOUSE, bookingData.getPentHouseCount(),
+                    reservationRooms, assignedRoomIds);
+        }
+    }
+
+    /**
+     * Improved method to add rooms of a specific type,
+     * ensuring no duplicate room IDs are used
+     */
+    private void addRoomsByType(RoomType roomType, int count,
+                                List<ReservationRoom> reservationRooms,
+                                Set<Integer> assignedRoomIds) throws DatabaseException {
         if (count <= 0) return;
 
+        // Get the total number of guests for this room type
+        int totalGuestsForType = bookingData.getGuestsForRoomType(roomType);
+        int remainingGuests = totalGuestsForType;
+
         for (int i = 0; i < count; i++) {
-            // Find an available room of this type
-            Room room = roomService.findAvailableRoom(
-                    roomType,
-                    bookingData.getCheckInDate(),
-                    bookingData.getCheckOutDate()
-            );
+            // Find an available room of this type that hasn't been assigned yet
+            Room room = findUnassignedRoom(roomType, assignedRoomIds);
 
             if (room == null) {
                 throw new DatabaseException("No available " + roomType.getDisplayName() + " rooms.");
             }
 
-            // Create ReservationRoom (set guestsInRoom = 0 or calculate if needed)
+            // Add this room ID to our tracking set to prevent duplicates
+            assignedRoomIds.add(room.getRoomID());
+
+            // Calculate how many guests to assign to this room
+            int maxCapacity = roomType.getMaxOccupancy();
+            int guestsInRoom;
+
+            if (i == count - 1) {
+                // Last room gets all remaining guests
+                guestsInRoom = remainingGuests;
+            } else {
+                // Distribute evenly among rooms
+                guestsInRoom = Math.min(maxCapacity, totalGuestsForType / count);
+            }
+
+            // Ensure we don't exceed capacity
+            guestsInRoom = Math.min(guestsInRoom, maxCapacity);
+
+            // Update remaining guests
+            remainingGuests -= guestsInRoom;
+
+            // Create ReservationRoom
             ReservationRoom reservationRoom = new ReservationRoom();
             reservationRoom.setRoomID(room.getRoomID());
-            reservationRoom.setPricePerNight(roomType.getBasePrice());
-
-            // Optional: Assign guests (if logic is needed)
-            int guestsInRoom = Math.min(
-                    roomType.getMaxOccupancy(),
-                    bookingData.getGuestsForRoomType(roomType) / count // Distribute evenly
-            );
+            reservationRoom.setPricePerNight(room.getPrice());
             reservationRoom.setGuestsInRoom(guestsInRoom);
+
+            // Log for debugging
+            LoggingManager.logSystemInfo("Adding room #" + room.getRoomID() +
+                    " of type " + roomType + " with " + guestsInRoom + " guests");
 
             reservationRooms.add(reservationRoom);
         }
+    }
+
+    /**
+     * Find an available room of the specified type that hasn't been assigned yet
+     */
+    private Room findUnassignedRoom(RoomType roomType, Set<Integer> assignedRoomIds)
+            throws DatabaseException {
+        // Get all available rooms of this type
+        List<Room> availableRooms = roomService.getAllAvailableRoomsByType(
+                roomType,
+                bookingData.getCheckInDate(),
+                bookingData.getCheckOutDate()
+        );
+
+        // Find the first room that hasn't been assigned yet
+        for (Room room : availableRooms) {
+            if (!assignedRoomIds.contains(room.getRoomID())) {
+                return room;
+            }
+        }
+
+        return null; // No unassigned rooms found
     }
 
     /**
@@ -364,4 +431,5 @@ public class GuestDetailsController extends BaseController {
     protected void hideError() {
         // Nothing to do, we don't have a label to hide
     }
+
 }

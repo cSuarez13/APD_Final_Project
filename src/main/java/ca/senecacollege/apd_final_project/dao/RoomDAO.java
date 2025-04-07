@@ -170,6 +170,63 @@ public class RoomDAO {
     }
 
     /**
+     * NEW METHOD: Find all available rooms of the specified type for the given date range
+     * Used for booking multiple rooms of the same type without duplicates
+     *
+     * @param roomType The room type
+     * @param checkInDate The check-in date
+     * @param checkOutDate The check-out date
+     * @return List of all available rooms of the specified type
+     * @throws DatabaseException If there's an error finding available rooms
+     */
+    public List<Room> findAllAvailableRoomsByType(RoomType roomType, LocalDate checkInDate, LocalDate checkOutDate)
+            throws DatabaseException {
+        // Same query as findAvailableRoom but without LIMIT 1
+        String sql = "SELECT * FROM rooms r WHERE r.room_type_id = ? " +
+                "AND r.is_available = TRUE " +
+                "AND r.room_id NOT IN (" +
+                "SELECT rr.room_id FROM reservations res " +
+                "JOIN reservation_rooms rr ON res.reservation_id = rr.reservation_id " +
+                "WHERE res.status IN ('Pending', 'Confirmed', 'Checked In') " +
+                "AND ((res.check_in_date BETWEEN ? AND ?) " +
+                "OR (res.check_out_date BETWEEN ? AND ?) " +
+                "OR (res.check_in_date <= ? AND res.check_out_date >= ?)))";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, getRoomTypeId(roomType));
+            stmt.setDate(2, java.sql.Date.valueOf(checkInDate));
+            stmt.setDate(3, java.sql.Date.valueOf(checkOutDate));
+            stmt.setDate(4, java.sql.Date.valueOf(checkInDate));
+            stmt.setDate(5, java.sql.Date.valueOf(checkOutDate));
+            stmt.setDate(6, java.sql.Date.valueOf(checkInDate));
+            stmt.setDate(7, java.sql.Date.valueOf(checkOutDate));
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                List<Room> availableRooms = new ArrayList<>();
+                while (rs.next()) {
+                    availableRooms.add(mapResultSetToRoom(rs));
+                }
+
+                // If no rooms are available, check if rooms of this type exist at all
+                if (availableRooms.isEmpty() && countRoomsByType(roomType) == 0) {
+                    // Create default rooms if none exist
+                    createDefaultRooms(roomType);
+                    // Try again to find available rooms
+                    return findAllAvailableRoomsByType(roomType, checkInDate, checkOutDate);
+                }
+
+                return availableRooms;
+            }
+
+        } catch (SQLException e) {
+            LoggingManager.logException("Database error while finding available rooms", e);
+            throw new DatabaseException("Error finding available rooms: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * Count how many rooms of a specific type exist in the database
      *
      * @param roomType The room type
