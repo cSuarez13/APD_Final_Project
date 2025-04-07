@@ -353,7 +353,6 @@ public class RoomDAO {
      */
     private RoomType getRoomTypeById(int roomTypeId) {
         return switch (roomTypeId) {
-            case 1 -> RoomType.SINGLE;
             case 2 -> RoomType.DOUBLE;
             case 3 -> RoomType.DELUXE;
             case 4 -> RoomType.PENT_HOUSE;

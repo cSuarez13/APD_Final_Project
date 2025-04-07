@@ -102,28 +102,12 @@ public class BookingData {
         return guestsPerRoomType.getOrDefault(roomType, 0);
     }
 
-    public void setGuestsForRoomType(RoomType roomType, int guestCount) {
-        guestsPerRoomType.put(roomType, guestCount);
-    }
-
     public Map<Integer, Integer> getRoomIdToGuestCount() {
         return roomIdToGuestCount;
     }
 
     public void setRoomIdToGuestCount(Map<Integer, Integer> roomIdToGuestCount) {
         this.roomIdToGuestCount = roomIdToGuestCount;
-    }
-
-    public void addRoomAssignment(int roomId, int guestCount) {
-        roomIdToGuestCount.put(roomId, guestCount);
-    }
-
-    public int getTotalRoomCount() {
-        return singleRoomCount + doubleRoomCount + deluxeRoomCount + pentHouseCount;
-    }
-
-    public int getTotalAssignedGuests() {
-        return guestsPerRoomType.values().stream().mapToInt(Integer::intValue).sum();
     }
 
     @Override

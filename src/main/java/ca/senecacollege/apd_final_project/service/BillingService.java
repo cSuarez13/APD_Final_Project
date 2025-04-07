@@ -99,69 +99,6 @@ public class BillingService {
     }
 
     /**
-     * Generate a new bill for a reservation with multiple rooms
-     *
-     * @param reservationId The reservation ID
-     * @param discount The discount amount (0 for no discount)
-     * @return The generated bill
-     * @throws DatabaseException If there's an error generating the bill
-     */
-    public Billing generateBill(int reservationId, double discount) throws DatabaseException {
-        try {
-            // Get the reservation
-            Reservation reservation = reservationService.getReservationById(reservationId);
-            if (reservation == null) {
-                throw new DatabaseException("Reservation not found");
-            }
-
-            // Create a new bill
-            Billing bill = new Billing();
-            bill.setReservationID(reservationId);
-            bill.setBillingDateTime(LocalDateTime.now());
-            bill.setPaid(false);
-            bill.setDiscount(discount);
-
-            // Get all rooms for this reservation
-            List<ReservationRoom> reservationRooms = reservationService.getReservationRooms(reservationId);
-            double totalAmount = 0.0;
-
-            // Calculate nights
-            int nights = reservation.calculateNumberOfNights();
-
-            // Add billing items for each room
-            for (ReservationRoom reservationRoom : reservationRooms) {
-                Room room = roomService.getRoomById(reservationRoom.getRoomID());
-
-                // Create a billing item
-                Billing.BillingItem item = new Billing.BillingItem(
-                        room.getRoomID(),
-                        room.getRoomType().getDisplayName(),
-                        nights,
-                        room.getPrice()
-                );
-
-                // Add to the bill
-                bill.addBillingItem(item);
-
-                // Add to total
-                totalAmount += item.getSubtotal();
-            }
-
-            // Set the total amount
-            bill.setAmount(totalAmount);
-
-            // Save the bill
-            int billId = saveBill(bill);
-            bill.setBillID(billId);
-
-            return bill;
-        } catch (Exception e) {
-            LoggingManager.logException("Error generating bill for reservation #" + reservationId, e);
-            throw new DatabaseException("Error generating bill: " + e.getMessage(), e);
-        }
-    }
-
-    /**
      * Calculate the total bill amount for a reservation without saving it
      *
      * @param reservationId The reservation ID
@@ -232,7 +169,4 @@ public class BillingService {
         return reservationService;
     }
 
-    public RoomService getRoomService() {
-        return roomService;
-    }
 }

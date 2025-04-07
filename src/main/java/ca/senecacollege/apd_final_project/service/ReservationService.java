@@ -12,9 +12,10 @@ import ca.senecacollege.apd_final_project.model.RoomType;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ReservationService {
 
@@ -62,7 +63,7 @@ public class ReservationService {
             reservation.setStatus(ReservationStatus.CONFIRMED);
 
             // Save the reservation first (with a placeholder room ID)
-            if (roomsWithGuests.size() > 0) {
+            if (!roomsWithGuests.isEmpty()) {
                 // Set the first room as the "primary" room for backward compatibility
                 reservation.setRoomID(roomsWithGuests.keySet().iterator().next());
             }
@@ -148,153 +149,6 @@ public class ReservationService {
     }
 
     /**
-     * Add a room to an existing reservation
-     *
-     * @param reservationId The reservation ID
-     * @param roomId The room ID to add
-     * @param guestsInRoom Number of guests assigned to this room
-     * @throws ReservationException If there's an error adding the room
-     */
-    public void addRoomToReservation(int reservationId, int roomId, int guestsInRoom) throws ReservationException {
-        try {
-            // Get the reservation
-            Reservation reservation = getReservationById(reservationId);
-            if (reservation == null) {
-                throw new ReservationException("Reservation not found");
-            }
-
-            // Check reservation status
-            if (reservation.getStatus() != ReservationStatus.CONFIRMED &&
-                    reservation.getStatus() != ReservationStatus.PENDING) {
-                throw new ReservationException("Cannot add room to reservation with status: " +
-                        reservation.getStatus().getDisplayName());
-            }
-
-            // Check if room is already assigned to this reservation
-            if (reservationRoomDAO.isRoomBookedForReservation(reservationId, roomId)) {
-                throw new ReservationException("Room #" + roomId + " is already assigned to this reservation");
-            }
-
-            // Check if room exists and is available
-            Room room = roomService.getRoomById(roomId);
-            if (room == null) {
-                throw new ReservationException("Room #" + roomId + " does not exist");
-            }
-
-            if (!room.isAvailable()) {
-                throw new ReservationException("Room #" + roomId + " is not available");
-            }
-
-            // Check room capacity
-            if (guestsInRoom > room.getRoomType().getMaxOccupancy()) {
-                throw new ReservationException("Room #" + roomId + " cannot accommodate " +
-                        guestsInRoom + " guests. Maximum capacity is " +
-                        room.getRoomType().getMaxOccupancy());
-            }
-
-            // Create the reservation-room relationship
-            ReservationRoom reservationRoom = new ReservationRoom();
-            reservationRoom.setReservationID(reservationId);
-            reservationRoom.setRoomID(roomId);
-            reservationRoom.setGuestsInRoom(guestsInRoom);
-            reservationRoom.setPricePerNight(room.getPrice());
-
-            reservationRoomDAO.save(reservationRoom);
-
-            // Mark the room as unavailable
-            roomService.setRoomAvailability(roomId, false);
-
-            // Update the total number of guests in the reservation
-            updateTotalGuestCount(reservationId);
-
-            LoggingManager.logSystemInfo("Added room #" + roomId + " to reservation #" + reservationId);
-        } catch (Exception e) {
-            LoggingManager.logException("Error adding room to reservation", e);
-            throw new ReservationException("Error adding room to reservation: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Remove a room from an existing reservation
-     *
-     * @param reservationId The reservation ID
-     * @param roomId The room ID to remove
-     * @throws ReservationException If there's an error removing the room
-     */
-    public void removeRoomFromReservation(int reservationId, int roomId) throws ReservationException {
-        try {
-            // Get the reservation
-            Reservation reservation = getReservationById(reservationId);
-            if (reservation == null) {
-                throw new ReservationException("Reservation not found");
-            }
-
-            // Check reservation status
-            if (reservation.getStatus() != ReservationStatus.CONFIRMED &&
-                    reservation.getStatus() != ReservationStatus.PENDING) {
-                throw new ReservationException("Cannot remove room from reservation with status: " +
-                        reservation.getStatus().getDisplayName());
-            }
-
-            // Get the reservation-room relationship
-            ReservationRoom reservationRoom = reservationRoomDAO.findByReservationAndRoom(reservationId, roomId);
-            if (reservationRoom == null) {
-                throw new ReservationException("Room #" + roomId + " is not assigned to this reservation");
-            }
-
-            // Check if this is the only room (can't remove all rooms)
-            List<ReservationRoom> rooms = reservationRoomDAO.findByReservationId(reservationId);
-            if (rooms.size() == 1) {
-                throw new ReservationException("Cannot remove the only room from a reservation");
-            }
-
-            // Delete the relationship
-            reservationRoomDAO.delete(reservationRoom.getId());
-
-            // Make the room available again
-            roomService.setRoomAvailability(roomId, true);
-
-            // Update the total number of guests in the reservation
-            updateTotalGuestCount(reservationId);
-
-            LoggingManager.logSystemInfo("Removed room #" + roomId + " from reservation #" + reservationId);
-        } catch (Exception e) {
-            LoggingManager.logException("Error removing room from reservation", e);
-            throw new ReservationException("Error removing room from reservation: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Update the total guest count in a reservation based on the sum of guests in all rooms
-     *
-     * @param reservationId The reservation ID
-     * @throws DatabaseException If there's an error updating the reservation
-     */
-    private void updateTotalGuestCount(int reservationId) throws DatabaseException {
-        try {
-            // Get all reservation-room relationships
-            List<ReservationRoom> rooms = reservationRoomDAO.findByReservationId(reservationId);
-
-            // Calculate total guests
-            int totalGuests = 0;
-            for (ReservationRoom room : rooms) {
-                totalGuests += room.getGuestsInRoom();
-            }
-
-            // Update the reservation
-            Reservation reservation = getReservationById(reservationId);
-            reservation.setNumberOfGuests(totalGuests);
-            updateReservation(reservation);
-
-            LoggingManager.logSystemInfo("Updated total guest count for reservation #" +
-                    reservationId + " to " + totalGuests);
-        } catch (Exception e) {
-            LoggingManager.logException("Error updating total guest count", e);
-            throw new DatabaseException("Error updating total guest count: " + e.getMessage(), e);
-        }
-    }
-
-    /**
      * Get all rooms for a reservation
      *
      * @param reservationId The reservation ID
@@ -330,21 +184,6 @@ public class ReservationService {
             LoggingManager.logException("Error retrieving reservation #" + reservationId, e);
             throw new DatabaseException("Error retrieving reservation: " + e.getMessage(), e);
         }
-    }
-
-    public int createReservationWithRooms(Reservation reservation, List<ReservationRoom> rooms)
-            throws DatabaseException {
-
-        // 1. Save reservation (get ID)
-        int reservationId = reservationDAO.save(reservation);
-
-        // 2. Save all ReservationRoom records
-        for (ReservationRoom room : rooms) {
-            room.setReservationID(reservationId);
-            reservationRoomDAO.save(room); // Insert into `reservation_rooms` table
-        }
-
-        return reservationId;
     }
 
     /**
@@ -552,6 +391,52 @@ public class ReservationService {
 
     public int save(Reservation reservation) throws DatabaseException {
         return reservationDAO.save(reservation);
+    }
+
+    /**
+     * Creates a reservation with multiple rooms
+     * @param reservation Reservation details
+     * @param rooms List of ReservationRoom objects
+     * @return reservation ID
+     * @throws ReservationException if validation fails
+     */
+    public int createReservationWithRooms(Reservation reservation, List<ReservationRoom> rooms)
+            throws ReservationException {
+        try {
+            // Validate rooms first
+            Set<Integer> roomIds = new HashSet<>();
+            for (ReservationRoom room : rooms) {
+                if (!roomIds.add(room.getRoomID())) {
+                    throw new ReservationException("Duplicate room ID: " + room.getRoomID());
+                }
+
+                Room roomData = roomService.getRoomById(room.getRoomID());
+                if (roomData == null) {
+                    throw new ReservationException("Room #" + room.getRoomID() + " doesn't exist");
+                }
+                if (!roomData.isAvailable()) {
+                    throw new ReservationException("Room #" + room.getRoomID() + " is not available");
+                }
+            }
+
+            // Save reservation
+            reservation.setStatus(ReservationStatus.CONFIRMED);
+            if (!rooms.isEmpty()) {
+                reservation.setRoomID(rooms.get(0).getRoomID()); // Set primary room
+            }
+            int reservationId = reservationDAO.save(reservation);
+
+            // Save rooms
+            for (ReservationRoom room : rooms) {
+                room.setReservationID(reservationId);
+                reservationRoomDAO.save(room);
+                roomService.setRoomAvailability(room.getRoomID(), false);
+            }
+
+            return reservationId;
+        } catch (Exception e) {
+            throw new ReservationException("Failed to create reservation: " + e.getMessage(), e);
+        }
     }
 
 }

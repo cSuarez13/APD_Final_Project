@@ -52,24 +52,6 @@ public class RoomService {
     }
 
     /**
-     * Find an available room of the specified type for the given date range
-     *
-     * @param roomType The room type
-     * @param checkInDate The check-in date
-     * @param checkOutDate The check-out date
-     * @return An available room, or null if none is available
-     * @throws DatabaseException If there's an error finding a room
-     */
-    public Room findAvailableRoom(RoomType roomType, LocalDate checkInDate, LocalDate checkOutDate) throws DatabaseException {
-        try {
-            return roomDAO.findAvailableRoom(roomType, checkInDate, checkOutDate);
-        } catch (Exception e) {
-            LoggingManager.logException("Error finding available room", e);
-            throw new DatabaseException("Error finding available room: " + e.getMessage(), e);
-        }
-    }
-
-    /**
      * Check if a specific room is available for the given date range,
      * excluding a specific reservation (for modification purposes)
      *
@@ -136,6 +118,24 @@ public class RoomService {
         } catch (Exception e) {
             LoggingManager.logException("Error retrieving all rooms", e);
             throw new DatabaseException("Error retrieving all rooms: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Finds an available room of specified type for given dates
+     * @param roomType Type of room needed
+     * @param checkInDate Check-in date
+     * @param checkOutDate Check-out date
+     * @return Available Room or null if none found
+     * @throws DatabaseException If database error occurs
+     */
+    public Room findAvailableRoom(RoomType roomType, LocalDate checkInDate, LocalDate checkOutDate)
+            throws DatabaseException {
+        try {
+            return roomDAO.findAvailableRoom(roomType, checkInDate, checkOutDate);
+        } catch (Exception e) {
+            LoggingManager.logException("Error finding available room", e);
+            throw new DatabaseException("Error finding available room: " + e.getMessage(), e);
         }
     }
 }

@@ -46,10 +46,6 @@ public class Billing {
         this.tax.set(tax);
     }
 
-    public DoubleProperty taxProperty() {
-        return tax;
-    }
-
     /**
      * Calculate the total amount (amount + tax - discount)
      *
@@ -74,20 +70,12 @@ public class Billing {
         this.totalAmount.set(totalAmount);
     }
 
-    public DoubleProperty totalAmountProperty() {
-        return totalAmount;
-    }
-
     public String getPaymentMethod() {
         return paymentMethod.get();
     }
 
     public void setPaymentMethod(String paymentMethod) {
         this.paymentMethod.set(paymentMethod);
-    }
-
-    public StringProperty paymentMethodProperty() {
-        return paymentMethod;
     }
 
     public int getBillID() {
@@ -144,16 +132,6 @@ public class Billing {
         updateTotalAmount();
     }
 
-    public void removeBillingItem(BillingItem item) {
-        billingItems.remove(item);
-        updateTotalAmount();
-    }
-
-    public void clearBillingItems() {
-        billingItems.clear();
-        updateTotalAmount();
-    }
-
     private void updateTotalAmount() {
         double total = 0;
         for (BillingItem item : billingItems) {
@@ -184,22 +162,6 @@ public class Billing {
             this.nights = nights;
             this.pricePerNight = pricePerNight;
             this.subtotal = nights * pricePerNight;
-        }
-
-        public int getRoomId() {
-            return roomId;
-        }
-
-        public String getRoomType() {
-            return roomType;
-        }
-
-        public int getNights() {
-            return nights;
-        }
-
-        public double getPricePerNight() {
-            return pricePerNight;
         }
 
         public double getSubtotal() {

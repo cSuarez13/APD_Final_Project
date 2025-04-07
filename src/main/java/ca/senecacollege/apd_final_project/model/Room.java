@@ -32,20 +32,8 @@ public class Room {
         this.roomNumber.set(roomNumber);
     }
 
-    public StringProperty roomNumberProperty() {
-        return roomNumber;
-    }
-
-    public int getFloor() {
-        return floor.get();
-    }
-
     public void setFloor(int floor) {
         this.floor.set(floor);
-    }
-
-    public IntegerProperty floorProperty() {
-        return floor;
     }
 
     public int getRoomID() {

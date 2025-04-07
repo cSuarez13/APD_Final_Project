@@ -18,21 +18,6 @@ public class ReservationRoom {
         // Default constructor
     }
 
-    public ReservationRoom(int id, int reservationID, int roomID, int guestsInRoom, double pricePerNight) {
-        this.id.set(id);
-        this.reservationID.set(reservationID);
-        this.roomID.set(roomID);
-        this.guestsInRoom.set(guestsInRoom);
-        this.pricePerNight.set(pricePerNight);
-    }
-
-    public ReservationRoom(int reservationID, int roomID, int guestsInRoom, double pricePerNight) {
-        this.reservationID.set(reservationID);
-        this.roomID.set(roomID);
-        this.guestsInRoom.set(guestsInRoom);
-        this.pricePerNight.set(pricePerNight);
-    }
-
     // Getter and Setter for ID
     public int getId() {
         return id.get();
@@ -40,10 +25,6 @@ public class ReservationRoom {
 
     public void setId(int id) {
         this.id.set(id);
-    }
-
-    public IntegerProperty idProperty() {
-        return id;
     }
 
     // Getter and Setter for ReservationID
@@ -55,10 +36,6 @@ public class ReservationRoom {
         this.reservationID.set(reservationID);
     }
 
-    public IntegerProperty reservationIDProperty() {
-        return reservationID;
-    }
-
     // Getter and Setter for RoomID
     public int getRoomID() {
         return roomID.get();
@@ -66,10 +43,6 @@ public class ReservationRoom {
 
     public void setRoomID(int roomID) {
         this.roomID.set(roomID);
-    }
-
-    public IntegerProperty roomIDProperty() {
-        return roomID;
     }
 
     // Getter and Setter for Guests in Room
@@ -81,20 +54,12 @@ public class ReservationRoom {
         this.guestsInRoom.set(guestsInRoom);
     }
 
-    public IntegerProperty guestsInRoomProperty() {
-        return guestsInRoom;
-    }
-
     public double getPricePerNight() {
         return pricePerNight.get();
     }
 
     public void setPricePerNight(double pricePerNight) {
         this.pricePerNight.set(pricePerNight);
-    }
-
-    public DoubleProperty pricePerNightProperty() {
-        return pricePerNight;
     }
 
     @Override

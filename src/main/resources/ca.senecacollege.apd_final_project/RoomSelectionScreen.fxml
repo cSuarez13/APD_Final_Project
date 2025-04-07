@@ -20,7 +20,7 @@
                     <Font name="System Bold" size="24.0" />
                 </font>
                 <VBox.margin>
-                    <Insets top="0" />
+                    <Insets/>
                 </VBox.margin>
             </Label>
 
@@ -98,7 +98,7 @@
                                 </Label>
                             </graphic>
                             <padding>
-                                <Insets top="0" right="0" bottom="0" left="0" />
+                                <Insets/>
                             </padding>
                         </Button>
 
@@ -124,7 +124,7 @@
                                 </Label>
                             </graphic>
                             <padding>
-                                <Insets top="0" right="0" bottom="0" left="0" />
+                                <Insets/>
                             </padding>
                         </Button>
                     </HBox>
@@ -173,7 +173,7 @@
                                 </Label>
                             </graphic>
                             <padding>
-                                <Insets top="0" right="0" bottom="0" left="0" />
+                                <Insets/>
                             </padding>
                         </Button>
 
@@ -199,7 +199,7 @@
                                 </Label>
                             </graphic>
                             <padding>
-                                <Insets top="0" right="0" bottom="0" left="0" />
+                                <Insets/>
                             </padding>
                         </Button>
                     </HBox>
@@ -248,7 +248,7 @@
                                 </Label>
                             </graphic>
                             <padding>
-                                <Insets top="0" right="0" bottom="0" left="0" />
+                                <Insets/>
                             </padding>
                         </Button>
 
@@ -274,7 +274,7 @@
                                 </Label>
                             </graphic>
                             <padding>
-                                <Insets top="0" right="0" bottom="0" left="0" />
+                                <Insets/>
                             </padding>
                         </Button>
                     </HBox>
@@ -323,7 +323,7 @@
                                 </Label>
                             </graphic>
                             <padding>
-                                <Insets top="0" right="0" bottom="0" left="0" />
+                                <Insets/>
                             </padding>
                         </Button>
 
@@ -349,7 +349,7 @@
                                 </Label>
                             </graphic>
                             <padding>
-                                <Insets top="0" right="0" bottom="0" left="0" />
+                                <Insets/>
                             </padding>
                         </Button>
                     </HBox>

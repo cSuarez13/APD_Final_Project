@@ -35,10 +35,6 @@ public class Constants {
     public static final int SERVER_PORT = 5555;
     public static final int MAX_CLIENTS = 10;
 
-    // Room related constants
-    public static final int MAX_GUESTS_SINGLE_ROOM = 2;
-    public static final int MAX_GUESTS_DOUBLE_ROOM = 4;
-
     // Tax rate
     public static final double TAX_RATE = 0.13; // 13% tax
 

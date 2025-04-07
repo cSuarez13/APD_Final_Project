@@ -124,29 +124,33 @@ public class ConfirmationController extends BaseController {
         // Add listener to wait for scene to be available
         lblReservationId.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
-                Stage stage = (Stage) newScene.getWindow();
+                // Wait for the window to be available
+                newScene.windowProperty().addListener((windowObs, oldWindow, newWindow) -> {
+                    if (newWindow instanceof Stage stage) {
 
-                // Calculate dimensions based on screen dimensions
-                double stageWidth = ScreenSizeManager.calculateStageWidth(1024);
-                double stageHeight = ScreenSizeManager.calculateStageHeight(800); // Increased height for multiple rooms
+                        // Calculate dimensions based on screen dimensions
+                        double stageWidth = ScreenSizeManager.calculateStageWidth(1024);
+                        double stageHeight = ScreenSizeManager.calculateStageHeight(800); // Increased height for multiple rooms
 
-                // Ensure minimum size for content
-                stageWidth = Math.max(stageWidth, 800);
-                stageHeight = Math.max(stageHeight, 700);
+                        // Ensure minimum size for content
+                        stageWidth = Math.max(stageWidth, 800);
+                        stageHeight = Math.max(stageHeight, 700);
 
-                // Get center position
-                double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
+                        // Get center position
+                        double[] centerPos = ScreenSizeManager.centerStageOnScreen(stageWidth, stageHeight);
 
-                // Set the stage's size and position
-                stage.setWidth(stageWidth);
-                stage.setHeight(stageHeight);
-                stage.setX(centerPos[0]);
-                stage.setY(centerPos[1]);
+                        // Set the stage's size and position
+                        stage.setWidth(stageWidth);
+                        stage.setHeight(stageHeight);
+                        stage.setX(centerPos[0]);
+                        stage.setY(centerPos[1]);
 
-                // Make sure it's not maximized
-                stage.setMaximized(false);
+                        // Make sure it's not maximized
+                        stage.setMaximized(false);
 
-                logSystemActivity("ConfirmationScreen size adjusted to " + stageWidth + "x" + stageHeight);
+                        logSystemActivity("ConfirmationScreen size adjusted to " + stageWidth + "x" + stageHeight);
+                    }
+                });
             }
         });
     }
