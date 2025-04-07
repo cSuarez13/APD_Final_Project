@@ -332,6 +332,21 @@ public class ReservationService {
         }
     }
 
+    public int createReservationWithRooms(Reservation reservation, List<ReservationRoom> rooms)
+            throws DatabaseException {
+
+        // 1. Save reservation (get ID)
+        int reservationId = reservationDAO.save(reservation);
+
+        // 2. Save all ReservationRoom records
+        for (ReservationRoom room : rooms) {
+            room.setReservationID(reservationId);
+            reservationRoomDAO.save(room); // Insert into `reservation_rooms` table
+        }
+
+        return reservationId;
+    }
+
     /**
      * Update a reservation
      *

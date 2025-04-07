@@ -1,10 +1,8 @@
 package ca.senecacollege.apd_final_project.controller.kiosk;
 
 import ca.senecacollege.apd_final_project.controller.BaseController;
-import ca.senecacollege.apd_final_project.model.Guest;
-import ca.senecacollege.apd_final_project.model.Reservation;
-import ca.senecacollege.apd_final_project.model.ReservationRoom;
-import ca.senecacollege.apd_final_project.model.Room;
+import ca.senecacollege.apd_final_project.controller.kiosk.BookingData;
+import ca.senecacollege.apd_final_project.model.*;
 import ca.senecacollege.apd_final_project.service.*;
 import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
@@ -24,7 +22,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
@@ -65,6 +64,7 @@ public class ConfirmationController extends BaseController {
     private Guest guest;
     private List<Room> rooms;
     private List<ReservationRoom> reservationRooms;
+    private BookingData bookingData;
 
     private ReservationService reservationService;
     private GuestService guestService;
@@ -151,9 +151,10 @@ public class ConfirmationController extends BaseController {
         });
     }
 
-    public void initReservationData(int reservationId) {
+    public void initReservationData(int reservationId, BookingData bookingData)
+    {
         this.reservationId = reservationId;
-
+        this.bookingData = bookingData;
         try {
             // Load reservation details
             reservation = reservationService.getReservationById(reservationId);
@@ -210,53 +211,56 @@ public class ConfirmationController extends BaseController {
             return;
         }
 
-        // If single room, keep backward compatibility
-        if (rooms.size() == 1) {
-            Room room = rooms.get(0);
-            lblRoomInfo.setText(room.getRoomType().getDisplayName() + " (Room #" + room.getRoomID() + ")");
-            return;
+        System.out.println("Rooms:");
+        for (Room r : rooms) {
+            System.out.println("Room ID: " + r.getRoomID() + ", Type: " + r.getRoomType().getDisplayName());
         }
 
-        // For multiple rooms, create a summary in lblRoomInfo
+        // Group rooms by room type to count duplicates and display properly
+        Map<RoomType, List<Room>> roomsByType = rooms.stream()
+                .collect(Collectors.groupingBy(Room::getRoomType));
+
+        // Create a summary for the main room info label
         StringBuilder roomSummary = new StringBuilder();
-        roomSummary.append(rooms.size()).append(" rooms: ");
+        List<String> roomDetailsList = new ArrayList<>();
 
-        int singleCount = 0, doubleCount = 0, deluxeCount = 0, pentCount = 0;
+        boolean firstRoom = true;
+        for (Map.Entry<RoomType, List<Room>> entry : roomsByType.entrySet()) {
+            RoomType roomType = entry.getKey();
+            List<Room> roomsOfType = entry.getValue();
+            int count = roomsOfType.size();
 
-        for (Room room : rooms) {
-            switch (room.getRoomType()) {
-                case SINGLE -> singleCount++;
-                case DOUBLE -> doubleCount++;
-                case DELUXE -> deluxeCount++;
-                case PENT_HOUSE -> pentCount++;
+            // Add to summary
+            if (!firstRoom) {
+                roomSummary.append(", ");
             }
+
+            if (count == 1) {
+                Room room = roomsOfType.get(0);
+                roomSummary.append(roomType.getDisplayName())
+                        .append(" (Room #")
+                        .append(room.getRoomID())
+                        .append(")");
+            } else {
+                roomSummary.append(count)
+                        .append(" ")
+                        .append(roomType.getDisplayName())
+                        .append("s");
+
+                // Add individual room numbers
+                for (Room room : roomsOfType) {
+                    roomDetailsList.add(roomType.getDisplayName() + " (Room #" + room.getRoomID() + ")");
+                }
+            }
+
+            firstRoom = false;
         }
 
-        // Add counts to summary
-        boolean firstType = true;
-        if (singleCount > 0) {
-            roomSummary.append(singleCount).append(" Single");
-            firstType = false;
-        }
-        if (doubleCount > 0) {
-            if (!firstType) roomSummary.append(", ");
-            roomSummary.append(doubleCount).append(" Double");
-            firstType = false;
-        }
-        if (deluxeCount > 0) {
-            if (!firstType) roomSummary.append(", ");
-            roomSummary.append(deluxeCount).append(" Deluxe");
-            firstType = false;
-        }
-        if (pentCount > 0) {
-            if (!firstType) roomSummary.append(", ");
-            roomSummary.append(pentCount).append(" Pent House");
-        }
-
+        // Set the main room info label
         lblRoomInfo.setText(roomSummary.toString());
 
         // Create detailed rows for each room if we have a detailed view container
-        if (roomDetailsContainer != null) {
+        if (roomDetailsContainer != null && !roomDetailsList.isEmpty()) {
             roomDetailsContainer.getChildren().clear();
 
             Label titleLabel = new Label("Room Details:");

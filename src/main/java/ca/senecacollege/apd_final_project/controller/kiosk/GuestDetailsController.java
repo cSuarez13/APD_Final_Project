@@ -142,95 +142,73 @@ public class GuestDetailsController extends BaseController {
     private void handleNextButton() {
         if (validateFields()) {
             try {
-                // Create guest object
+                // 1. Create and save guest
                 Guest guest = new Guest();
                 guest.setName(txtName.getText().trim());
                 guest.setPhoneNumber(txtPhone.getText().trim());
                 guest.setEmail(txtEmail.getText().trim());
                 guest.setAddress(txtAddress.getText().trim());
-
-                // Save guest and get ID
                 int guestId = guestService.saveGuest(guest);
 
-                // Create a map to store room ID to guest count assignments
-                Map<Integer, Integer> roomsWithGuests = new HashMap<>();
-
-                // Assign rooms by type and add to the map
-                assignRoomsByType(RoomType.SINGLE, bookingData.getSingleRoomCount(),
-                        bookingData.getGuestsForRoomType(RoomType.SINGLE), roomsWithGuests);
-                assignRoomsByType(RoomType.DOUBLE, bookingData.getDoubleRoomCount(),
-                        bookingData.getGuestsForRoomType(RoomType.DOUBLE), roomsWithGuests);
-                assignRoomsByType(RoomType.DELUXE, bookingData.getDeluxeRoomCount(),
-                        bookingData.getGuestsForRoomType(RoomType.DELUXE), roomsWithGuests);
-                assignRoomsByType(RoomType.PENT_HOUSE, bookingData.getPentHouseCount(),
-                        bookingData.getGuestsForRoomType(RoomType.PENT_HOUSE), roomsWithGuests);
-
-                // Create a basic reservation object
+                // 2. Create reservation
                 Reservation reservation = new Reservation();
                 reservation.setGuestID(guestId);
                 reservation.setCheckInDate(bookingData.getCheckInDate());
                 reservation.setCheckOutDate(bookingData.getCheckOutDate());
                 reservation.setNumberOfGuests(bookingData.getGuestCount());
+                reservation.setStatus(ReservationStatus.CONFIRMED);
 
-                // Use the reservationService to create the reservation with multiple rooms
-                int reservationId = reservationService.createReservation(reservation, roomsWithGuests);
+                // 3. Create a list to hold ReservationRoom objects
+                List<ReservationRoom> reservationRooms = new ArrayList<>();
 
-                LoggingManager.logSystemInfo("Created reservation #" + reservationId +
-                        " with " + roomsWithGuests.size() + " rooms for guest: " + guest.getName());
+                // 4. Assign rooms by type (simplified: no guest distribution)
+                addRoomsByType(RoomType.SINGLE, bookingData.getSingleRoomCount(), reservationRooms);
+                addRoomsByType(RoomType.DOUBLE, bookingData.getDoubleRoomCount(), reservationRooms);
+                addRoomsByType(RoomType.DELUXE, bookingData.getDeluxeRoomCount(), reservationRooms);
+                addRoomsByType(RoomType.PENT_HOUSE, bookingData.getPentHouseCount(), reservationRooms);
+
+                // 5. Save reservation and rooms
+                int reservationId = reservationService.createReservationWithRooms(reservation, reservationRooms);
 
                 navigateToConfirmation(reservationId);
 
             } catch (Exception e) {
-                LoggingManager.logException("Error processing guest details", e);
-                ErrorPopupManager.showErrorPopup(getStage(), "Error processing guest details: " + e.getMessage());
+                ErrorPopupManager.showErrorPopup(getStage(), "Error: " + e.getMessage());
+                LoggingManager.logSystemInfo("Error: " + e.getMessage());
             }
         }
     }
 
+    private void addRoomsByType(RoomType roomType, int count, List<ReservationRoom> reservationRooms)
+            throws DatabaseException {
 
-    /**
-     * Assign rooms by type to the reservation
-     *
-     * @param roomType The room type
-     * @param count Number of rooms of this type
-     * @param totalGuests Total guests to assign to this room type
-     * @param roomAssignments Map to store room ID to guest count assignments
-     * @throws DatabaseException If there's an error finding available rooms
-     */
-    private void assignRoomsByType(RoomType roomType, int count, int totalGuests,
-                                   Map<Integer, Integer> roomAssignments) throws DatabaseException {
-        if (count <= 0 || totalGuests <= 0) {
-            return; // No rooms or guests to assign
-        }
+        if (count <= 0) return;
 
-        // Get available rooms of this type
-        List<Room> availableRooms = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            Room room = roomService.findAvailableRoom(roomType,
-                    bookingData.getCheckInDate(), bookingData.getCheckOutDate());
+            // Find an available room of this type
+            Room room = roomService.findAvailableRoom(
+                    roomType,
+                    bookingData.getCheckInDate(),
+                    bookingData.getCheckOutDate()
+            );
 
-            if (room != null) {
-                availableRooms.add(room);
-            } else {
-                throw new DatabaseException("Unable to find available " + roomType.getDisplayName());
+            if (room == null) {
+                throw new DatabaseException("No available " + roomType.getDisplayName() + " rooms.");
             }
-        }
 
-        // Distribute guests evenly among rooms
-        int remainingGuests = totalGuests;
-        int roomIndex = 0;
+            // Create ReservationRoom (set guestsInRoom = 0 or calculate if needed)
+            ReservationRoom reservationRoom = new ReservationRoom();
+            reservationRoom.setRoomID(room.getRoomID());
+            reservationRoom.setPricePerNight(roomType.getBasePrice());
 
-        while (remainingGuests > 0 && roomIndex < availableRooms.size()) {
-            Room room = availableRooms.get(roomIndex);
-            int maxCapacity = room.getRoomType().getMaxOccupancy();
-            int guestsToAssign = Math.min(remainingGuests, maxCapacity);
+            // Optional: Assign guests (if logic is needed)
+            int guestsInRoom = Math.min(
+                    roomType.getMaxOccupancy(),
+                    bookingData.getGuestsForRoomType(roomType) / count // Distribute evenly
+            );
+            reservationRoom.setGuestsInRoom(guestsInRoom);
 
-            // Add to the assignments map
-            roomAssignments.put(room.getRoomID(), guestsToAssign);
-
-            // Update remaining guests
-            remainingGuests -= guestsToAssign;
-            roomIndex++;
+            reservationRooms.add(reservationRoom);
         }
     }
 
@@ -244,9 +222,9 @@ public class GuestDetailsController extends BaseController {
         FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_CONFIRMATION));
         Parent confirmationRoot = loader.load();
 
-        // Get the controller and pass the reservation data
+        // Get the controller and pass the reservation + booking data
         ConfirmationController confirmationController = loader.getController();
-        confirmationController.initReservationData(reservationId);
+        confirmationController.initReservationData(reservationId, bookingData);
 
         // Get the current stage
         Stage stage = getStage();
