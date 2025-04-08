@@ -241,9 +241,14 @@ public class SearchGuestController extends BaseController {
         if (selectedGuest == null) return;
 
         try {
-            // Open reservation screen
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_BOOKING));
+            // Load the new reservation screen
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(Constants.FXML_NEW_RESERVATION));
             Parent root = loader.load();
+
+            // Get the controller and pass the guest data
+            NewReservationController controller = loader.getController();
+            controller.initData(currentAdmin);
+            controller.initGuest(selectedGuest.getGuestID());
 
             // Create and configure the stage
             Stage stage = new Stage();
@@ -254,19 +259,21 @@ public class SearchGuestController extends BaseController {
             // Apply CSS
             root.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_ADMIN)).toExternalForm());
 
-            // Set a larger stage size
-            stage.setWidth(800);
-            stage.setHeight(600);
-
             // Show the dialog
             stage.showAndWait();
 
+            // Refresh reservations after dialog closes
+            loadReservationsForGuest(selectedGuest);
+
             // Log the action
-            logAdminActivity("Opened new reservation for guest: " + selectedGuest.getName());
+            logAdminActivity("Created new reservation for guest: " + selectedGuest.getName());
 
         } catch (IOException e) {
             LoggingManager.logException("Error opening new reservation screen", e);
             showError("Error creating new reservation: " + e.getMessage());
+        } catch (Exception e) {
+            LoggingManager.logException("Unexpected error", e);
+            showError("Unexpected error: " + e.getMessage());
         }
     }
 

@@ -25,6 +25,7 @@ public class Constants {
     public static final String FXML_DASHBOARD_CONTENT = "/ca.senecacollege.apd_final_project/DashboardContent.fxml";
     public static final String FXML_RESERVATIONS = "/ca.senecacollege.apd_final_project/ReservationScreen.fxml";
     public static final String FXML_MODIFY_RESERVATION = "/ca.senecacollege.apd_final_project/ModifyReservation.fxml";
+    public static final String FXML_NEW_RESERVATION = "/ca.senecacollege.apd_final_project/NewReservation.fxml";
 
     // CSS files
     public static final String CSS_MAIN = "/ca.senecacollege.apd_final_project/application.css";

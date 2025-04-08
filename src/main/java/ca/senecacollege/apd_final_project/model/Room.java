@@ -73,4 +73,8 @@ public class Room {
         return "Room " + getRoomNumber() + " - " + getRoomType().getDisplayName() +
                 " ($" + String.format("%.2f", getPrice()) + ")";
     }
+
+    public int getFloor() {
+        return floor.get();
+    }
 }
