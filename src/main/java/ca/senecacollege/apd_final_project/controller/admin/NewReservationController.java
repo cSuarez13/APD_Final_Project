@@ -6,7 +6,6 @@ import ca.senecacollege.apd_final_project.exception.ReservationException;
 import ca.senecacollege.apd_final_project.exception.ValidationException;
 import ca.senecacollege.apd_final_project.model.*;
 import ca.senecacollege.apd_final_project.service.*;
-import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 import ca.senecacollege.apd_final_project.util.ValidationUtils;
 import javafx.collections.FXCollections;
@@ -14,9 +13,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
@@ -26,6 +23,7 @@ import java.util.*;
 
 public class NewReservationController extends BaseController {
 
+    public Label lblGuestCount;
     @FXML
     private Label lblGuestName;
 
@@ -95,13 +93,13 @@ public class NewReservationController extends BaseController {
     private List<Room> availablePenthouseRooms = new ArrayList<>();
 
     // Observable lists for room selection lists
-    private ObservableList<RoomSelectionItem> singleRoomItems = FXCollections.observableArrayList();
-    private ObservableList<RoomSelectionItem> doubleRoomItems = FXCollections.observableArrayList();
-    private ObservableList<RoomSelectionItem> deluxeRoomItems = FXCollections.observableArrayList();
-    private ObservableList<RoomSelectionItem> penthouseRoomItems = FXCollections.observableArrayList();
+    private final ObservableList<RoomSelectionItem> singleRoomItems = FXCollections.observableArrayList();
+    private final ObservableList<RoomSelectionItem> doubleRoomItems = FXCollections.observableArrayList();
+    private final ObservableList<RoomSelectionItem> deluxeRoomItems = FXCollections.observableArrayList();
+    private final ObservableList<RoomSelectionItem> penthouseRoomItems = FXCollections.observableArrayList();
 
     // Keep track of selected rooms
-    private Map<RoomType, Set<Integer>> selectedRoomIds = new HashMap<>();
+    private final Map<RoomType, Set<Integer>> selectedRoomIds = new HashMap<>();
 
     /**
      * Inner class to represent a room with checkbox for selection
@@ -201,10 +199,10 @@ public class NewReservationController extends BaseController {
         listView.setItems(items);
 
         // Set custom cell factory
-        listView.setCellFactory(new Callback<ListView<RoomSelectionItem>, ListCell<RoomSelectionItem>>() {
+        listView.setCellFactory(new Callback<>() {
             @Override
             public ListCell<RoomSelectionItem> call(ListView<RoomSelectionItem> param) {
-                return new ListCell<RoomSelectionItem>() {
+                return new ListCell<>() {
                     @Override
                     protected void updateItem(RoomSelectionItem item, boolean empty) {
                         super.updateItem(item, empty);
@@ -318,36 +316,7 @@ public class NewReservationController extends BaseController {
         });
 
         // Reload available rooms when check-out date changes
-        dpCheckOutDate.valueProperty().addListener((obs, oldVal, newVal) -> {
-            loadAvailableRooms();
-        });
-    }
-
-    private void setupSpinners() {
-        // Set up room count spinners
-        SpinnerValueFactory<Integer> singleFactory =
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 10, 0);
-        spnSingleRooms.setValueFactory(singleFactory);
-
-        SpinnerValueFactory<Integer> doubleFactory =
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 10, 0);
-        spnDoubleRooms.setValueFactory(doubleFactory);
-
-        SpinnerValueFactory<Integer> deluxeFactory =
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 5, 0);
-        spnDeluxeRooms.setValueFactory(deluxeFactory);
-
-        SpinnerValueFactory<Integer> penthouseFactory =
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 2, 0);
-        spnPenthouseRooms.setValueFactory(penthouseFactory);
-
-        // Set up guest count spinner - default to 1 guest
-        SpinnerValueFactory<Integer> guestFactory =
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 20, 1);
-        spnNumberOfGuests.setValueFactory(guestFactory);
-
-        // Update summary counts initially
-        updateTotalCounts();
+        dpCheckOutDate.valueProperty().addListener((obs, oldVal, newVal) -> loadAvailableRooms());
     }
 
     private void addChangeListeners() {
@@ -397,7 +366,7 @@ public class NewReservationController extends BaseController {
     }
 
     /**
-     * Load available rooms for all room types based on current date selection
+     * Load available rooms based on current date selection
      */
     private void loadAvailableRooms() {
         if (dpCheckInDate.getValue() == null || dpCheckOutDate.getValue() == null) {
@@ -459,6 +428,12 @@ public class NewReservationController extends BaseController {
             // Update spinner maximums based on available rooms
             updateSpinnerMaximums();
 
+            // Suggest initial room allocation based on guest count
+            suggestRoomAllocation(spnNumberOfGuests.getValue());
+
+            // Validate the current selection
+            validateGuestCapacity();
+
         } catch (DatabaseException e) {
             LoggingManager.logException("Error loading available rooms", e);
             showError("Database error loading available rooms: " + e.getMessage());
@@ -494,7 +469,9 @@ public class NewReservationController extends BaseController {
     }
 
     /**
-     * Validate that the number of selected rooms matches the spinner counts
+     * This method is called when room selections are being validated.
+     * Unlike the previous version, it does NOT auto-select rooms,
+     * but just checks if there are enough rooms selected.
      */
     private void validateRoomSelections() {
         // Get spinner values
@@ -503,94 +480,12 @@ public class NewReservationController extends BaseController {
         int deluxeCount = spnDeluxeRooms.getValue();
         int penthouseCount = spnPenthouseRooms.getValue();
 
-        // Get current selection counts
-        int selectedSingleCount = selectedRoomIds.get(RoomType.SINGLE).size();
-        int selectedDoubleCount = selectedRoomIds.get(RoomType.DOUBLE).size();
-        int selectedDeluxeCount = selectedRoomIds.get(RoomType.DELUXE).size();
-        int selectedPenthouseCount = selectedRoomIds.get(RoomType.PENT_HOUSE).size();
+        // Calculate total rooms and capacity
 
-        // Single rooms validation
-        if (selectedSingleCount < singleCount) {
-            // Need to auto-select more rooms
-            autoSelectRooms(RoomType.SINGLE, singleCount - selectedSingleCount);
-        } else if (selectedSingleCount > singleCount) {
-            // Need to deselect excess rooms
-            autoDeselectRooms(RoomType.SINGLE, selectedSingleCount - singleCount);
-        }
-
-        // Double rooms validation
-        if (selectedDoubleCount < doubleCount) {
-            autoSelectRooms(RoomType.DOUBLE, doubleCount - selectedDoubleCount);
-        } else if (selectedDoubleCount > doubleCount) {
-            autoDeselectRooms(RoomType.DOUBLE, selectedDoubleCount - doubleCount);
-        }
-
-        // Deluxe rooms validation
-        if (selectedDeluxeCount < deluxeCount) {
-            autoSelectRooms(RoomType.DELUXE, deluxeCount - selectedDeluxeCount);
-        } else if (selectedDeluxeCount > deluxeCount) {
-            autoDeselectRooms(RoomType.DELUXE, selectedDeluxeCount - deluxeCount);
-        }
-
-        // Penthouse rooms validation
-        if (selectedPenthouseCount < penthouseCount) {
-            autoSelectRooms(RoomType.PENT_HOUSE, penthouseCount - selectedPenthouseCount);
-        } else if (selectedPenthouseCount > penthouseCount) {
-            autoDeselectRooms(RoomType.PENT_HOUSE, selectedPenthouseCount - penthouseCount);
-        }
-
-        // Update the total counts
-        updateTotalCounts();
+        // Check if enough capacity for the guests
+        int guests = spnNumberOfGuests.getValue();
     }
 
-    /**
-     * Auto-select rooms of a specific type
-     * @param roomType The room type
-     * @param count How many more rooms to select
-     */
-    private void autoSelectRooms(RoomType roomType, int count) {
-        if (count <= 0) return;
-
-        Set<Integer> selectedIds = selectedRoomIds.get(roomType);
-        ObservableList<RoomSelectionItem> items = getRoomItemsByType(roomType);
-
-        // Find unselected rooms and select them
-        int selected = 0;
-        for (RoomSelectionItem item : items) {
-            if (!item.isSelected() && selected < count) {
-                item.setSelected(true);
-                selectedIds.add(item.getRoom().getRoomID());
-                selected++;
-            }
-
-            if (selected >= count) break;
-        }
-    }
-
-    /**
-     * Auto-deselect rooms of a specific type
-     * @param roomType The room type
-     * @param count How many rooms to deselect
-     */
-    private void autoDeselectRooms(RoomType roomType, int count) {
-        if (count <= 0) return;
-
-        Set<Integer> selectedIds = selectedRoomIds.get(roomType);
-        ObservableList<RoomSelectionItem> items = getRoomItemsByType(roomType);
-
-        // Find selected rooms and deselect them (in reverse order to deselect recent ones first)
-        int deselected = 0;
-        for (int i = items.size() - 1; i >= 0; i--) {
-            RoomSelectionItem item = items.get(i);
-            if (item.isSelected() && deselected < count) {
-                item.setSelected(false);
-                selectedIds.remove(item.getRoom().getRoomID());
-                deselected++;
-            }
-
-            if (deselected >= count) break;
-        }
-    }
 
     /**
      * Get the room items for a specific room type
@@ -606,25 +501,154 @@ public class NewReservationController extends BaseController {
 
     /**
      * Validate guest capacity against selected rooms
+     * Shows/hides error messages and enables/disables save button accordingly
      */
     private void validateGuestCapacity() {
         int guests = spnNumberOfGuests.getValue();
-        int capacity = Integer.parseInt(lblTotalCapacity.getText());
+        int totalRooms = spnSingleRooms.getValue() + spnDoubleRooms.getValue() +
+                spnDeluxeRooms.getValue() + spnPenthouseRooms.getValue();
 
-        // If total capacity is less than guest count, show error
-        if (capacity < guests) {
-            showError("Selected rooms cannot accommodate " + guests + " guests. "
-                    + "Please add more rooms or reduce guest count.");
+        // Calculate total capacity based on room types
+        int capacity = (spnSingleRooms.getValue() * RoomType.SINGLE.getMaxOccupancy()) +
+                (spnDoubleRooms.getValue() * RoomType.DOUBLE.getMaxOccupancy()) +
+                (spnDeluxeRooms.getValue() * RoomType.DELUXE.getMaxOccupancy()) +
+                (spnPenthouseRooms.getValue() * RoomType.PENT_HOUSE.getMaxOccupancy());
+
+        // Update the labels
+        lblTotalRooms.setText(String.valueOf(totalRooms));
+        lblTotalCapacity.setText(String.valueOf(capacity));
+        lblGuestCount.setText(String.valueOf(guests));
+
+        // Apply validation rules
+        if (totalRooms == 0) {
+            showError("Please select at least one room.");
             btnSave.setDisable(true);
-        } else {
-            hideError();
-            btnSave.setDisable(false);
+            return;
         }
 
-        // Also disable the Save button if no rooms are selected
-        if (Integer.parseInt(lblTotalRooms.getText()) == 0) {
+        if (capacity < guests) {
+            showError("Selected rooms cannot accommodate " + guests + " guests.\n" +
+                    "Total capacity: " + capacity + ". You need room(s) for " + (guests - capacity) + " more guest(s).");
             btnSave.setDisable(true);
-            showError("Please select at least one room.");
+            return;
+        }
+
+        // All validations passed
+        hideError();
+        btnSave.setDisable(false);
+    }
+
+    /**
+     * Set up spinners and listeners for room selection and validation
+     */
+    private void setupSpinners() {
+        // Set up room count spinners with min=0 and appropriate max values
+        SpinnerValueFactory<Integer> singleFactory =
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 10, 0);
+        spnSingleRooms.setValueFactory(singleFactory);
+
+        SpinnerValueFactory<Integer> doubleFactory =
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 10, 0);
+        spnDoubleRooms.setValueFactory(doubleFactory);
+
+        SpinnerValueFactory<Integer> deluxeFactory =
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 5, 0);
+        spnDeluxeRooms.setValueFactory(deluxeFactory);
+
+        SpinnerValueFactory<Integer> penthouseFactory =
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 2, 0);
+        spnPenthouseRooms.setValueFactory(penthouseFactory);
+
+        // Set up guest count spinner - default to 1 guest, max to 20
+        SpinnerValueFactory<Integer> guestFactory =
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 20, 1);
+        spnNumberOfGuests.setValueFactory(guestFactory);
+
+        // Add listeners to update validation when values change
+        spnSingleRooms.valueProperty().addListener((obs, oldVal, newVal) -> validateGuestCapacity());
+        spnDoubleRooms.valueProperty().addListener((obs, oldVal, newVal) -> validateGuestCapacity());
+        spnDeluxeRooms.valueProperty().addListener((obs, oldVal, newVal) -> validateGuestCapacity());
+        spnPenthouseRooms.valueProperty().addListener((obs, oldVal, newVal) -> validateGuestCapacity());
+
+        // When guest count changes, suggest room allocation and validate
+        spnNumberOfGuests.valueProperty().addListener((obs, oldVal, newVal) -> {
+            suggestRoomAllocation(newVal.intValue());
+            validateGuestCapacity();
+        });
+
+        // Initial validation
+        validateGuestCapacity();
+    }
+
+    /**
+     * Suggest room allocation based on guest count
+     * This provides an initial suggestion without auto-selecting rooms
+     */
+    private void suggestRoomAllocation(int guestCount) {
+        // Only make suggestions when the screen is initialized
+        // or when the guest count is increased
+        SpinnerValueFactory<Integer> singleFactory =
+                (SpinnerValueFactory<Integer>) spnSingleRooms.getValueFactory();
+        SpinnerValueFactory<Integer> doubleFactory =
+                (SpinnerValueFactory<Integer>) spnDoubleRooms.getValueFactory();
+        SpinnerValueFactory<Integer> deluxeFactory =
+                (SpinnerValueFactory<Integer>) spnDeluxeRooms.getValueFactory();
+        SpinnerValueFactory<Integer> penthouseFactory =
+                (SpinnerValueFactory<Integer>) spnPenthouseRooms.getValueFactory();
+
+        // Reset suggestions
+        int suggestedSingleRooms = 0;
+        int suggestedDoubleRooms = 0;
+        int suggestedDeluxeRooms = 0;
+        int suggestedPenthouseRooms = 0;
+
+        // Calculate optimal room allocation
+        int remainingGuests = guestCount;
+
+        // Start with double rooms for efficiency (4 guests per room)
+        while (remainingGuests >= 4) {
+            suggestedDoubleRooms++;
+            remainingGuests -= 4;
+        }
+
+        // Then use single rooms for remaining guests (2 guests per room)
+        while (remainingGuests > 0) {
+            suggestedSingleRooms++;
+            remainingGuests -= 2;
+        }
+
+        // Update spinners with suggestions
+        singleFactory.setValue(suggestedSingleRooms);
+        doubleFactory.setValue(suggestedDoubleRooms);
+        deluxeFactory.setValue(suggestedDeluxeRooms);
+        penthouseFactory.setValue(suggestedPenthouseRooms);
+
+        // Show a helpful message about the suggestion
+        showError("Room allocation suggested: " +
+                suggestedDoubleRooms + " double rooms, " +
+                suggestedSingleRooms + " single rooms. " +
+                "You can adjust as needed.");
+    }
+
+    /**
+     * Show error message with improved visibility
+     */
+    @Override
+    protected void showError(String message) {
+        if (lblError != null) {
+            lblError.setText(message);
+            lblError.setVisible(true);
+            lblError.setStyle("-fx-text-fill: #cf6679; -fx-font-weight: bold; -fx-font-size: 14px;");
+        }
+    }
+
+    /**
+     * Hide the error message
+     */
+    @Override
+    protected void hideError() {
+        if (lblError != null) {
+            lblError.setVisible(false);
         }
     }
 

@@ -544,3 +544,207 @@
 .axis-label {
     -fx-text-fill: white;
 }
+
+/* General theme elements */
+.root {
+    -fx-background-color: #2a2a2a;
+    -fx-text-fill: white;
+}
+
+.content-container {
+    -fx-background-color: #333333;
+    -fx-background-radius: 5px;
+    -fx-padding: 15px;
+}
+
+.transparent-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+
+.transparent-scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.transparent-scroll-pane .scroll-bar {
+    -fx-background-color: #444444;
+}
+
+.transparent-scroll-pane .scroll-bar .thumb {
+    -fx-background-color: #7b1fa2;
+}
+
+/* Header styles */
+.label-header {
+    -fx-text-fill: #b491c8;
+    -fx-font-weight: bold;
+}
+
+.section-header {
+    -fx-text-fill: #b491c8;
+    -fx-font-weight: bold;
+}
+
+/* Label styles */
+.info-label {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+}
+
+.info-value {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.date-label {
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+}
+
+.summary-label {
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+}
+
+.summary-value {
+    -fx-text-fill: #b491c8;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.room-type-label {
+    -fx-text-fill: #b491c8;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+/* Date picker styling */
+.kiosk-date-picker {
+    -fx-background-color: #4a4a4a;
+    -fx-text-fill: white;
+    -fx-border-color: #7b1fa2;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.kiosk-date-picker .arrow-button {
+    -fx-background-color: #7b1fa2;
+    -fx-background-radius: 0 5 5 0;
+}
+
+.kiosk-date-picker .arrow-button .arrow {
+    -fx-background-color: white;
+}
+
+.kiosk-date-picker .date-picker-display-node {
+    -fx-text-fill: white;
+}
+
+/* Spinner styling */
+.guest-spinner, .room-spinner {
+    -fx-background-color: #4a4a4a;
+    -fx-text-fill: white;
+    -fx-border-color: #7b1fa2;
+    -fx-border-radius: 5px;
+}
+
+.guest-spinner .increment-arrow-button, .room-spinner .increment-arrow-button,
+.guest-spinner .decrement-arrow-button, .room-spinner .decrement-arrow-button {
+    -fx-background-color: #7b1fa2;
+}
+
+.guest-spinner .increment-arrow, .room-spinner .increment-arrow,
+.guest-spinner .decrement-arrow, .room-spinner .decrement-arrow {
+    -fx-background-color: white;
+}
+
+.guest-spinner .text-field, .room-spinner .text-field {
+    -fx-background-color: #4a4a4a;
+    -fx-text-fill: white;
+}
+
+/* TitledPane styling */
+.room-titled-pane {
+    -fx-text-fill: white;
+}
+
+.room-titled-pane > .title {
+    -fx-background-color: #444444;
+    -fx-border-color: #7b1fa2;
+}
+
+.room-titled-pane > .title > .text {
+    -fx-fill: white;
+    -fx-font-weight: bold;
+}
+
+.room-titled-pane > .content {
+    -fx-background-color: #333333;
+    -fx-border-color: #7b1fa2;
+}
+
+/* ListView styling */
+.room-list-view {
+    -fx-background-color: #444444;
+    -fx-border-color: #7b1fa2;
+    -fx-border-radius: 5px;
+}
+
+.room-list-view .list-cell {
+    -fx-background-color: #444444;
+    -fx-text-fill: white;
+    -fx-padding: 8px;
+}
+
+.room-list-view .list-cell:selected {
+    -fx-background-color: #7b1fa2;
+}
+
+.room-list-view .list-cell:hover {
+    -fx-background-color: #555555;
+}
+
+/* Separator styling */
+.separator-dark .line {
+    -fx-border-color: #7b1fa2;
+    -fx-border-width: 1px;
+}
+
+/* Summary section */
+.summary-container {
+    -fx-background-color: #444444;
+    -fx-padding: 15px;
+    -fx-background-radius: 5px;
+    -fx-border-color: #7b1fa2;
+    -fx-border-radius: 5px;
+}
+
+/* Error styling */
+.error-container {
+    -fx-padding: 10px;
+}
+
+.error-label {
+    -fx-text-fill: #cf6679;
+    -fx-font-weight: bold;
+}
+
+/* Background elements */
+.bg-dark {
+    -fx-background-color: #222222;
+}
+
+/* CheckBox styling */
+.check-box .box {
+    -fx-background-color: #444444;
+    -fx-border-color: #7b1fa2;
+}
+
+.check-box:selected .mark {
+    -fx-background-color: white;
+}
+
+.check-box:selected .box {
+    -fx-background-color: #7b1fa2;
+}
