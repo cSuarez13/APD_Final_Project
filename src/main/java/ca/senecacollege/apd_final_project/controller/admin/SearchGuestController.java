@@ -6,8 +6,11 @@ import ca.senecacollege.apd_final_project.model.Admin;
 import ca.senecacollege.apd_final_project.model.Guest;
 import ca.senecacollege.apd_final_project.model.Reservation;
 import ca.senecacollege.apd_final_project.model.ReservationStatus;
+import ca.senecacollege.apd_final_project.model.Room;
 import ca.senecacollege.apd_final_project.service.GuestService;
 import ca.senecacollege.apd_final_project.service.ReservationService;
+import ca.senecacollege.apd_final_project.service.RoomService;
+import ca.senecacollege.apd_final_project.service.ServiceLocator;
 import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
 import ca.senecacollege.apd_final_project.util.TableUtils;
@@ -24,6 +27,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -58,6 +62,7 @@ public class SearchGuestController extends BaseController {
 
     private GuestService guestService;
     private ReservationService reservationService;
+    private RoomService roomService;
 
     private final ObservableList<Guest> guestList = FXCollections.observableArrayList();
     private final ObservableList<Reservation> reservationList = FXCollections.observableArrayList();
@@ -67,8 +72,9 @@ public class SearchGuestController extends BaseController {
         super.initialize(url, resourceBundle);
 
         // Initialize services
-        guestService = new GuestService();
-        reservationService = new ReservationService();
+        guestService = ServiceLocator.getService(GuestService.class);
+        reservationService = ServiceLocator.getService(ReservationService.class);
+        roomService = ServiceLocator.getService(RoomService.class);
 
         // Setup search by options
         cmbSearchBy.setItems(FXCollections.observableArrayList("Name", "Phone", "Email"));
@@ -84,12 +90,34 @@ public class SearchGuestController extends BaseController {
         tblGuests.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 loadReservationsForGuest(newSelection);
+                // Clear reservation selection when a guest is selected
+                tblReservations.getSelectionModel().clearSelection();
                 updateButtonStates();
             }
         });
 
         // Add listener to reservation table selection to update button states
-        tblReservations.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> updateButtonStates());
+        tblReservations.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            updateButtonStates();
+
+            // If a reservation is selected, make sure its guest is also selected
+            if (newSelection != null) {
+                for (Guest guest : tblGuests.getItems()) {
+                    if (guest.getGuestID() == newSelection.getGuestID()) {
+                        // Select the guest without triggering the clear selection logic
+                        tblGuests.getSelectionModel().select(guest);
+                        break;
+                    }
+                }
+            }
+        });
+
+        // Add mouse click listener to guest table to handle unselecting reservation
+        tblGuests.setOnMouseClicked(event -> {
+            // Clear reservation selection when guest table is clicked
+            tblReservations.getSelectionModel().clearSelection();
+            updateButtonStates();
+        });
 
         // Initially disable action buttons
         btnViewDetails.setDisable(true);
@@ -123,19 +151,13 @@ public class SearchGuestController extends BaseController {
             List<Guest> results;
             String searchBy = cmbSearchBy.getValue();
 
-            // Search based on selected criteria with improved handling for partial matching
-            if ("Name".equals(searchBy)) {
-                results = guestService.searchGuestsByName(searchTerm);
-            } else if ("Phone".equals(searchBy)) {
-                // Clean phone number for more flexible search
-                String cleanedPhone = searchTerm.replaceAll("[^0-9]", "");
-                results = guestService.searchGuestsByPhone(cleanedPhone);
-            } else if ("Email".equals(searchBy)) {
-                // Use the existing method which should already handle partial matches
-                results = guestService.searchGuestsByEmail(searchTerm);
-            } else {
-                results = null;
-            }
+            // Search based on selected criteria
+            results = switch (searchBy) {
+                case "Name" -> guestService.searchGuestsByName(searchTerm);
+                case "Phone" -> guestService.searchGuestsByPhone(searchTerm);
+                case "Email" -> guestService.searchGuestsByEmail(searchTerm);
+                default -> null;
+            };
 
             // Update the guest list
             if (results != null && !results.isEmpty()) {
@@ -170,7 +192,8 @@ public class SearchGuestController extends BaseController {
 
             if (reservations != null && !reservations.isEmpty()) {
                 reservationList.addAll(reservations);
-                tblReservations.getSelectionModel().selectFirst();
+                // Don't auto-select any reservation
+                // Let the user explicitly choose which one to view
             }
 
         } catch (DatabaseException e) {
@@ -186,21 +209,29 @@ public class SearchGuestController extends BaseController {
         Guest selectedGuest = tblGuests.getSelectionModel().getSelectedItem();
         Reservation selectedReservation = tblReservations.getSelectionModel().getSelectedItem();
 
-        // Enable/disable buttons based on selections
-        btnViewDetails.setDisable(selectedGuest == null);
+        // Enable View Details button if either guest or reservation is selected
+        // The handleViewDetailsAction method will determine which to show
+        btnViewDetails.setDisable(selectedGuest == null && selectedReservation == null);
+
+        // Enable New Reservation only when a guest is selected
         btnNewReservation.setDisable(selectedGuest == null);
 
-        // Handle null reservation or null status safely
-        boolean canCheckIn = selectedReservation != null &&
-                selectedReservation.getStatus() != null &&
-                selectedReservation.getStatus().equals(ReservationStatus.CONFIRMED);
+        // Enable Check-in only for reservations with CONFIRMED status
+        btnCheckIn.setDisable(selectedReservation == null ||
+                !selectedReservation.getStatus().equals(ReservationStatus.CONFIRMED));
 
-        boolean canCheckOut = selectedReservation != null &&
-                selectedReservation.getStatus() != null &&
-                selectedReservation.getStatus().equals(ReservationStatus.CHECKED_IN);
+        // Enable Check-out only for reservations with CHECKED_IN status
+        btnCheckOut.setDisable(selectedReservation == null ||
+                !selectedReservation.getStatus().equals(ReservationStatus.CHECKED_IN));
 
-        btnCheckIn.setDisable(!canCheckIn);
-        btnCheckOut.setDisable(!canCheckOut);
+        // Update View Details button text based on selection
+        if (selectedReservation != null) {
+            btnViewDetails.setText("View Reservation Details");
+        } else if (selectedGuest != null) {
+            btnViewDetails.setText("View Guest Details");
+        } else {
+            btnViewDetails.setText("View Details");
+        }
     }
 
     @FXML
@@ -242,20 +273,38 @@ public class SearchGuestController extends BaseController {
     @FXML
     private void handleViewDetailsAction() {
         Guest selectedGuest = tblGuests.getSelectionModel().getSelectedItem();
-        if (selectedGuest == null) return;
+        Reservation selectedReservation = tblReservations.getSelectionModel().getSelectedItem();
 
+        // Determine which details to show based on what's selected
+        if (selectedReservation != null) {
+            // Reservation is selected, show reservation details
+            showReservationDetails(selectedReservation);
+        } else if (selectedGuest != null) {
+            // Only guest is selected, show guest details
+            showGuestDetails(selectedGuest);
+        } else {
+            // Nothing selected, show error
+            showError("Please select a guest or reservation to view details");
+        }
+    }
+
+    /**
+     * Show guest details in a dialog
+     * @param guest The guest to show details for
+     */
+    private void showGuestDetails(Guest guest) {
         try {
             // Create guest details dialog
             Dialog<ButtonType> dialog = new Dialog<>();
             dialog.setTitle("Guest Details");
-            dialog.setHeaderText("Details for " + selectedGuest.getName());
+            dialog.setHeaderText("Details for " + guest.getName());
 
             DialogPane dialogPane = dialog.getDialogPane();
             dialogPane.setPrefWidth(400);
             dialogPane.setPrefHeight(400);
 
             // Construct guest details content
-            VBox content = createGuestDetailsContent(selectedGuest);
+            VBox content = createGuestDetailsContent(guest);
 
             dialog.getDialogPane().setContent(content);
             dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
@@ -266,6 +315,36 @@ public class SearchGuestController extends BaseController {
         } catch (Exception e) {
             LoggingManager.logException("Error showing guest details", e);
             showError("Error showing guest details: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Show reservation details in a dialog
+     * @param reservation The reservation to show details for
+     */
+    private void showReservationDetails(Reservation reservation) {
+        try {
+            // Create reservation details dialog
+            Dialog<ButtonType> dialog = new Dialog<>();
+            dialog.setTitle("Reservation Details");
+            dialog.setHeaderText("Reservation #" + reservation.getReservationID());
+
+            DialogPane dialogPane = dialog.getDialogPane();
+            dialogPane.setPrefWidth(500);
+            dialogPane.setPrefHeight(500);
+
+            // Construct reservation details content
+            VBox content = createReservationDetailsContent(reservation);
+
+            dialog.getDialogPane().setContent(content);
+            dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+            dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource(Constants.CSS_ADMIN)).toExternalForm());
+
+            dialog.showAndWait();
+
+        } catch (Exception e) {
+            LoggingManager.logException("Error showing reservation details", e);
+            showError("Error showing reservation details: " + e.getMessage());
         }
     }
 
@@ -294,6 +373,90 @@ public class SearchGuestController extends BaseController {
                     new Separator(),
                     createFeedbackSection(guest.getFeedback())
             );
+        }
+
+        return content;
+    }
+
+    private VBox createReservationDetailsContent(Reservation reservation) {
+        VBox content = new VBox(15);
+        content.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+        String labelStyle = "-fx-font-size: 16px;";
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMMM d, yyyy");
+
+        try {
+            // Get additional information
+            Guest guest = guestService.getGuestById(reservation.getGuestID());
+            Room room = roomService.getRoomById(reservation.getRoomID());
+
+            // Basic reservation details
+            Label idLabel = new Label("Reservation ID: " + reservation.getReservationID());
+            Label statusLabel = new Label("Status: " + reservation.getStatusDisplayName());
+            Label guestLabel = new Label("Guest: " + (guest != null ? guest.getName() : "Unknown") +
+                    " (ID: " + reservation.getGuestID() + ")");
+
+            Label roomLabel = new Label("Room: " + (room != null ?
+                    room.getRoomType().getDisplayName() + " (Room #" + room.getRoomID() + ")" :
+                    "Room #" + reservation.getRoomID()));
+
+            Label datesLabel = new Label("Dates: " +
+                    reservation.getCheckInDate().format(dateFormatter) + " to " +
+                    reservation.getCheckOutDate().format(dateFormatter));
+
+            Label nightsLabel = new Label("Number of nights: " + reservation.calculateNumberOfNights());
+            Label guestsLabel = new Label("Number of guests: " + reservation.getNumberOfGuests());
+
+            // Apply styling
+            idLabel.setStyle(labelStyle);
+            statusLabel.setStyle(labelStyle);
+            guestLabel.setStyle(labelStyle);
+            roomLabel.setStyle(labelStyle);
+            datesLabel.setStyle(labelStyle);
+            nightsLabel.setStyle(labelStyle);
+            guestsLabel.setStyle(labelStyle);
+
+            // Set status label color based on status
+            if (reservation.getStatus() == ReservationStatus.CHECKED_IN) {
+                statusLabel.setStyle(labelStyle + "-fx-text-fill: #2e7d32;"); // Green for checked in
+            } else if (reservation.getStatus() == ReservationStatus.CONFIRMED) {
+                statusLabel.setStyle(labelStyle + "-fx-text-fill: #1976d2;"); // Blue for confirmed
+            } else if (reservation.getStatus() == ReservationStatus.CHECKED_OUT) {
+                statusLabel.setStyle(labelStyle + "-fx-text-fill: #9e9e9e;"); // Gray for checked out
+            } else if (reservation.getStatus() == ReservationStatus.CANCELLED) {
+                statusLabel.setStyle(labelStyle + "-fx-text-fill: #d32f2f;"); // Red for cancelled
+            }
+
+            // Special note for active reservations
+            Label noteLabel = null;
+            if (reservation.getStatus() == ReservationStatus.CHECKED_IN) {
+                noteLabel = new Label("Note: Guest is currently checked in");
+                noteLabel.setStyle(labelStyle + "-fx-text-fill: #2e7d32; -fx-font-weight: bold;");
+            }
+
+            // Add all components to the content
+            content.getChildren().addAll(
+                    idLabel,
+                    statusLabel,
+                    guestLabel,
+                    roomLabel,
+                    datesLabel,
+                    nightsLabel,
+                    guestsLabel
+            );
+
+            if (noteLabel != null) {
+                content.getChildren().add(new Separator());
+                content.getChildren().add(noteLabel);
+            }
+
+            // If there's pricing info available, we could add it here
+
+        } catch (Exception e) {
+            LoggingManager.logException("Error creating reservation details", e);
+            Label errorLabel = new Label("Error loading some reservation details: " + e.getMessage());
+            errorLabel.setStyle("-fx-text-fill: red;");
+            content.getChildren().add(errorLabel);
         }
 
         return content;
