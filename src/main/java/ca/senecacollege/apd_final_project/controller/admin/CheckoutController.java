@@ -9,12 +9,14 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class CheckoutController extends BaseController {
 
@@ -67,6 +69,9 @@ public class CheckoutController extends BaseController {
     @FXML
     private CheckBox chkFeedbackReminder;
 
+    @FXML
+    private VBox roomDetailsContainer; // Optional container for showing multiple rooms
+
     // Services
     private ReservationService reservationService;
     private GuestService guestService;
@@ -77,7 +82,7 @@ public class CheckoutController extends BaseController {
     // State Variables
     private Reservation currentReservation;
     private Guest currentGuest;
-    private Room currentRoom;
+    private List<Room> currentRooms;
     private Billing currentBill;
 
     // List to hold matching reservations
@@ -162,8 +167,7 @@ public class CheckoutController extends BaseController {
                     setText(null);
                 } else {
                     setText("Reservation #" + reservation.getReservationID() +
-                            " - Check-in: " + reservation.getCheckInDate() +
-                            " - Room: " + reservation.getRoomID());
+                            " - Check-in: " + reservation.getCheckInDate());
                 }
             }
         });
@@ -238,9 +242,11 @@ public class CheckoutController extends BaseController {
         try {
             currentReservation = reservation;
 
-            // Fetch guest and room information
+            // Fetch guest information
             currentGuest = guestService.getGuestById(reservation.getGuestID());
-            currentRoom = roomService.getRoomById(reservation.getRoomID());
+
+            // Fetch all rooms for this reservation
+            currentRooms = reservationService.getRoomsForReservation(reservation.getReservationID());
 
             // Display information
             displayReservationInfo();
@@ -277,17 +283,26 @@ public class CheckoutController extends BaseController {
             double subtotal = calculateSubtotal();
             currentBill.setAmount(subtotal);
 
+            // Calculate tax (13%)
+            double tax = subtotal * Constants.TAX_RATE;
+            currentBill.setTax(tax);
+
             // Apply discount if provided
-            double discount;
+            double discount = 0.0;
             if (!txtDiscount.getText().isEmpty()) {
                 discount = Double.parseDouble(txtDiscount.getText());
                 validationService.validateBilling(subtotal, discount);
                 currentBill.setDiscount(discount);
             }
 
+            // Calculate total amount
+            double total = subtotal + tax - discount;
+            currentBill.setTotalAmount(total);
+
             // Set billing datetime and paid status
             currentBill.setBillingDateTime(LocalDateTime.now());
             currentBill.setPaid(true);
+            currentBill.setPaymentMethod("Credit Card"); // Default payment method
 
             // Save the bill
             int billId = billingService.saveBill(currentBill);
@@ -329,13 +344,39 @@ public class CheckoutController extends BaseController {
      * Display the reservation information in the UI
      */
     private void displayReservationInfo() {
-        if (currentReservation == null || currentGuest == null || currentRoom == null) {
+        if (currentReservation == null || currentGuest == null || currentRooms == null || currentRooms.isEmpty()) {
             return;
         }
 
         lblGuestName.setText(currentGuest.getName());
-        lblRoomInfo.setText(currentRoom.getRoomType().getDisplayName() + " (Room #" +
-                currentRoom.getRoomID() + ")");
+
+        // Handle multiple rooms - create a summary
+        if (currentRooms.size() == 1) {
+            Room room = currentRooms.get(0);
+            lblRoomInfo.setText(room.getRoomType().getDisplayName() + " (Room #" + room.getRoomID() + ")");
+        } else {
+            // Multiple rooms - show count and details if container exists
+            String roomSummary = currentRooms.size() + " Rooms: " +
+                    currentRooms.stream()
+                            .map(room -> "#" + room.getRoomID())
+                            .collect(Collectors.joining(", "));
+            lblRoomInfo.setText(roomSummary);
+
+            // If we have a container for detailed room info, display it
+            if (roomDetailsContainer != null) {
+                roomDetailsContainer.getChildren().clear();
+
+                // Add a label for each room with details
+                for (Room room : currentRooms) {
+                    Label roomLabel = new Label(room.getRoomType().getDisplayName() +
+                            " (Room #" + room.getRoomID() + ") - $" +
+                            String.format("%.2f", room.getPrice()) + " per night");
+                    roomLabel.setStyle("-fx-text-fill: white;");
+                    roomDetailsContainer.getChildren().add(roomLabel);
+                }
+            }
+        }
+
         lblCheckInDate.setText(currentReservation.getCheckInDate().toString());
         lblCheckOutDate.setText(currentReservation.getCheckOutDate().toString());
 
@@ -347,11 +388,11 @@ public class CheckoutController extends BaseController {
      * Calculate the bill and update the UI
      */
     private void calculateBill() {
-        if (currentReservation == null || currentRoom == null) {
+        if (currentReservation == null || currentRooms == null || currentRooms.isEmpty()) {
             return;
         }
 
-        // Calculate subtotal (room price * nights)
+        // Calculate subtotal (sum of all room prices * nights)
         double subtotal = calculateSubtotal();
         lblSubtotal.setText(String.format("$%.2f", subtotal));
 
@@ -375,25 +416,59 @@ public class CheckoutController extends BaseController {
     }
 
     /**
-     * Calculate the subtotal (room price * nights)
+     * Calculate the subtotal (sum of all room prices * nights)
      *
      * @return The subtotal
      */
     private double calculateSubtotal() {
+        if (currentRooms == null || currentRooms.isEmpty()) {
+            return 0.0;
+        }
+
         int nights = currentReservation.calculateNumberOfNights();
-        return currentRoom.getPrice() * nights;
+
+        // Sum up the price for all rooms
+        return currentRooms.stream()
+                .mapToDouble(room -> room.getPrice() * nights)
+                .sum();
     }
 
     /**
      * Show a reminder to the admin about guest feedback
+     * With proper sizing to fit content
      */
     private void showFeedbackReminder(int billId) {
-        showAlert(Alert.AlertType.INFORMATION,
-                "Feedback Reminder",
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Feedback Reminder");
+        alert.setHeaderText("Feedback Reminder");
+
+        // Create custom content with wrapping
+        Label contentLabel = new Label(
                 "Please inform the guest that they can use the kiosk " +
                         "to provide feedback about their stay.\n\n" +
                         "Their Bill ID is: " + billId + "\n\n" +
                         "Please remind them to use this Bill ID when submitting feedback.");
+
+        // Set label properties for better display
+        contentLabel.setWrapText(true);
+        contentLabel.setPrefWidth(400);  // Set preferred width
+        contentLabel.setMinHeight(150);  // Set minimum height
+        contentLabel.setStyle("-fx-font-size: 14px;");
+
+        // Set the content
+        alert.getDialogPane().setContent(contentLabel);
+
+        // Apply CSS to match the application theme
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.getStylesheets().add(
+                getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
+
+        // Adjust size based on content
+        dialogPane.setPrefWidth(450);
+        dialogPane.setPrefHeight(200);
+
+        // Show the dialog
+        alert.showAndWait();
     }
 
     /**
@@ -405,10 +480,15 @@ public class CheckoutController extends BaseController {
         clearFields();
         currentReservation = null;
         currentGuest = null;
-        currentRoom = null;
+        currentRooms = null;
         currentBill = null;
         btnCheckout.setDisable(true);
         hideError();
+
+        // Clear room details container if it exists
+        if (roomDetailsContainer != null) {
+            roomDetailsContainer.getChildren().clear();
+        }
     }
 
     /**
