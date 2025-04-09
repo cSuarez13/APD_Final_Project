@@ -194,21 +194,6 @@ public class ReservationController extends BaseController {
 
             LoggingManager.logSystemInfo("Retrieved " + (reservations != null ? reservations.size() : 0) + " reservations");
 
-            // For testing - add a dummy reservation if the list is empty
-            if (reservations == null || reservations.isEmpty()) {
-                LoggingManager.logSystemInfo("No reservations found, adding dummy data for testing");
-                Reservation dummyReservation = new Reservation();
-                dummyReservation.setReservationID(999);
-                dummyReservation.setGuestID(1);
-                dummyReservation.setRoomID(101);
-                dummyReservation.setCheckInDate(LocalDate.now());
-                dummyReservation.setCheckOutDate(LocalDate.now().plusDays(2));
-                dummyReservation.setNumberOfGuests(2);
-                dummyReservation.setStatus(ReservationStatus.CONFIRMED);
-
-                reservations = FXCollections.observableArrayList(dummyReservation);
-            }
-
             // Clear and add to the observable list
             allReservations.clear();
             allReservations.addAll(reservations);

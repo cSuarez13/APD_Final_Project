@@ -313,7 +313,6 @@ public class ReportController extends BaseController {
      * Generate the occupancy report
      */
     private void generateOccupancyReport() throws DatabaseException {
-        // Get services using ServiceLocator
         ReservationService reservationService = ServiceLocator.getService(ReservationService.class);
         RoomService roomService = ServiceLocator.getService(RoomService.class);
 
@@ -339,18 +338,20 @@ public class ReportController extends BaseController {
             totalRoomsByType.put(type, totalRoomsByType.get(type) + 1);
         }
 
-        // Count occupied rooms by type
+        // Count occupied rooms by type based on multi-room reservations
         for (Reservation reservation : currentReservations) {
             ReservationStatus status = reservation.getStatus();
-            if ((status == ReservationStatus.CHECKED_IN || status == ReservationStatus.CONFIRMED)) {
+            if (status == ReservationStatus.CHECKED_IN || status == ReservationStatus.CONFIRMED) {
                 try {
-                    Room room = roomService.getRoomById(reservation.getRoomID());
-                    if (room != null) {
-                        RoomType type = room.getRoomType();
-                        occupiedRoomsByType.put(type, occupiedRoomsByType.get(type) + 1);
+                    List<Room> reservationRooms = reservationService.getRoomsForReservation(reservation.getReservationID());
+                    if (reservationRooms != null) {
+                        for (Room room : reservationRooms) {
+                            RoomType type = room.getRoomType();
+                            occupiedRoomsByType.put(type, occupiedRoomsByType.get(type) + 1);
+                        }
                     }
                 } catch (Exception e) {
-                    LoggingManager.logException("Error processing reservation #" + reservation.getReservationID(), e);
+                    LoggingManager.logException("Error processing rooms for reservation #" + reservation.getReservationID(), e);
                 }
             }
         }
@@ -402,6 +403,7 @@ public class ReportController extends BaseController {
 
         LoggingManager.logSystemInfo("Generated occupancy report with " + occupancyData.size() + " rows");
     }
+
 
     /**
      * Generate the revenue report

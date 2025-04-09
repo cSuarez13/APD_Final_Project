@@ -2,11 +2,7 @@ package ca.senecacollege.apd_final_project.controller.admin;
 
 import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
-import ca.senecacollege.apd_final_project.model.Admin;
-import ca.senecacollege.apd_final_project.model.Guest;
-import ca.senecacollege.apd_final_project.model.Reservation;
-import ca.senecacollege.apd_final_project.model.ReservationStatus;
-import ca.senecacollege.apd_final_project.model.Room;
+import ca.senecacollege.apd_final_project.model.*;
 import ca.senecacollege.apd_final_project.service.GuestService;
 import ca.senecacollege.apd_final_project.service.ReservationService;
 import ca.senecacollege.apd_final_project.service.RoomService;
@@ -29,8 +25,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class SearchGuestController extends BaseController {
 
@@ -393,9 +391,11 @@ public class SearchGuestController extends BaseController {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMMM d, yyyy");
 
         try {
-            // Get additional information
+            // Get guest info
             Guest guest = guestService.getGuestById(reservation.getGuestID());
-            Room room = roomService.getRoomById(reservation.getRoomID());
+
+            // Fetch all rooms for the reservation
+            List<Room> reservationRooms = reservationService.getRoomsForReservation(reservation.getReservationID());
 
             // Basic reservation details
             Label idLabel = new Label("Reservation ID: " + reservation.getReservationID());
@@ -403,9 +403,30 @@ public class SearchGuestController extends BaseController {
             Label guestLabel = new Label("Guest: " + (guest != null ? guest.getName() : "Unknown") +
                     " (ID: " + reservation.getGuestID() + ")");
 
-            Label roomLabel = new Label("Room: " + (room != null ?
-                    room.getRoomType().getDisplayName() + " (Room #" + room.getRoomID() + ")" :
-                    "Room #" + reservation.getRoomID()));
+            // Room info handling
+            String roomText;
+            if (reservationRooms == null || reservationRooms.isEmpty()) {
+                LoggingManager.logSystemWarning("Room info not found for reservation #" + reservation.getReservationID());
+                roomText = "Room information not available";
+            } else if (reservationRooms.size() == 1) {
+                Room room = reservationRooms.get(0);
+                roomText = room.getRoomType().getDisplayName() + " (Room #" + room.getRoomID() + ")";
+            } else {
+                // Multiple rooms
+                Map<RoomType, Long> roomTypeCounts = reservationRooms.stream()
+                        .collect(Collectors.groupingBy(Room::getRoomType, Collectors.counting()));
+
+                roomText = reservationRooms.size() + " rooms: ";
+                roomText += roomTypeCounts.entrySet().stream()
+                        .map(entry -> entry.getValue() + " " + entry.getKey().getDisplayName() +
+                                (entry.getValue() > 1 ? "s" : ""))
+                        .collect(Collectors.joining(", "));
+                roomText += " (" + reservationRooms.stream()
+                        .map(room -> "#" + room.getRoomID())
+                        .collect(Collectors.joining(", ")) + ")";
+            }
+
+            Label roomLabel = new Label("Room(s): " + roomText);
 
             Label datesLabel = new Label("Dates: " +
                     reservation.getCheckInDate().format(dateFormatter) + " to " +
@@ -415,23 +436,16 @@ public class SearchGuestController extends BaseController {
             Label guestsLabel = new Label("Number of guests: " + reservation.getNumberOfGuests());
 
             // Apply styling
-            idLabel.setStyle(labelStyle);
-            statusLabel.setStyle(labelStyle);
-            guestLabel.setStyle(labelStyle);
-            roomLabel.setStyle(labelStyle);
-            datesLabel.setStyle(labelStyle);
-            nightsLabel.setStyle(labelStyle);
-            guestsLabel.setStyle(labelStyle);
+            for (Label label : List.of(idLabel, statusLabel, guestLabel, roomLabel, datesLabel, nightsLabel, guestsLabel)) {
+                label.setStyle(labelStyle);
+            }
 
-            // Set status label color based on status
-            if (reservation.getStatus() == ReservationStatus.CHECKED_IN) {
-                statusLabel.setStyle(labelStyle + "-fx-text-fill: #2e7d32;"); // Green for checked in
-            } else if (reservation.getStatus() == ReservationStatus.CONFIRMED) {
-                statusLabel.setStyle(labelStyle + "-fx-text-fill: #1976d2;"); // Blue for confirmed
-            } else if (reservation.getStatus() == ReservationStatus.CHECKED_OUT) {
-                statusLabel.setStyle(labelStyle + "-fx-text-fill: #9e9e9e;"); // Gray for checked out
-            } else if (reservation.getStatus() == ReservationStatus.CANCELLED) {
-                statusLabel.setStyle(labelStyle + "-fx-text-fill: #d32f2f;"); // Red for cancelled
+            // Set status color
+            switch (reservation.getStatus()) {
+                case CHECKED_IN -> statusLabel.setStyle(labelStyle + "-fx-text-fill: #2e7d32;");
+                case CONFIRMED -> statusLabel.setStyle(labelStyle + "-fx-text-fill: #1976d2;");
+                case CHECKED_OUT -> statusLabel.setStyle(labelStyle + "-fx-text-fill: #9e9e9e;");
+                case CANCELLED -> statusLabel.setStyle(labelStyle + "-fx-text-fill: #d32f2f;");
             }
 
             // Special note for active reservations
@@ -441,7 +455,6 @@ public class SearchGuestController extends BaseController {
                 noteLabel.setStyle(labelStyle + "-fx-text-fill: #2e7d32; -fx-font-weight: bold;");
             }
 
-            // Add all components to the content
             content.getChildren().addAll(
                     idLabel,
                     statusLabel,
@@ -456,8 +469,6 @@ public class SearchGuestController extends BaseController {
                 content.getChildren().add(new Separator());
                 content.getChildren().add(noteLabel);
             }
-
-            // If there's pricing info available, we could add it here
 
         } catch (Exception e) {
             LoggingManager.logException("Error creating reservation details", e);

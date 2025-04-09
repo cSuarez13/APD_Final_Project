@@ -62,11 +62,7 @@ public class ReservationService {
             // Set initial status
             reservation.setStatus(ReservationStatus.CONFIRMED);
 
-            // Save the reservation first (with a placeholder room ID)
-            if (!roomsWithGuests.isEmpty()) {
-                // Set the first room as the "primary" room for backward compatibility
-                reservation.setRoomID(roomsWithGuests.keySet().iterator().next());
-            }
+            // Save the reservation (no room ID needed in reservation table now)
             int reservationId = reservationDAO.save(reservation);
 
             // Now save each room assignment
@@ -102,7 +98,7 @@ public class ReservationService {
     }
 
     /**
-     * Create a new reservation with a single room (for backward compatibility)
+     * Create a new reservation with a single room
      *
      * @param reservation The reservation details
      * @param roomType The desired room type
@@ -117,9 +113,6 @@ public class ReservationService {
             if (room == null) {
                 throw new ReservationException("No available rooms of type " + roomType.getDisplayName());
             }
-
-            // Set the room ID in the reservation
-            reservation.setRoomID(room.getRoomID());
 
             // Set initial status
             reservation.setStatus(ReservationStatus.CONFIRMED);
@@ -421,9 +414,6 @@ public class ReservationService {
 
             // Save reservation
             reservation.setStatus(ReservationStatus.CONFIRMED);
-            if (!rooms.isEmpty()) {
-                reservation.setRoomID(rooms.get(0).getRoomID()); // Set primary room
-            }
             int reservationId = reservationDAO.save(reservation);
 
             // Save rooms
@@ -438,5 +428,4 @@ public class ReservationService {
             throw new ReservationException("Failed to create reservation: " + e.getMessage(), e);
         }
     }
-
 }
