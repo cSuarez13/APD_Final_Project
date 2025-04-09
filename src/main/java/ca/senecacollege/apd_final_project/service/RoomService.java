@@ -52,26 +52,6 @@ public class RoomService {
     }
 
     /**
-     * Check if a specific room is available for the given date range,
-     * excluding a specific reservation (for modification purposes)
-     *
-     * @param roomId The room ID
-     * @param checkInDate The check-in date
-     * @param checkOutDate The check-out date
-     * @param excludeReservationId Reservation ID to exclude from availability check
-     * @return true if the room is available, false otherwise
-     * @throws DatabaseException If there's an error checking availability
-     */
-    public boolean isRoomAvailable(int roomId, LocalDate checkInDate, LocalDate checkOutDate, int excludeReservationId) throws DatabaseException {
-        try {
-            return roomDAO.isRoomAvailable(roomId, checkInDate, checkOutDate, excludeReservationId);
-        } catch (Exception e) {
-            LoggingManager.logException("Error checking room availability", e);
-            throw new DatabaseException("Error checking room availability: " + e.getMessage(), e);
-        }
-    }
-
-    /**
      * Update a room's details
      *
      * @param room The room to update

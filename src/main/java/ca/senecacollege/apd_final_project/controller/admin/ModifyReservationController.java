@@ -2,7 +2,6 @@ package ca.senecacollege.apd_final_project.controller.admin;
 
 import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
-import ca.senecacollege.apd_final_project.exception.ReservationException;
 import ca.senecacollege.apd_final_project.exception.ValidationException;
 import ca.senecacollege.apd_final_project.model.*;
 import ca.senecacollege.apd_final_project.service.*;
@@ -14,7 +13,6 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
@@ -101,7 +99,6 @@ public class ModifyReservationController extends BaseController {
     private Reservation originalReservation;
     private Guest currentGuest;
     private List<Room> originalRooms;
-    private List<ReservationRoom> originalReservationRooms;
 
     // Available rooms by type (for selection)
     private List<Room> availableSingleRooms = new ArrayList<>();
@@ -153,10 +150,6 @@ public class ModifyReservationController extends BaseController {
 
         public CheckBox getCheckBox() {
             return checkBox;
-        }
-
-        public boolean isSelected() {
-            return checkBox.isSelected();
         }
 
         public void setSelected(boolean selected) {
@@ -225,7 +218,7 @@ public class ModifyReservationController extends BaseController {
 
             // Load all rooms for this reservation
             originalRooms = reservationService.getRoomsForReservation(reservation.getReservationID());
-            originalReservationRooms = reservationService.getReservationRooms(reservation.getReservationID());
+            reservationService.getReservationRooms(reservation.getReservationID());
 
             // Set values for editable fields
             dpCheckInDate.setValue(reservation.getCheckInDate());
@@ -843,18 +836,6 @@ public class ModifyReservationController extends BaseController {
     }
 
     /**
-     * Get the room items for a specific room type
-     */
-    private ObservableList<RoomSelectionItem> getRoomItemsByType(RoomType roomType) {
-        return switch (roomType) {
-            case SINGLE -> singleRoomItems;
-            case DOUBLE -> doubleRoomItems;
-            case DELUXE -> deluxeRoomItems;
-            case PENT_HOUSE -> penthouseRoomItems;
-        };
-    }
-
-    /**
      * Handle save button click
      */
     @FXML
@@ -914,7 +895,7 @@ public class ModifyReservationController extends BaseController {
     /**
      * Handle room changes - delete old assignments and create new ones
      */
-    private void handleRoomChanges(int reservationId) throws DatabaseException, ReservationException {
+    private void handleRoomChanges(int reservationId) throws DatabaseException {
         // Delete all existing room assignments
         reservationService.reservationRoomDAO.deleteByReservationId(reservationId);
 

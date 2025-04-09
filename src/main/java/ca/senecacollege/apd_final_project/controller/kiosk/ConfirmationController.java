@@ -1,7 +1,6 @@
 package ca.senecacollege.apd_final_project.controller.kiosk;
 
 import ca.senecacollege.apd_final_project.controller.BaseController;
-import ca.senecacollege.apd_final_project.controller.kiosk.BookingData;
 import ca.senecacollege.apd_final_project.model.*;
 import ca.senecacollege.apd_final_project.service.*;
 import ca.senecacollege.apd_final_project.util.Constants;
@@ -56,29 +55,28 @@ public class ConfirmationController extends BaseController {
     // Container for room details
     @FXML
     private VBox roomDetailsContainer;
-    @FXML
-    private GridPane roomGrid;
 
     private int reservationId;
     private Reservation reservation;
     private Guest guest;
     private List<Room> rooms;
     private List<ReservationRoom> reservationRooms;
-    private BookingData bookingData;
 
     private ReservationService reservationService;
     private GuestService guestService;
-    private RoomService roomService;
     private BillingService billingService;
 
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
+
+    public ConfirmationController() {
+    }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         // Get services from ServiceLocator
         reservationService = ServiceLocator.getService(ReservationService.class);
         guestService = ServiceLocator.getService(GuestService.class);
-        roomService = ServiceLocator.getService(RoomService.class);
+        ServiceLocator.getService(RoomService.class);
         billingService = ServiceLocator.getService(BillingService.class);
 
         applyStyles();
@@ -155,10 +153,9 @@ public class ConfirmationController extends BaseController {
         });
     }
 
-    public void initReservationData(int reservationId, BookingData bookingData)
+    public void initReservationData(int reservationId)
     {
         this.reservationId = reservationId;
-        this.bookingData = bookingData;
         try {
             // Load reservation details
             reservation = reservationService.getReservationById(reservationId);

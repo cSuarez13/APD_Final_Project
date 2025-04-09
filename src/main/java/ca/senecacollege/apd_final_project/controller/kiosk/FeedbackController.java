@@ -59,7 +59,6 @@ public class FeedbackController extends BaseController {
     private GuestService guestService;
     private ReservationService reservationService;
     private BillingService billingService;
-    private ValidationService validationService;
 
     private Reservation currentReservation;
     private Guest currentGuest;
@@ -73,7 +72,7 @@ public class FeedbackController extends BaseController {
         guestService = ServiceLocator.getService(GuestService.class);
         reservationService = ServiceLocator.getService(ReservationService.class);
         billingService = ServiceLocator.getService(BillingService.class);
-        validationService = ServiceLocator.getService(ValidationService.class);
+        ServiceLocator.getService(ValidationService.class);
 
         setupRatingStars();
         btnSubmit.setDisable(true);

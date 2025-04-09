@@ -142,9 +142,6 @@ public class NewReservationController extends BaseController {
             return checkBox.isSelected();
         }
 
-        public void setSelected(boolean selected) {
-            checkBox.setSelected(selected);
-        }
     }
 
     @Override
@@ -675,7 +672,7 @@ public class NewReservationController extends BaseController {
 
         // When guest count changes, suggest room allocation and validate
         spnNumberOfGuests.valueProperty().addListener((obs, oldVal, newVal) -> {
-            suggestRoomAllocation(newVal.intValue());
+            suggestRoomAllocation(newVal);
             validateGuestCapacity();
         });
 
@@ -691,13 +688,13 @@ public class NewReservationController extends BaseController {
         // Only make suggestions when the screen is initialized
         // or when the guest count is increased
         SpinnerValueFactory<Integer> singleFactory =
-                (SpinnerValueFactory<Integer>) spnSingleRooms.getValueFactory();
+                spnSingleRooms.getValueFactory();
         SpinnerValueFactory<Integer> doubleFactory =
-                (SpinnerValueFactory<Integer>) spnDoubleRooms.getValueFactory();
+                spnDoubleRooms.getValueFactory();
         SpinnerValueFactory<Integer> deluxeFactory =
-                (SpinnerValueFactory<Integer>) spnDeluxeRooms.getValueFactory();
+                spnDeluxeRooms.getValueFactory();
         SpinnerValueFactory<Integer> penthouseFactory =
-                (SpinnerValueFactory<Integer>) spnPenthouseRooms.getValueFactory();
+                spnPenthouseRooms.getValueFactory();
 
         // Reset suggestions
         int suggestedSingleRooms = 0;

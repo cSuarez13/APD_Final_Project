@@ -47,7 +47,6 @@ public class ReservationController extends BaseController {
     private TableView<Reservation> tblAllReservations;
 
     private ReservationService reservationService;
-    private RoomService roomService;
     private final ObservableList<Reservation> allReservations = FXCollections.observableArrayList();
 
     @Override
@@ -58,7 +57,7 @@ public class ReservationController extends BaseController {
 
         // Get services using ServiceLocator
         reservationService = ServiceLocator.getService(ReservationService.class);
-        roomService = ServiceLocator.getService(RoomService.class);
+        ServiceLocator.getService(RoomService.class);
 
         // Initialize reservation filter combo box
         cmbReservationFilter.setItems(FXCollections.observableArrayList(
@@ -225,7 +224,9 @@ public class ReservationController extends BaseController {
 
             // Clear and add to the observable list
             allReservations.clear();
-            allReservations.addAll(reservations);
+            if (reservations != null) {
+                allReservations.addAll(reservations);
+            }
 
             LoggingManager.logSystemInfo("Added " + allReservations.size() + " reservations to the table");
 

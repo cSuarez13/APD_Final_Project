@@ -3,7 +3,6 @@ package ca.senecacollege.apd_final_project.service;
 import ca.senecacollege.apd_final_project.exception.ValidationException;
 import ca.senecacollege.apd_final_project.model.Reservation;
 import ca.senecacollege.apd_final_project.model.ReservationStatus;
-import ca.senecacollege.apd_final_project.util.ValidationUtils;
 
 import java.time.LocalDate;
 
@@ -46,23 +45,6 @@ public class ValidationService {
 
         if (!reservation.getStatus().equals(ReservationStatus.CHECKED_IN)) {
             throw new ValidationException("Cannot check out: guest is not checked in");
-        }
-    }
-
-    /**
-     * Validate ID format
-     *
-     * @param id The ID to validate
-     * @param fieldName The name of the field
-     * @throws ValidationException If the ID is invalid
-     */
-    public void validateId(String id, String fieldName) throws ValidationException {
-        if (ValidationUtils.isNotNullOrEmpty(id)) {
-            throw new ValidationException(fieldName + " cannot be empty");
-        }
-
-        if (ValidationUtils.isPositiveInteger(id)) {
-            throw new ValidationException(fieldName + " must be a positive number");
         }
     }
 

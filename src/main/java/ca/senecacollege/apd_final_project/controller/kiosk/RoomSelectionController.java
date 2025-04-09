@@ -3,8 +3,6 @@ package ca.senecacollege.apd_final_project.controller.kiosk;
 import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
 import ca.senecacollege.apd_final_project.exception.ValidationException;
-import ca.senecacollege.apd_final_project.dao.ReservationRoomDAO;
-import ca.senecacollege.apd_final_project.model.ReservationRoom;
 import ca.senecacollege.apd_final_project.model.RoomType;
 import ca.senecacollege.apd_final_project.service.DialogService;
 import ca.senecacollege.apd_final_project.service.RoomService;
@@ -23,7 +21,6 @@ import javafx.scene.control.Label;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -185,7 +182,6 @@ public class RoomSelectionController extends BaseController {
         if (remainingGuests > 0) {
             singleRoomCount++;
             guestsPerRoomType.put(RoomType.SINGLE, remainingGuests);
-            remainingGuests = 0;
         }
 
         // Update the UI
@@ -483,7 +479,7 @@ public class RoomSelectionController extends BaseController {
      */
     private void updateSummary() {
         int totalRooms = singleRoomCount + doubleRoomCount + deluxeRoomCount + pentHouseCount;
-        int capacityCount = calculateTotalCapacity();
+        calculateTotalCapacity();
         int assignedGuests = getTotalAssignedGuests();
 
         lblRoomSummary.setText(String.format("Selected: %d room%s for %d/%d guest%s",
@@ -494,13 +490,8 @@ public class RoomSelectionController extends BaseController {
 
     /**
      * Calculate the total capacity of selected rooms
-     * @return Total capacity
      */
-    private int calculateTotalCapacity() {
-        return (singleRoomCount * RoomType.SINGLE.getMaxOccupancy()) +
-                (doubleRoomCount * RoomType.DOUBLE.getMaxOccupancy()) +
-                (deluxeRoomCount * RoomType.DELUXE.getMaxOccupancy()) +
-                (pentHouseCount * RoomType.PENT_HOUSE.getMaxOccupancy());
+    private void calculateTotalCapacity() {
     }
 
     /**

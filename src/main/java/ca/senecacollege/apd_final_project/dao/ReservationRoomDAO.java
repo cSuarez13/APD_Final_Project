@@ -86,28 +86,6 @@ public class ReservationRoomDAO {
     }
 
     /**
-     * Delete a reservation-room relationship
-     *
-     * @param id The ID of the relationship to delete
-     * @throws DatabaseException If there's an error deleting the relationship
-     */
-    public void delete(int id) throws DatabaseException {
-        String sql = "DELETE FROM reservation_rooms WHERE id = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, id);
-
-            stmt.executeUpdate();
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while deleting reservation-room relationship", e);
-            throw new DatabaseException("Error deleting reservation-room relationship: " + e.getMessage(), e);
-        }
-    }
-
-    /**
      * Delete all relationships for a reservation
      *
      * @param reservationId The ID of the reservation
@@ -191,49 +169,6 @@ public class ReservationRoomDAO {
             LoggingManager.logException("Database error while finding rooms by reservation ID", e);
             throw new DatabaseException("Error finding rooms for reservation: " + e.getMessage(), e);
         }
-    }
-
-    /**
-     * Find a specific reservation-room relationship
-     *
-     * @param reservationId The reservation ID
-     * @param roomId The room ID
-     * @return The reservation-room relationship, or null if not found
-     * @throws DatabaseException If there's an error retrieving the relationship
-     */
-    public ReservationRoom findByReservationAndRoom(int reservationId, int roomId) throws DatabaseException {
-        String sql = "SELECT * FROM reservation_rooms WHERE reservation_id = ? AND room_id = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, reservationId);
-            stmt.setInt(2, roomId);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapResultSetToReservationRoom(rs);
-                } else {
-                    return null;
-                }
-            }
-
-        } catch (SQLException e) {
-            LoggingManager.logException("Database error while finding reservation-room relationship", e);
-            throw new DatabaseException("Error finding reservation-room relationship: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Check if a room is already booked for a reservation
-     *
-     * @param reservationId The reservation ID
-     * @param roomId The room ID
-     * @return true if the room is already booked for the reservation, false otherwise
-     * @throws DatabaseException If there's an error checking the booking
-     */
-    public boolean isRoomBookedForReservation(int reservationId, int roomId) throws DatabaseException {
-        return findByReservationAndRoom(reservationId, roomId) != null;
     }
 
     /**

@@ -15,6 +15,7 @@ import javafx.stage.Stage;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -75,7 +76,6 @@ public class CheckoutController extends BaseController {
     // Services
     private ReservationService reservationService;
     private GuestService guestService;
-    private RoomService roomService;
     private BillingService billingService;
     private ValidationService validationService;
 
@@ -93,7 +93,7 @@ public class CheckoutController extends BaseController {
         // Initialize services using ServiceLocator
         reservationService = ServiceLocator.getService(ReservationService.class);
         guestService = ServiceLocator.getService(GuestService.class);
-        roomService = ServiceLocator.getService(RoomService.class);
+        ServiceLocator.getService(RoomService.class);
         billingService = ServiceLocator.getService(BillingService.class);
         validationService = ServiceLocator.getService(ValidationService.class);
 
@@ -461,7 +461,7 @@ public class CheckoutController extends BaseController {
         // Apply CSS to match the application theme
         DialogPane dialogPane = alert.getDialogPane();
         dialogPane.getStylesheets().add(
-                getClass().getResource(Constants.CSS_ADMIN).toExternalForm());
+                Objects.requireNonNull(getClass().getResource(Constants.CSS_ADMIN)).toExternalForm());
 
         // Adjust size based on content
         dialogPane.setPrefWidth(450);

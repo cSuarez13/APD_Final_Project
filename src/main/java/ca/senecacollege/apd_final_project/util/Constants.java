@@ -16,8 +16,6 @@ public class Constants {
     public static final String FXML_GUEST_COUNT = "/ca.senecacollege.apd_final_project/GuestCountScreen.fxml";
     public static final String FXML_DATE_SELECTION = "/ca.senecacollege.apd_final_project/DateSelectionScreen.fxml";
     public static final String FXML_ROOM_SELECTION = "/ca.senecacollege.apd_final_project/RoomSelectionScreen.fxml";
-    // Original screens still used in the flow
-    public static final String FXML_BOOKING = "/ca.senecacollege.apd_final_project/BookingScreen.fxml";
     public static final String FXML_GUEST_DETAILS = "/ca.senecacollege.apd_final_project/GuestDetailsScreen.fxml";
     public static final String FXML_CONFIRMATION = "/ca.senecacollege.apd_final_project/ConfirmationScreen.fxml";
     public static final String FXML_FEEDBACK = "/ca.senecacollege.apd_final_project/FeedbackScreen.fxml";

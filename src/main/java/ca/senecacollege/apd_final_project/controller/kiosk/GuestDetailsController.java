@@ -512,7 +512,7 @@ public class GuestDetailsController extends BaseController {
 
         // Get the controller and pass the reservation + booking data
         ConfirmationController confirmationController = loader.getController();
-        confirmationController.initReservationData(reservationId, bookingData);
+        confirmationController.initReservationData(reservationId);
 
         // Get the current stage
         Stage stage = getStage();

@@ -61,7 +61,6 @@ public class SearchGuestController extends BaseController {
 
     private GuestService guestService;
     private ReservationService reservationService;
-    private RoomService roomService;
     private FeedbackService feedbackService;
 
     private final ObservableList<Guest> guestList = FXCollections.observableArrayList();
@@ -74,7 +73,7 @@ public class SearchGuestController extends BaseController {
         // Initialize services
         guestService = ServiceLocator.getService(GuestService.class);
         reservationService = ServiceLocator.getService(ReservationService.class);
-        roomService = ServiceLocator.getService(RoomService.class);
+        ServiceLocator.getService(RoomService.class);
         feedbackService = ServiceLocator.getService(FeedbackService.class);
 
         // Setup search by options
@@ -454,7 +453,7 @@ public class SearchGuestController extends BaseController {
             );
 
             // Add special note for active reservations
-            Label noteLabel = null;
+            Label noteLabel;
             if (reservation.getStatus() == ReservationStatus.CHECKED_IN) {
                 noteLabel = new Label("Note: Guest is currently checked in");
                 noteLabel.setStyle(labelStyle + "-fx-text-fill: #2e7d32; -fx-font-weight: bold;");

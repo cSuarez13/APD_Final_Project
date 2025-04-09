@@ -47,20 +47,12 @@ public class Reservation {
         return reservationID.get();
     }
 
-    public IntegerProperty reservationIDProperty() {
-        return reservationID;
-    }
-
     public void setReservationID(int reservationID) {
         this.reservationID.set(reservationID);
     }
 
     public int getGuestID() {
         return guestID.get();
-    }
-
-    public IntegerProperty guestIDProperty() {
-        return guestID;
     }
 
     public void setGuestID(int guestID) {
@@ -71,20 +63,12 @@ public class Reservation {
         return checkInDate.get();
     }
 
-    public ObjectProperty<LocalDate> checkInDateProperty() {
-        return checkInDate;
-    }
-
     public void setCheckInDate(LocalDate checkInDate) {
         this.checkInDate.set(checkInDate);
     }
 
     public LocalDate getCheckOutDate() {
         return checkOutDate.get();
-    }
-
-    public ObjectProperty<LocalDate> checkOutDateProperty() {
-        return checkOutDate;
     }
 
     public void setCheckOutDate(LocalDate checkOutDate) {
@@ -95,20 +79,12 @@ public class Reservation {
         return numberOfGuests.get();
     }
 
-    public IntegerProperty numberOfGuestsProperty() {
-        return numberOfGuests;
-    }
-
     public void setNumberOfGuests(int numberOfGuests) {
         this.numberOfGuests.set(numberOfGuests);
     }
 
     public ReservationStatus getStatus() {
         return status.get();
-    }
-
-    public ObjectProperty<ReservationStatus> statusProperty() {
-        return status;
     }
 
     /**
@@ -136,20 +112,8 @@ public class Reservation {
         return createdAt.get();
     }
 
-    public ObjectProperty<LocalDateTime> createdAtProperty() {
-        return createdAt;
-    }
-
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt.set(createdAt);
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt.get();
-    }
-
-    public ObjectProperty<LocalDateTime> updatedAtProperty() {
-        return updatedAt;
     }
 
     public void setUpdatedAt(LocalDateTime updatedAt) {

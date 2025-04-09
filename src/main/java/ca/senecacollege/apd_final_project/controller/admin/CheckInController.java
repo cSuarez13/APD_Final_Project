@@ -46,7 +46,6 @@ public class CheckInController extends BaseController {
     // Services
     private ReservationService reservationService;
     private GuestService guestService;
-    private RoomService roomService;
     private ValidationService validationService;
 
     // State Variables
@@ -59,7 +58,7 @@ public class CheckInController extends BaseController {
         // Get services from ServiceLocator
         reservationService = ServiceLocator.getService(ReservationService.class);
         guestService = ServiceLocator.getService(GuestService.class);
-        roomService = ServiceLocator.getService(RoomService.class);
+        ServiceLocator.getService(RoomService.class);
         validationService = ServiceLocator.getService(ValidationService.class);
 
         // Disable confirm button until reservation is found

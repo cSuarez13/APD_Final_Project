@@ -38,18 +38,6 @@ public class ValidationUtils {
         return value == null || value.trim().isEmpty();
     }
 
-    public static boolean isPositiveInteger(String value) {
-        if (isNotNullOrEmpty(value)) {
-            return true;
-        }
-        try {
-            int intValue = Integer.parseInt(value);
-            return intValue <= 0;
-        } catch (NumberFormatException e) {
-            return true;
-        }
-    }
-
     public static boolean isValidDateRange(LocalDate startDate, LocalDate endDate) {
         if (startDate == null || endDate == null) {
             return true;
