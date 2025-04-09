@@ -517,7 +517,6 @@ public class NewReservationController extends BaseController {
             showError(errorMsg.toString());
             btnSave.setDisable(true);
         } else {
-            // Room selection is valid, now check other validations
             checkAllValidations();
         }
     }
@@ -579,7 +578,6 @@ public class NewReservationController extends BaseController {
                 return;
             }
 
-            // If we get here, all validations passed
             hideError();
             btnSave.setDisable(false);
 
@@ -918,7 +916,7 @@ public class NewReservationController extends BaseController {
                 return false;
             }
 
-            // NEW VALIDATION: Check that selected rooms match spinner values
+            // Check that selected rooms match spinner values
             boolean roomSelectionValid = validateRoomSelectionCounts();
             if (!roomSelectionValid) {
                 return false;

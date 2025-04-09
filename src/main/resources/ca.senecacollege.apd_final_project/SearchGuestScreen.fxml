@@ -61,7 +61,11 @@
                         <Font name="System Bold" size="16.0"/>
                     </font>
                 </Label>
-                <TableView fx:id="tblGuests" VBox.vgrow="ALWAYS"/>
+                <TableView fx:id="tblGuests" VBox.vgrow="ALWAYS">
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                    </columnResizePolicy>
+                </TableView>
             </VBox>
 
             <VBox spacing="10.0" HBox.hgrow="ALWAYS">
@@ -70,7 +74,11 @@
                         <Font name="System Bold" size="16.0"/>
                     </font>
                 </Label>
-                <TableView fx:id="tblReservations" VBox.vgrow="ALWAYS"/>
+                <TableView fx:id="tblReservations" VBox.vgrow="ALWAYS">
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                    </columnResizePolicy>
+                </TableView>
             </VBox>
         </HBox>
     </center>
