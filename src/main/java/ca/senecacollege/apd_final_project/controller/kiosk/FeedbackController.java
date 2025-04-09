@@ -3,11 +3,7 @@ package ca.senecacollege.apd_final_project.controller.kiosk;
 import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
 import ca.senecacollege.apd_final_project.exception.ValidationException;
-import ca.senecacollege.apd_final_project.model.Billing;
-import ca.senecacollege.apd_final_project.model.Feedback;
-import ca.senecacollege.apd_final_project.model.Guest;
-import ca.senecacollege.apd_final_project.model.Reservation;
-import ca.senecacollege.apd_final_project.model.ReservationStatus;
+import ca.senecacollege.apd_final_project.model.*;
 import ca.senecacollege.apd_final_project.service.*;
 import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
@@ -25,8 +21,11 @@ import javafx.scene.Node;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class FeedbackController extends BaseController {
 
@@ -342,7 +341,43 @@ public class FeedbackController extends BaseController {
         lblCheckInDate.setText(currentReservation.getCheckInDate().toString());
         lblCheckOutDate.setText(currentReservation.getCheckOutDate().toString());
 
-        lblRoomInfo.setText("Room #" + currentReservation.getRoomID());
+        try {
+            List<Room> reservationRooms = reservationService.getRoomsForReservation(currentReservation.getReservationID());
+
+            if (reservationRooms == null || reservationRooms.isEmpty()) {
+                LoggingManager.logSystemWarning("Room info not found for reservation #" + currentReservation.getReservationID());
+                lblRoomInfo.setText("Room information not available");
+            } else {
+                // Build a room summary
+                String roomSummary;
+                if (reservationRooms.size() == 1) {
+                    Room room = reservationRooms.get(0);
+                    roomSummary = room.getRoomType().getDisplayName() + " (Room #" + room.getRoomID() + ")";
+                } else {
+                    // Multiple rooms - display a summary with room types
+                    Map<RoomType, Long> roomTypeCounts = reservationRooms.stream()
+                            .collect(Collectors.groupingBy(Room::getRoomType, Collectors.counting()));
+
+                    roomSummary = reservationRooms.size() + " rooms: ";
+
+                    // Add room type breakdown
+                    roomSummary += roomTypeCounts.entrySet().stream()
+                            .map(entry -> entry.getValue() + " " + entry.getKey().getDisplayName() +
+                                    (entry.getValue() > 1 ? "s" : ""))
+                            .collect(Collectors.joining(", "));
+
+                    // Add room numbers
+                    roomSummary += " (" + reservationRooms.stream()
+                            .map(room -> "#" + room.getRoomID())
+                            .collect(Collectors.joining(", ")) + ")";
+                }
+                lblRoomInfo.setText(roomSummary);
+            }
+        } catch (DatabaseException e) {
+            LoggingManager.logException("Error retrieving rooms for reservation #" +
+                    currentReservation.getReservationID(), e);
+            lblRoomInfo.setText("Error loading room information");
+        }
     }
 
     /**
