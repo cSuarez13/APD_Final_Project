@@ -1,24 +1,25 @@
 package ca.senecacollege.apd_final_project.controller.admin;
 
 import ca.senecacollege.apd_final_project.controller.BaseController;
-import ca.senecacollege.apd_final_project.model.Admin;
-import ca.senecacollege.apd_final_project.model.Guest;
-import ca.senecacollege.apd_final_project.model.Reservation;
-import ca.senecacollege.apd_final_project.model.Room;
-import ca.senecacollege.apd_final_project.model.ReservationStatus;
+import ca.senecacollege.apd_final_project.model.*;
 import ca.senecacollege.apd_final_project.service.*;
 import ca.senecacollege.apd_final_project.util.ErrorPopupManager;
+import ca.senecacollege.apd_final_project.util.LoggingManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class CheckInController extends BaseController {
 
     @FXML
     public TextField txtReservationId;
+
+    @FXML
     public Button btnSearch;
 
     @FXML
@@ -51,7 +52,7 @@ public class CheckInController extends BaseController {
     // State Variables
     private Reservation currentReservation;
     private Guest currentGuest;
-    private Room currentRoom;
+    private List<Room> reservationRooms;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -66,6 +67,8 @@ public class CheckInController extends BaseController {
 
         // Call parent initialize
         super.initialize(url, resourceBundle);
+
+        LoggingManager.logSystemInfo("CheckInController initialized");
     }
 
     @Override
@@ -90,9 +93,18 @@ public class CheckInController extends BaseController {
 
         try {
             // Validate reservation ID
-            validationService.validateId(reservationIdText, "Reservation ID");
+            if (reservationIdText.isEmpty()) {
+                showError("Please enter a Reservation ID");
+                return;
+            }
 
-            int reservationId = Integer.parseInt(reservationIdText);
+            int reservationId;
+            try {
+                reservationId = Integer.parseInt(reservationIdText);
+            } catch (NumberFormatException e) {
+                showError("Reservation ID must be a number");
+                return;
+            }
 
             // Fetch reservation information
             currentReservation = reservationService.getReservationById(reservationId);
@@ -109,9 +121,15 @@ public class CheckInController extends BaseController {
                 return;
             }
 
-            // Fetch guest and room information
+            // Fetch guest information
             currentGuest = guestService.getGuestById(currentReservation.getGuestID());
-            currentRoom = roomService.getRoomById(currentReservation.getRoomID());
+
+            // Fetch all rooms for this reservation
+            reservationRooms = reservationService.getRoomsForReservation(currentReservation.getReservationID());
+
+            LoggingManager.logSystemInfo("Displaying reservation #" + currentReservation.getReservationID());
+            LoggingManager.logSystemInfo("Guest: " + (currentGuest != null ? currentGuest.getName() : "null"));
+            LoggingManager.logSystemInfo("Rooms found: " + (reservationRooms != null ? reservationRooms.size() : "null"));
 
             // Display information
             displayReservationInfo();
@@ -122,8 +140,53 @@ public class CheckInController extends BaseController {
             logAdminActivity("Found reservation #" + reservationId + " for check-in");
 
         } catch (Exception e) {
+            LoggingManager.logException("Error searching for reservation", e);
             showError(e.getMessage());
         }
+    }
+
+    /**
+     * Display the reservation information in the UI
+     */
+    private void displayReservationInfo() {
+        // Always check the reservation first
+        if (currentReservation == null) {
+            LoggingManager.logSystemInfo("Cannot display reservation info: currentReservation is null");
+            return;
+        }
+
+        // Display guest information
+        if (currentGuest == null) {
+            LoggingManager.logSystemWarning("Guest info not found for reservation #" + currentReservation.getReservationID());
+            lblGuestName.setText("Guest information not available");
+        } else {
+            lblGuestName.setText(currentGuest.getName());
+        }
+
+        // Display room information - now handling multiple rooms
+        if (reservationRooms == null || reservationRooms.isEmpty()) {
+            LoggingManager.logSystemWarning("Room info not found for reservation #" + currentReservation.getReservationID());
+            lblRoomInfo.setText("Room information not available");
+        } else {
+            // Build a room summary
+            String roomSummary;
+            if (reservationRooms.size() == 1) {
+                Room room = reservationRooms.get(0);
+                roomSummary = room.getRoomType().getDisplayName() + " (Room #" + room.getRoomID() + ")";
+            } else {
+                // Multiple rooms - display a summary
+                roomSummary = reservationRooms.size() + " rooms: " +
+                        reservationRooms.stream()
+                                .map(room -> "#" + room.getRoomID())
+                                .collect(Collectors.joining(", "));
+            }
+            lblRoomInfo.setText(roomSummary);
+        }
+
+        // Always update these fields even if guest/room is null
+        lblCheckInDate.setText(currentReservation.getCheckInDate().toString());
+        lblCheckOutDate.setText(currentReservation.getCheckOutDate().toString());
+        lblGuests.setText(String.valueOf(currentReservation.getNumberOfGuests()));
     }
 
     @FXML
@@ -154,6 +217,8 @@ public class CheckInController extends BaseController {
             clearAll();
 
         } catch (Exception e) {
+            LoggingManager.logException("Error checking in reservation #" +
+                    (currentReservation != null ? currentReservation.getReservationID() : "unknown"), e);
             showError(e.getMessage());
         }
     }
@@ -166,22 +231,6 @@ public class CheckInController extends BaseController {
     }
 
     /**
-     * Display the reservation information in the UI
-     */
-    private void displayReservationInfo() {
-        if (currentReservation == null || currentGuest == null || currentRoom == null) {
-            return;
-        }
-
-        lblGuestName.setText(currentGuest.getName());
-        lblRoomInfo.setText(currentRoom.getRoomType().getDisplayName() + " (Room #" +
-                currentRoom.getRoomID() + ")");
-        lblCheckInDate.setText(currentReservation.getCheckInDate().toString());
-        lblCheckOutDate.setText(currentReservation.getCheckOutDate().toString());
-        lblGuests.setText(String.valueOf(currentReservation.getNumberOfGuests()));
-    }
-
-    /**
      * Clear all fields and reset the form
      */
     private void clearAll() {
@@ -189,7 +238,7 @@ public class CheckInController extends BaseController {
         clearFields();
         currentReservation = null;
         currentGuest = null;
-        currentRoom = null;
+        reservationRooms = null;
         btnConfirm.setDisable(true);
         hideError();
     }
@@ -244,5 +293,4 @@ public class CheckInController extends BaseController {
         // Trigger the search action programmatically
         performReservationSearch();
     }
-
 }

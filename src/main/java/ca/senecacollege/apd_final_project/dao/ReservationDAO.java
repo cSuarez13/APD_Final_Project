@@ -275,11 +275,11 @@ public class ReservationDAO {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, reservation.getGuestID());
-            stmt.setDate(3, java.sql.Date.valueOf(reservation.getCheckInDate()));
-            stmt.setDate(4, java.sql.Date.valueOf(reservation.getCheckOutDate()));
-            stmt.setInt(5, reservation.getNumberOfGuests());
-            stmt.setString(6, reservation.getStatus().getDisplayName());
-            stmt.setInt(7, reservation.getReservationID());
+            stmt.setDate(2, java.sql.Date.valueOf(reservation.getCheckInDate()));
+            stmt.setDate(3, java.sql.Date.valueOf(reservation.getCheckOutDate()));
+            stmt.setInt(4, reservation.getNumberOfGuests());
+            stmt.setString(5, reservation.getStatus().getDisplayName());
+            stmt.setInt(6, reservation.getReservationID());
 
             int affectedRows = stmt.executeUpdate();
 
