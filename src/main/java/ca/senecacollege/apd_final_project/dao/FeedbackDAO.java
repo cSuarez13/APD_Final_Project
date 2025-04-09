@@ -88,6 +88,37 @@ public class FeedbackDAO {
     }
 
     /**
+     * Find feedback by reservation ID
+     *
+     * @param reservationId The reservation ID
+     * @return List of feedback for the specified reservation
+     * @throws DatabaseException If there's an error retrieving the feedback
+     */
+    public List<Feedback> findByReservationId(int reservationId) throws DatabaseException {
+        String sql = "SELECT * FROM feedback WHERE reservation_id = ? ORDER BY submission_date DESC";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, reservationId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                List<Feedback> feedbackList = new ArrayList<>();
+
+                while (rs.next()) {
+                    feedbackList.add(mapResultSetToFeedback(rs));
+                }
+
+                return feedbackList;
+            }
+
+        } catch (SQLException e) {
+            LoggingManager.logException("Database error while finding feedback by reservation ID", e);
+            throw new DatabaseException("Error finding feedback: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * Update feedback
      *
      * @param feedback The feedback to update

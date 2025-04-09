@@ -3,6 +3,7 @@ package ca.senecacollege.apd_final_project.controller.admin;
 import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
 import ca.senecacollege.apd_final_project.model.*;
+import ca.senecacollege.apd_final_project.service.FeedbackService;
 import ca.senecacollege.apd_final_project.service.GuestService;
 import ca.senecacollege.apd_final_project.service.ReservationService;
 import ca.senecacollege.apd_final_project.service.RoomService;
@@ -61,6 +62,7 @@ public class SearchGuestController extends BaseController {
     private GuestService guestService;
     private ReservationService reservationService;
     private RoomService roomService;
+    private FeedbackService feedbackService;
 
     private final ObservableList<Guest> guestList = FXCollections.observableArrayList();
     private final ObservableList<Reservation> reservationList = FXCollections.observableArrayList();
@@ -73,6 +75,7 @@ public class SearchGuestController extends BaseController {
         guestService = ServiceLocator.getService(GuestService.class);
         reservationService = ServiceLocator.getService(ReservationService.class);
         roomService = ServiceLocator.getService(RoomService.class);
+        feedbackService = ServiceLocator.getService(FeedbackService.class);
 
         // Setup search by options
         cmbSearchBy.setItems(FXCollections.observableArrayList("Name", "Phone", "Email"));
@@ -372,14 +375,6 @@ public class SearchGuestController extends BaseController {
             content.getChildren().add(label);
         }
 
-        // Add feedback if available
-        if (guest.getFeedback() != null && !guest.getFeedback().isEmpty()) {
-            content.getChildren().addAll(
-                    new Separator(),
-                    createFeedbackSection(guest.getFeedback())
-            );
-        }
-
         return content;
     }
 
@@ -448,13 +443,6 @@ public class SearchGuestController extends BaseController {
                 case CANCELLED -> statusLabel.setStyle(labelStyle + "-fx-text-fill: #d32f2f;");
             }
 
-            // Special note for active reservations
-            Label noteLabel = null;
-            if (reservation.getStatus() == ReservationStatus.CHECKED_IN) {
-                noteLabel = new Label("Note: Guest is currently checked in");
-                noteLabel.setStyle(labelStyle + "-fx-text-fill: #2e7d32; -fx-font-weight: bold;");
-            }
-
             content.getChildren().addAll(
                     idLabel,
                     statusLabel,
@@ -465,9 +453,33 @@ public class SearchGuestController extends BaseController {
                     guestsLabel
             );
 
-            if (noteLabel != null) {
+            // Add special note for active reservations
+            Label noteLabel = null;
+            if (reservation.getStatus() == ReservationStatus.CHECKED_IN) {
+                noteLabel = new Label("Note: Guest is currently checked in");
+                noteLabel.setStyle(labelStyle + "-fx-text-fill: #2e7d32; -fx-font-weight: bold;");
                 content.getChildren().add(new Separator());
                 content.getChildren().add(noteLabel);
+            }
+
+            // Check if feedback exists for this reservation (MOVED FROM GUEST DETAILS TO HERE)
+            try {
+                boolean hasFeedback = feedbackService.checkFeedbackExists(reservation.getReservationID());
+
+                if (hasFeedback && reservation.getStatus() == ReservationStatus.CHECKED_OUT) {
+                    // Get the feedback for this reservation
+                    List<Feedback> feedbackList = feedbackService.getFeedbackByReservation(reservation.getReservationID());
+
+                    if (feedbackList != null && !feedbackList.isEmpty()) {
+                        Feedback feedback = feedbackList.get(0); // Get the first feedback
+
+                        content.getChildren().add(new Separator());
+                        content.getChildren().add(createFeedbackSection(feedback));
+                    }
+                }
+            } catch (Exception e) {
+                LoggingManager.logException("Error retrieving feedback for reservation #" +
+                        reservation.getReservationID(), e);
             }
 
         } catch (Exception e) {
@@ -480,20 +492,27 @@ public class SearchGuestController extends BaseController {
         return content;
     }
 
-    private VBox createFeedbackSection(String feedbackText) {
+    private VBox createFeedbackSection(Feedback feedback) {
         VBox feedbackBox = new VBox(10);
 
-        Label feedbackLabel = new Label("Feedback:");
+        Label feedbackLabel = new Label("Guest Feedback:");
         feedbackLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
 
-        TextArea feedbackArea = new TextArea(feedbackText);
+        Label ratingLabel = new Label("Rating: " + feedback.getRating() + " out of 5 stars");
+        ratingLabel.setStyle("-fx-font-size: 16px;");
+
+        TextArea feedbackArea = new TextArea(feedback.getComments());
         feedbackArea.setEditable(false);
         feedbackArea.setPrefRowCount(8);
         feedbackArea.setPrefHeight(120);
         feedbackArea.setPrefWidth(350);
         feedbackArea.setStyle("-fx-font-size: 16px; -fx-control-inner-background: #7b1fa2;");
 
-        feedbackBox.getChildren().addAll(feedbackLabel, feedbackArea);
+        Label dateLabel = new Label("Submitted on: " +
+                feedback.getSubmissionDateTime().toLocalDate().toString());
+        dateLabel.setStyle("-fx-font-size: 14px; -fx-font-style: italic;");
+
+        feedbackBox.getChildren().addAll(feedbackLabel, ratingLabel, feedbackArea, dateLabel);
         return feedbackBox;
     }
 

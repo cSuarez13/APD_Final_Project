@@ -75,6 +75,22 @@ public class FeedbackService {
     }
 
     /**
+     * Get feedback by reservation ID
+     *
+     * @param reservationId The reservation ID
+     * @return List of feedback for the specified reservation
+     * @throws DatabaseException If there's an error retrieving the feedback
+     */
+    public List<Feedback> getFeedbackByReservation(int reservationId) throws DatabaseException {
+        try {
+            return feedbackDAO.findByReservationId(reservationId);
+        } catch (Exception e) {
+            LoggingManager.logException("Error retrieving feedback for reservation #" + reservationId, e);
+            throw new DatabaseException("Error retrieving feedback: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * Validate feedback data
      *
      * @param feedback The feedback to validate
