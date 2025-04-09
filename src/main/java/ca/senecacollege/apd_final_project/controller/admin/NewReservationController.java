@@ -177,6 +177,8 @@ public class NewReservationController extends BaseController {
         // Hide error message initially
         hideError();
 
+        btnSave.setDisable(true);
+
         LoggingManager.logSystemInfo("NewReservationController initialized");
     }
 
@@ -470,20 +472,124 @@ public class NewReservationController extends BaseController {
 
     /**
      * This method is called when room selections are being validated.
-     * Unlike the previous version, it does NOT auto-select rooms,
-     * but just checks if there are enough rooms selected.
+     * It checks if the exact number of rooms specified in the spinners
+     * have been selected for each room type.
      */
     private void validateRoomSelections() {
-        // Get spinner values
+        // Get spinner values (target number of rooms for each type)
         int singleCount = spnSingleRooms.getValue();
         int doubleCount = spnDoubleRooms.getValue();
         int deluxeCount = spnDeluxeRooms.getValue();
         int penthouseCount = spnPenthouseRooms.getValue();
 
-        // Calculate total rooms and capacity
+        // Get actual selected room counts
+        int selectedSingleCount = selectedRoomIds.get(RoomType.SINGLE).size();
+        int selectedDoubleCount = selectedRoomIds.get(RoomType.DOUBLE).size();
+        int selectedDeluxeCount = selectedRoomIds.get(RoomType.DELUXE).size();
+        int selectedPenthouseCount = selectedRoomIds.get(RoomType.PENT_HOUSE).size();
 
-        // Check if enough capacity for the guests
-        int guests = spnNumberOfGuests.getValue();
+        // Check if the number of selected rooms matches the spinner values
+        boolean roomSelectionValid =
+                (singleCount == selectedSingleCount) &&
+                        (doubleCount == selectedDoubleCount) &&
+                        (deluxeCount == selectedDeluxeCount) &&
+                        (penthouseCount == selectedPenthouseCount);
+
+        // If room selection is not valid, show error message
+        if (!roomSelectionValid) {
+            StringBuilder errorMsg = new StringBuilder("Please select exactly: ");
+            List<String> mismatches = new ArrayList<>();
+
+            if (singleCount != selectedSingleCount) {
+                mismatches.add(singleCount + " single rooms (selected: " + selectedSingleCount + ")");
+            }
+            if (doubleCount != selectedDoubleCount) {
+                mismatches.add(doubleCount + " double rooms (selected: " + selectedDoubleCount + ")");
+            }
+            if (deluxeCount != selectedDeluxeCount) {
+                mismatches.add(deluxeCount + " deluxe rooms (selected: " + selectedDeluxeCount + ")");
+            }
+            if (penthouseCount != selectedPenthouseCount) {
+                mismatches.add(penthouseCount + " penthouse rooms (selected: " + selectedPenthouseCount + ")");
+            }
+
+            errorMsg.append(String.join(", ", mismatches));
+            showError(errorMsg.toString());
+            btnSave.setDisable(true);
+        } else {
+            // Room selection is valid, now check other validations
+            checkAllValidations();
+        }
+    }
+
+    /**
+     * Check all validations and enable/disable save button accordingly
+     */
+    private void checkAllValidations() {
+        try {
+            // Check if guest is selected
+            if (currentGuest == null) {
+                showError("No guest selected for the reservation.");
+                btnSave.setDisable(true);
+                return;
+            }
+
+            // Check dates
+            if (dpCheckInDate.getValue() == null) {
+                showError("Please select a check-in date.");
+                btnSave.setDisable(true);
+                return;
+            }
+
+            if (dpCheckOutDate.getValue() == null) {
+                showError("Please select a check-out date.");
+                btnSave.setDisable(true);
+                return;
+            }
+
+            // Validate date range
+            ValidationUtils.validateDateRange(
+                    dpCheckInDate.getValue(),
+                    dpCheckOutDate.getValue(),
+                    "Check-in date",
+                    "Check-out date");
+
+            // Check for future date
+            if (ValidationUtils.isValidFutureDate(dpCheckInDate.getValue())) {
+                showError("Check-in date must be today or in the future.");
+                btnSave.setDisable(true);
+                return;
+            }
+
+            // Check if any rooms are selected
+            int totalRooms = Integer.parseInt(lblTotalRooms.getText());
+            if (totalRooms == 0) {
+                showError("Please select at least one room.");
+                btnSave.setDisable(true);
+                return;
+            }
+
+            // Check if selected rooms have enough capacity
+            int capacity = Integer.parseInt(lblTotalCapacity.getText());
+            int guests = spnNumberOfGuests.getValue();
+
+            if (capacity < guests) {
+                showError("Selected rooms cannot accommodate " + guests + " guests.");
+                btnSave.setDisable(true);
+                return;
+            }
+
+            // If we get here, all validations passed
+            hideError();
+            btnSave.setDisable(false);
+
+        } catch (ValidationException e) {
+            showError(e.getMessage());
+            btnSave.setDisable(true);
+        } catch (Exception e) {
+            showError("Validation error: " + e.getMessage());
+            btnSave.setDisable(true);
+        }
     }
 
 
@@ -533,9 +639,8 @@ public class NewReservationController extends BaseController {
             return;
         }
 
-        // All validations passed
-        hideError();
-        btnSave.setDisable(false);
+        // Check if room selections match spinner values
+        validateRoomSelections();
     }
 
     /**
@@ -813,6 +918,12 @@ public class NewReservationController extends BaseController {
                 return false;
             }
 
+            // NEW VALIDATION: Check that selected rooms match spinner values
+            boolean roomSelectionValid = validateRoomSelectionCounts();
+            if (!roomSelectionValid) {
+                return false;
+            }
+
             // Check if selected rooms have enough capacity
             int capacity = Integer.parseInt(lblTotalCapacity.getText());
             int guests = spnNumberOfGuests.getValue();
@@ -831,6 +942,44 @@ public class NewReservationController extends BaseController {
             showError("Validation error: " + e.getMessage());
             return false;
         }
+    }
+
+    // Validate that selected room counts match spinner values
+    private boolean validateRoomSelectionCounts() {
+        // Get spinner values (requested room counts)
+        int requestedSingle = spnSingleRooms.getValue();
+        int requestedDouble = spnDoubleRooms.getValue();
+        int requestedDeluxe = spnDeluxeRooms.getValue();
+        int requestedPenthouse = spnPenthouseRooms.getValue();
+
+        // Get actual selected counts
+        int selectedSingle = selectedRoomIds.get(RoomType.SINGLE).size();
+        int selectedDouble = selectedRoomIds.get(RoomType.DOUBLE).size();
+        int selectedDeluxe = selectedRoomIds.get(RoomType.DELUXE).size();
+        int selectedPenthouse = selectedRoomIds.get(RoomType.PENT_HOUSE).size();
+
+        // Check for mismatches
+        List<String> mismatches = new ArrayList<>();
+
+        if (requestedSingle > 0 && selectedSingle != requestedSingle) {
+            mismatches.add("Single: " + selectedSingle + " selected (need " + requestedSingle + ")");
+        }
+        if (requestedDouble > 0 && selectedDouble != requestedDouble) {
+            mismatches.add("Double: " + selectedDouble + " selected (need " + requestedDouble + ")");
+        }
+        if (requestedDeluxe > 0 && selectedDeluxe != requestedDeluxe) {
+            mismatches.add("Deluxe: " + selectedDeluxe + " selected (need " + requestedDeluxe + ")");
+        }
+        if (requestedPenthouse > 0 && selectedPenthouse != requestedPenthouse) {
+            mismatches.add("Penthouse: " + selectedPenthouse + " selected (need " + requestedPenthouse + ")");
+        }
+
+        if (!mismatches.isEmpty()) {
+            showError("Room selection mismatch:\n" + String.join("\n", mismatches));
+            return false;
+        }
+
+        return true;
     }
 
     @Override
