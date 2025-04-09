@@ -2,14 +2,14 @@ package ca.senecacollege.apd_final_project.controller.admin;
 
 import ca.senecacollege.apd_final_project.controller.BaseController;
 import ca.senecacollege.apd_final_project.exception.DatabaseException;
-import ca.senecacollege.apd_final_project.model.Admin;
-import ca.senecacollege.apd_final_project.model.Reservation;
-import ca.senecacollege.apd_final_project.model.ReservationStatus;
+import ca.senecacollege.apd_final_project.model.*;
 import ca.senecacollege.apd_final_project.service.DialogService;
 import ca.senecacollege.apd_final_project.service.ReservationService;
+import ca.senecacollege.apd_final_project.service.RoomService;
 import ca.senecacollege.apd_final_project.service.ServiceLocator;
 import ca.senecacollege.apd_final_project.util.Constants;
 import ca.senecacollege.apd_final_project.util.LoggingManager;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -30,6 +30,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class ReservationController extends BaseController {
 
@@ -46,6 +47,7 @@ public class ReservationController extends BaseController {
     private TableView<Reservation> tblAllReservations;
 
     private ReservationService reservationService;
+    private RoomService roomService;
     private final ObservableList<Reservation> allReservations = FXCollections.observableArrayList();
 
     @Override
@@ -56,6 +58,7 @@ public class ReservationController extends BaseController {
 
         // Get services using ServiceLocator
         reservationService = ServiceLocator.getService(ReservationService.class);
+        roomService = ServiceLocator.getService(RoomService.class);
 
         // Initialize reservation filter combo box
         cmbReservationFilter.setItems(FXCollections.observableArrayList(
@@ -105,10 +108,34 @@ public class ReservationController extends BaseController {
         guestIdColumn.setCellValueFactory(new PropertyValueFactory<>("guestID"));
         guestIdColumn.setMinWidth(100);
 
-        // Room ID Column
-        TableColumn<Reservation, Integer> roomIdColumn = new TableColumn<>("Room");
-        roomIdColumn.setCellValueFactory(new PropertyValueFactory<>("roomID"));
-        roomIdColumn.setMinWidth(100);
+        // Room ID Column - UPDATED to show multiple rooms
+        TableColumn<Reservation, String> roomIdColumn = new TableColumn<>("Room(s)");
+        roomIdColumn.setCellValueFactory(cellData -> {
+            Reservation reservation = cellData.getValue();
+            try {
+                // Get all rooms for this reservation
+                List<Room> rooms = reservationService.getRoomsForReservation(reservation.getReservationID());
+                if (rooms == null || rooms.isEmpty()) {
+                    return new SimpleStringProperty("None");
+                } else if (rooms.size() == 1) {
+                    Room room = rooms.get(0);
+                    return new SimpleStringProperty(room.getRoomType().getDisplayName() + " #" + room.getRoomID());
+                } else {
+                    // Multiple rooms - combine in one string
+                    return new SimpleStringProperty(
+                            rooms.size() + " rooms: " +
+                                    rooms.stream()
+                                            .map(r -> "#" + r.getRoomID())
+                                            .collect(Collectors.joining(", "))
+                    );
+                }
+            } catch (Exception e) {
+                LoggingManager.logException("Error retrieving rooms for reservation #" +
+                        reservation.getReservationID(), e);
+                return new SimpleStringProperty("Error loading rooms");
+            }
+        });
+        roomIdColumn.setMinWidth(150);
 
         // Check-in Date Column
         TableColumn<Reservation, LocalDate> checkInColumn = new TableColumn<>("Check-in");
@@ -177,8 +204,10 @@ public class ReservationController extends BaseController {
             List<Reservation> reservations;
 
             if ("All".equals(filter)) {
-                reservations = reservationService.getActiveReservations();
+                // Show ALL reservations including checked out and cancelled
+                reservations = reservationService.getAllReservations();
             } else if ("Active".equals(filter)) {
+                // Only show CONFIRMED and CHECKED_IN reservations
                 reservations = reservationService.getActiveReservations();
             } else if ("Confirmed".equals(filter)) {
                 reservations = reservationService.getReservationsByStatus(ReservationStatus.CONFIRMED);

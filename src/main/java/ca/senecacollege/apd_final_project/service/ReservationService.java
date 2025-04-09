@@ -268,6 +268,30 @@ public class ReservationService {
     }
 
     /**
+     * Get all reservations regardless of status
+     *
+     * @return List of all reservations
+     * @throws DatabaseException If there's an error retrieving reservations
+     */
+    public List<Reservation> getAllReservations() throws DatabaseException {
+        try {
+            // Create an array with all possible status values
+            String[] allStatuses = {
+                    ReservationStatus.PENDING.getDisplayName(),
+                    ReservationStatus.CONFIRMED.getDisplayName(),
+                    ReservationStatus.CHECKED_IN.getDisplayName(),
+                    ReservationStatus.CHECKED_OUT.getDisplayName(),
+                    ReservationStatus.CANCELLED.getDisplayName()
+            };
+
+            return reservationDAO.findByStatus(allStatuses);
+        } catch (Exception e) {
+            LoggingManager.logException("Error retrieving all reservations", e);
+            throw new DatabaseException("Error retrieving all reservations: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * Check out a guest
      *
      * @param reservationId The reservation ID
